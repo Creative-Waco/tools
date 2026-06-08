@@ -62,25 +62,6 @@ export function SparksDashboard() {
     loadDashboard();
   }, [loadDashboard]);
 
-  function handleExportSnapshot() {
-    fetchDashboard({ period, membershipType })
-      .then((result) => {
-        const blob = new Blob([JSON.stringify(result, null, 2)], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `creative-spark-dashboard-${Date.now()}.json`;
-        link.click();
-        URL.revokeObjectURL(url);
-        setStatusMessage("Snapshot downloaded.");
-        setStatusType("is-success");
-      })
-      .catch((error) => {
-        setStatusMessage(error instanceof Error ? error.message : "Export failed.");
-        setStatusType("");
-      });
-  }
-
   function handleMonthClick(monthKey: string) {
     hideChartTooltip();
     setGrowthModalMonth(monthKey);
@@ -108,7 +89,6 @@ export function SparksDashboard() {
           onPeriodChange={setPeriod}
           onMembershipTypeChange={setMembershipType}
           onRefresh={loadDashboard}
-          onExport={handleExportSnapshot}
         />
 
         <KpiGrid kpis={data?.kpis ?? []} loading={loading} />

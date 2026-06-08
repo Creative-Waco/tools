@@ -20,7 +20,9 @@ function SkeletonKpiGrid() {
             className="skeleton skeleton--text-xl"
             style={{ width: i === 0 ? "42%" : "28%" }}
           />
-          <span className="skeleton skeleton--text-sm" style={{ width: "76%" }} />
+          {i === 0 ? (
+            <span className="skeleton skeleton--text-sm" style={{ width: "76%" }} />
+          ) : null}
         </article>
       ))}
     </>
@@ -41,9 +43,6 @@ export function KpiGrid({ kpis, loading }: KpiGridProps) {
           >
             <p className="kpi-card__label">{escapeHtml(kpi.label)}</p>
             <p className="kpi-card__value">{escapeHtml(kpi.value)}</p>
-            <p className={`kpi-card__delta ${kpi.delta.className}`}>
-              {escapeHtml(kpi.delta.text)}
-            </p>
             {kpi.footnote ? (
               <p
                 className={`kpi-card__footnote${kpi.footnote.includes("honorary") ? " is-honorary" : ""}`}

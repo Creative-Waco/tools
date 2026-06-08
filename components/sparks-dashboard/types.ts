@@ -1,15 +1,9 @@
 export type Tier = "bronze" | "silver" | "gold";
 
-export type KpiDelta = {
-  text: string;
-  className: string;
-};
-
 export type Kpi = {
   id: string;
   label: string;
   value: string;
-  delta: KpiDelta;
   footnote?: string | null;
   accent?: boolean;
   degraded?: boolean;

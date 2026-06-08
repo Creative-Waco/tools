@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { DashboardEvent } from "./types";
-import { escapeHtml, formatDate, formatNumber, statusSlugToClass } from "./utils";
+import { formatDate, formatNumber, statusSlugToClass } from "./utils";
 
 type EventsPanelProps = {
   events: DashboardEvent[];
@@ -19,15 +19,15 @@ function EventRow({ event }: { event: DashboardEvent }) {
       <td>
         {event.asanaUrl ? (
           <a href={event.asanaUrl} target="_blank" rel="noopener">
-            {escapeHtml(event.title)}
+            {event.title}
           </a>
         ) : (
-          escapeHtml(event.title)
+          event.title
         )}
       </td>
       <td>{formatDate(event.date)}</td>
       <td>
-        <span className={`status-badge status-badge--${slug}`}>{escapeHtml(label)}</span>
+        <span className={`status-badge status-badge--${slug}`}>{label}</span>
       </td>
     </tr>
   );

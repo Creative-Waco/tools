@@ -23,11 +23,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Favicon and Apple touch icon match [creativewaco.org](https://creativewaco.org/) (`app/icon.png`, `app/apple-icon.png`).
+- Creative Spark Dashboard toolbar: removed **Export snapshot** button.
+- KPI cards no longer show prior-period comparison lines (`vs prior period` deltas).
+- Sidebar expanded/collapsed state persists for 7 days via the `sidebar_state` cookie (restored on load).
 - Sidebar and mobile header logo use the same Creative Waco mark instead of the `CW` initials placeholder.
 - Hidden placeholder sidebar user menu until real auth is wired up.
 - Sidebar branding block is display-only (no home link); "All tools" remains the hub nav item.
-- Fixed sidebar collapse toggle blocked by full-width logo row in the header.
 - Disabled the Next.js dev indicator overlay (`devIndicators: false` in `next.config.ts`).
 - **App navigation** — replaced per-page `ToolNav` back links with the Application Shell 2 sidebar (active route highlighting).
 - **Application shell** — switched from Application Shell 5 to Application Shell 2 (inset sidebar with icon collapse).
@@ -49,6 +50,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Event cards and RSS email preview placeholder text invisible — use `--muted-foreground` instead of shadcn `--muted` background token.
 - Creative Spark Dashboard header matches other tools (`PageHero`); removed custom hero block and last-updated timestamp row.
 - Chart tooltip and growth modal label text invisible — scoped dashboard `--muted` token on fixed overlays.
+- Event status badges showed `&amp;` instead of `&` — render labels as React text instead of pre-escaped HTML entities.
+- Sidebar collapse toggle blocked by full-width logo row in the header.
 - Givebutter member profile links use the numeric dashboard account ID (`GIVEBUTTER_ACCOUNT_ID`, e.g. `145191`) instead of the API account slug, which broke dashboard URLs.
 
 ### Removed

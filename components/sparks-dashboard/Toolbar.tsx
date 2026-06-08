@@ -7,7 +7,6 @@ type ToolbarProps = {
   onPeriodChange: (period: Period) => void;
   onMembershipTypeChange: (type: MembershipTypeFilter) => void;
   onRefresh: () => void;
-  onExport: () => void;
 };
 
 export function Toolbar({
@@ -17,7 +16,6 @@ export function Toolbar({
   onPeriodChange,
   onMembershipTypeChange,
   onRefresh,
-  onExport,
 }: ToolbarProps) {
   return (
     <section className="toolbar panel">
@@ -53,9 +51,6 @@ export function Toolbar({
       </div>
 
       <div className="toolbar__actions">
-        <button type="button" className="ghost" id="export-btn" onClick={onExport}>
-          Export snapshot
-        </button>
         <button
           type="button"
           className="primary"

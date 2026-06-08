@@ -22,7 +22,7 @@ Next.js 15 App Router app deployed on Vercel at **https://tools.creativewaco.org
 | UI components | `components/` — shadcn/ui primitives, shared layout, per-tool React clients |
 | Backend logic | `lib/` — RSS generation, event cards, Givebutter/Asana dashboard |
 
-Navigation is provided by the Application Shell 2 layout (inset sidebar with icon collapse). The sidebar lists **All tools** plus every registry entry under a single **Tools** group; the Creative Waco branding block at the top is display-only (use **All tools** or **⌘B** / **Ctrl+B** to collapse the sidebar). The hub at `/` and each tool page render inside the shell's main content area.
+Navigation is provided by the Application Shell 2 layout (inset sidebar with icon collapse). The sidebar lists **All tools** plus every registry entry under a single **Tools** group; the Creative Waco branding block at the top is display-only (use **All tools** or **⌘B** / **Ctrl+B** to collapse the sidebar). Collapsed vs expanded state is remembered for 7 days in a browser cookie. The hub at `/` and each tool page render inside the shell's main content area.
 
 Favicon and Apple touch icon match [creativewaco.org](https://creativewaco.org/) (`app/icon.png`, `app/apple-icon.png`).
 
@@ -156,7 +156,7 @@ Public-facing dashboard for [Creative Spark](https://creativewaco.org/spark) mem
 
 **Spark events table** — upcoming pipeline first (soonest dated events on top), then ideas; completed events are collapsed behind a toggle. Scrollable table body keeps the layout compact.
 
-**Loading** — skeleton placeholders animate while Givebutter and Asana data load (filter changes and Refresh).
+**Loading** — skeleton placeholders animate while Givebutter and Asana data load (filter changes and **Refresh**). Toolbar filters: period, membership type, and refresh only (no JSON export).
 
 **Chart tooltips** — hover (or keyboard focus) on the growth chart, tier donut/legend, and goal progress bars for custom detail tooltips. Click a month in the growth chart to open a modal with new members and events held that month (names link to Givebutter).
 

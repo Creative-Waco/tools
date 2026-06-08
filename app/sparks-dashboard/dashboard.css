@@ -325,24 +325,6 @@
   font-weight: 700;
 }
 
-.kpi-card__delta {
-  margin: 10px 0 0;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.kpi-card__delta.is-up {
-  color: var(--success);
-}
-
-.kpi-card__delta.is-down {
-  color: #9b2226;
-}
-
-.kpi-card__delta.is-flat {
-  color: var(--muted);
-}
-
 .kpi-card--accent {
   border-color: #f5d4bc;
   background: linear-gradient(160deg, #fff 0%, var(--spark-soft) 100%);
