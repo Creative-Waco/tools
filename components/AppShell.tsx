@@ -1,5 +1,6 @@
 "use client";
 
+import { useClerk, useUser } from "@clerk/nextjs";
 import {
   BarChart3,
   ImageIcon,
@@ -56,8 +57,15 @@ function isActivePath(currentPath: string, href: string) {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { user, isLoaded } = useUser();
+  const { openUserProfile, signOut } = useClerk();
 
   const sidebarData = useMemo<SidebarData>(() => {
+    const displayName =
+      user?.fullName ||
+      [user?.firstName, user?.lastName].filter(Boolean).join(" ") ||
+      "Account";
+
     return {
       logo: {
         src: "/icon.png",
@@ -89,8 +97,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         title: "Support",
         items: [],
       },
+      user: isLoaded && user
+        ? {
+            name: displayName,
+            email: user.primaryEmailAddress?.emailAddress ?? "",
+            avatar: user.imageUrl,
+            onAccount: () => openUserProfile(),
+            onSignOut: () => signOut({ redirectUrl: "/sign-in/" }),
+          }
+        : undefined,
     };
-  }, [pathname]);
+  }, [isLoaded, openUserProfile, pathname, signOut, user]);
 
   return (
     <ApplicationShell2 data={sidebarData} linkComponent={ShellLink}>

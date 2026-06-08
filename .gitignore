@@ -3,7 +3,12 @@ node_modules/
 .vercel
 .env
 .env.*
+!.env.example
+!.env.development.local.example
 *.log
 .next/
 out/
 tsconfig.tsbuildinfo
+
+# clerk configuration (can include secrets)
+/.clerk/

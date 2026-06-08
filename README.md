@@ -12,7 +12,7 @@ Internal tools for Creative Waco, hosted at **https://tools.creativewaco.org**.
 
 ## Architecture
 
-Next.js 15 App Router app deployed on Vercel at **https://tools.creativewaco.org**.
+Next.js 15 App Router app deployed on Vercel at **https://tools.creativewaco.org**. **Clerk** protects all pages and API routes except `/api/health/` (uptime checks). Sign in at `/sign-in/`; the sidebar footer shows the signed-in user with account and sign-out actions.
 
 | Layer | Location |
 |-------|----------|
@@ -33,7 +33,117 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3847](http://localhost:3847) for the tools hub.
+Default dev server: **https://local.tools.creativewaco.org/** (HTTPS on port 443, production Clerk keys in `.env.local`). First run adds a hosts entry via `npm run setup:local-clerk` (sudo). Unauthenticated visits redirect to `/sign-in/`.
+
+For **Development** instance keys on `http://localhost:3847`, use `npm run dev:3847` with [`.env.development.local`](.env.development.local.example) (see Clerk section below).
+
+### Clerk (Creative Waco account)
+
+This app uses a **dedicated Creative Waco Clerk application**. Do **not** reuse API keys from the Tortoise & Hare Clerk account or any other project.
+
+**One-time setup**
+
+1. Sign in at [dashboard.clerk.com](https://dashboard.clerk.com/) with the Creative Waco account (or create a new Clerk account for Creative Waco).
+2. **Create application** → name it e.g. **Creative Waco Tools** (separate from Tortoise & Hare).
+3. Copy keys from **Configure → API keys** into `.env.local` (see [`.env.example`](.env.example)).
+4. Under **Configure → Paths**, set sign-in URL `/sign-in/` and sign-up URL `/sign-up/`.
+5. Under **Configure → Domains**, add:
+   - Development: `http://localhost:3847`
+   - Production: `https://tools.creativewaco.org`
+6. Restrict access for an internal tool — e.g. **User & authentication → Restrictions** to allowlist `@creativewaco.org`, or disable public sign-up and **invite** team members only.
+
+**Do not** click **Configure your application** in the running dev app if you are logged into the Tortoise & Hare Clerk account — that would link this project to the wrong Clerk app. Always paste Creative Waco keys into the env files below.
+
+#### Local development (two options)
+
+Clerk **production** keys (`pk_live_`) do not work on `http://localhost:3847` — Clerk validates the request origin against your production domain.
+
+**Option A — day-to-day dev with test keys** (`npm run dev:3847`)
+
+1. Install the [Clerk CLI](https://clerk.com/docs/guides/development/clerk-cli/overview) (`npm install -g clerk`), then run `clerk auth login`, `clerk link`, and `clerk env pull` to write Development keys to `.env.development.local`.
+2. Or manually: Clerk Dashboard → **Development** instance → **Configure → API keys** → copy into [`.env.development.local.example`](.env.development.local.example) as `.env.development.local`.
+3. Run `npm run dev:3847` → [http://localhost:3847/sign-in/](http://localhost:3847/sign-in/)
+
+**Option B — default local dev with production keys** (`npm run dev`)
+
+Uses subdomain `local.tools.creativewaco.org` (Clerk allows subdomains of `tools.creativewaco.org`). Requires `NEXT_PUBLIC_CLERK_PROXY_URL` in `.env.local` (see [`.env.example`](.env.example)); middleware enables Frontend API proxy when that variable is set.
+
+```bash
+npm run setup:local-clerk   # one-time: 127.0.0.1 local.tools.creativewaco.org in /etc/hosts (sudo)
+npm run dev                 # HTTPS on port 443 (sudo inside scripts/dev-local.sh)
+```
+
+Open [https://local.tools.creativewaco.org/sign-in/](https://local.tools.creativewaco.org/sign-in/) (accept the self-signed cert warning). Add this host to Google OAuth redirect URIs if testing Google sign-in locally.
+
+| Variable | Required | Purpose |
+|----------|----------|---------|
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Yes | `pk_test_…` in `.env.development.local`; `pk_live_…` in `.env.local` + Vercel |
+| `CLERK_SECRET_KEY` | Yes | Matching secret for each instance |
+| `NEXT_PUBLIC_CLERK_PROXY_URL` | Local prod dev | e.g. `https://local.tools.creativewaco.org/__clerk/` when using Option B |
+| `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | No | Default `/sign-in/` |
+| `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | No | Default `/sign-up/` |
+| `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL` | No | Default `/` |
+| `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL` | No | Default `/` |
+
+For Vercel production, set the **Production** Clerk variables under **Settings → Environment Variables**.
+
+#### Google sign-in (production)
+
+Production Clerk requires **custom Google OAuth credentials** — Clerk’s shared dev credentials do not work on `pk_live_` instances.
+
+**1. Clerk Dashboard** (Production instance selected)
+
+1. Go to [Configure → SSO connections](https://dashboard.clerk.com/last-active?path=sso-connections).
+2. **Add connection** → **For all users** → **Google**.
+3. Enable **Enable for sign-up and sign-in** and **Use custom credentials**.
+4. Copy the **Authorized redirect URI** shown in the modal (keep this page open).
+
+**2. Google Cloud Console**
+
+Use a Google Cloud project owned by Creative Waco (not Tortoise & Hare).
+
+1. [Google Cloud Console](https://console.cloud.google.com/) → **APIs & Services** → **OAuth consent screen** — configure app name (e.g. *Creative Waco Tools*), support email, and set **Publishing status** to **In production** when ready.
+2. **Credentials** → **Create credentials** → **OAuth client ID** → **Web application**.
+3. **Authorized JavaScript origins:**
+   - `https://tools.creativewaco.org`
+   - `http://localhost:3847` (local dev)
+4. **Authorized redirect URIs:** paste the URI from Clerk (step 1.4).
+5. Copy the **Client ID** and **Client secret**.
+
+**3. Back in Clerk**
+
+Paste the Google Client ID and Client secret into the Google connection → **Save**.
+
+**4. Restrict who can sign in** (recommended for internal tools)
+
+In Clerk → **Configure → Restrictions**, allowlist `@creativewaco.org` emails and/or disable public sign-up so only invited Google accounts can access the tools.
+
+No code changes are required — the existing `/sign-in/` page shows the Google button automatically once the connection is enabled.
+
+#### Clerk DNS (Cloudflare)
+
+Production Clerk on `tools.creativewaco.org` requires five **CNAME** records in the **creativewaco.org** Cloudflare zone. Set **Proxy status** to **DNS only** (grey cloud) for all of them.
+
+| Name (Cloudflare) | Target |
+|-------------------|--------|
+| `clerk.tools` | `frontend-api.clerk.services` |
+| `accounts.tools` | `accounts.clerk.services` |
+| `clkmail.tools` | `mail.yw067ya9fpf3.clerk.services` |
+| `clk._domainkey.tools` | `dkim1.yw067ya9fpf3.clerk.services` |
+| `clk2._domainkey.tools` | `dkim2.yw067ya9fpf3.clerk.services` |
+
+After adding records, click **Verify configuration** in the Clerk Dashboard. SSL certificates issue automatically once DNS verifies.
+
+From the website repo (with `.cloudflare-env` configured):
+
+```bash
+cd ../website
+source setup-cloudflare-env.sh
+cf_dns_upsert clerk.tools CNAME frontend-api.clerk.services false
+# …repeat for each row above
+```
+
+Or use **Cloudflare Dashboard** → **DNS** → **Add record** for each row.
 
 ### shadcn/ui and Shadcnblocks
 
@@ -74,6 +184,8 @@ Set these before `npm run dev` / `npm start` (or in Vercel → Settings → Envi
 | `ASANA_REFRESH_TOKEN` | Recommended (prod) | OAuth refresh token so Vercel can renew `ASANA_ACCESS_TOKEN` without the local token file |
 | `ASANA_OAUTH_CLIENT_ID` | No | OAuth app client ID (default: Creative Waco app) |
 | `ASANA_OAUTH_CLIENT_SECRET` | No | OAuth app client secret (default: Creative Waco app) |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Yes | Creative Waco Clerk publishable key (not Tortoise & Hare) |
+| `CLERK_SECRET_KEY` | Yes | Creative Waco Clerk secret key |
 
 ### Vercel (production)
 
@@ -81,10 +193,14 @@ Local file auto-load does **not** run on Vercel. Set at minimum:
 
 | Variable | Notes |
 |----------|--------|
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk publishable key |
+| `CLERK_SECRET_KEY` | Clerk secret key |
 | `GIVEBUTTER_API_KEY` | Givebutter → Settings → Integrations → API |
 | `GIVEBUTTER_ACCOUNT_ID` | Numeric ID from dashboard URL (`145191` for Creative Waco) — required for member links |
 | `ASANA_ACCESS_TOKEN` | Current OAuth access token |
 | `ASANA_REFRESH_TOKEN` | From `Workspace/asana/.asana_token.json` after running `scripts/refresh-asana-oauth.mjs` — keeps Asana working when the access token expires |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Creative Waco Clerk publishable key |
+| `CLERK_SECRET_KEY` | Creative Waco Clerk secret key |
 
 Optional overrides match the table above (`ASANA_SPARKS_PROJECT_GID`, campaign/tier aliases, etc.).
 

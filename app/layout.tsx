@@ -1,6 +1,8 @@
+import { ClerkProvider } from "@clerk/nextjs";
+import { shadcn } from "@clerk/ui/themes";
 import type { Metadata } from "next";
 
-import { AppShell } from "@/components/AppShell";
+import { AppShellGate } from "@/components/AppShellGate";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 import "./globals.css";
@@ -18,9 +20,22 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <TooltipProvider>
-          <AppShell>{children}</AppShell>
-        </TooltipProvider>
+        <ClerkProvider
+          appearance={{
+            theme: shadcn,
+            options: {
+              unsafe_disableDevelopmentModeWarnings: true,
+            },
+          }}
+          signInUrl="/sign-in/"
+          signUpUrl="/sign-up/"
+          signInFallbackRedirectUrl="/"
+          signUpFallbackRedirectUrl="/"
+        >
+          <TooltipProvider>
+            <AppShellGate>{children}</AppShellGate>
+          </TooltipProvider>
+        </ClerkProvider>
       </body>
     </html>
   );
