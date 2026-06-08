@@ -18,8 +18,13 @@ Next.js 15 App Router app deployed on Vercel at **https://tools.creativewaco.org
 |-------|----------|
 | Pages | `app/` — hub, `/rss-email/`, `/event-cards/`, `/sparks-dashboard/` |
 | API | `app/api/` — Route Handlers wrapping `lib/` |
-| UI components | `components/` — shared shell + per-tool React clients |
+| App shell | `components/AppShell.tsx` + `@shadcnblocks/application-shell2` — inset collapsible sidebar; all tools under one **Tools** group from `lib/tools-registry.ts` |
+| UI components | `components/` — shadcn/ui primitives, shared layout, per-tool React clients |
 | Backend logic | `lib/` — RSS generation, event cards, Givebutter/Asana dashboard |
+
+Navigation is provided by the Application Shell 2 layout (inset sidebar with icon collapse). The sidebar lists **All tools** plus every registry entry under a single **Tools** group; the Creative Waco branding block at the top is display-only (use **All tools** or **⌘B** / **Ctrl+B** to collapse the sidebar). The hub at `/` and each tool page render inside the shell's main content area.
+
+Favicon and Apple touch icon match [creativewaco.org](https://creativewaco.org/) (`app/icon.png`, `app/apple-icon.png`).
 
 ## Run locally
 
@@ -29,6 +34,21 @@ npm run dev
 ```
 
 Open [http://localhost:3847](http://localhost:3847) for the tools hub.
+
+### shadcn/ui and Shadcnblocks
+
+The app uses [shadcn/ui](https://ui.shadcn.com/) with the Application Shell 2 block from [Shadcnblocks](https://www.shadcnblocks.com/). Configuration lives in [`components.json`](components.json).
+
+To install additional Shadcnblocks:
+
+```bash
+source ~/.config/shadcnblocks.env   # SHADCNBLOCKS_API_KEY
+npx shadcn@latest add @shadcnblocks/<block-id>
+```
+
+The `@shadcnblocks` registry in `components.json` reads `SHADCNBLOCKS_API_KEY` from the environment. Generate a key at [shadcnblocks.com/dashboard/api](https://shadcnblocks.com/dashboard/api) if needed.
+
+**Note:** The app uses **Tailwind CSS v4** (`@tailwindcss/postcss`) — required for shadcn v4 sidebar layout utilities. `lib/cn.ts` holds the shadcn `cn()` helper. Server-side RSS/dashboard utilities remain in `lib/utils.mjs` (separate module to avoid path conflicts).
 
 Production build:
 
@@ -172,7 +192,7 @@ Grid output includes a `<style>` block with a `@media` query so columns stack on
 ## Adding a new tool
 
 1. **Registry** — Add an entry to `TOOLS` in [`lib/tools-registry.ts`](lib/tools-registry.ts) (hub and `/api/tools` read from here).
-2. **UI** — Add `app/<tool-id>/page.tsx` and a client component under `components/<tool-id>/`. Reuse `ToolNav`, `PageHero`, `StatusLine`, and globals from `app/globals.css`.
+2. **UI** — Add `app/<tool-id>/page.tsx` and a client component under `components/<tool-id>/`. The sidebar picks up new tools automatically from the registry (single **Tools** group; `tag` controls the nav icon). Reuse `PageHero`, `StatusLine`, and globals from `app/globals.css`.
 3. **API** (if needed) — Add `app/api/<tool-id>/route.ts` and logic under `lib/<tool-id>/`. Set `export const runtime = "nodejs"` for routes that use filesystem auth or long-running fetches.
 
 Deploy by pushing to `main` on [Creative-Waco/tools](https://github.com/Creative-Waco/tools) (Vercel auto-deploys as a Next.js project). See [CHANGELOG.md](./CHANGELOG.md) for release notes.

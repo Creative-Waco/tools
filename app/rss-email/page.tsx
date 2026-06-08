@@ -1,11 +1,9 @@
 import { PageHero } from "@/components/PageHero";
 import { RssEmailTool } from "@/components/rss-email/RssEmailTool";
-import { ToolNav } from "@/components/ToolNav";
 
 export default function RssEmailPage() {
   return (
     <main className="page">
-      <ToolNav />
       <PageHero
         eyebrow="Creative Waco tooling"
         title="RSS Email HTML Generator"

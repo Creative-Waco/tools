@@ -248,7 +248,7 @@ export function RssEmailTool() {
 
         .rss-email-placeholder {
           margin: 0;
-          color: var(--muted, #5c5c5c);
+          color: var(--muted-foreground, #666666);
         }
       `}</style>
 

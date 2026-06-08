@@ -236,7 +236,7 @@ export function EventCardsTool() {
 
         .preview-area .placeholder {
           margin: 0;
-          color: var(--muted, #5c5c5c);
+          color: var(--muted-foreground, #666666);
         }
 
         .preview-card-wrap {

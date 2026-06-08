@@ -1,4 +1,8 @@
 import type { Metadata } from "next";
+
+import { AppShell } from "@/components/AppShell";
+import { TooltipProvider } from "@/components/ui/tooltip";
+
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -13,7 +17,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <TooltipProvider>
+          <AppShell>{children}</AppShell>
+        </TooltipProvider>
+      </body>
     </html>
   );
 }

@@ -1,9 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { ChartTooltip } from "./ChartTooltip";
-import { DashboardHero } from "./DashboardHero";
 import { EventsPanel } from "./EventsPanel";
 import { GoalsPanel } from "./GoalsPanel";
 import { GrowthChart } from "./GrowthChart";
@@ -88,35 +86,20 @@ export function SparksDashboard() {
     setGrowthModalMonth(monthKey);
   }
 
-  const lastUpdated = loading ? (
-    <span className="skeleton skeleton--text-sm" style={{ width: "140px" }} />
-  ) : data ? (
-    `Updated ${new Date(data.updatedAt).toLocaleString("en-US", {
-      dateStyle: "medium",
-      timeStyle: "short",
-    })}${data.cached ? " (cached)" : ""}`
-  ) : null;
-
   const schemaIssues = data?.syncHealth?.schemaIssues ?? [];
 
   return (
     <>
-      <main
-        className={`page dashboard-page${loading ? " is-loading" : ""}`}
+      <div
+        className={`dashboard-page${loading ? " is-loading" : ""}`}
         id="dashboard-page"
         aria-busy={loading}
       >
-        <nav className="tool-nav">
-          <Link href="/">← All tools</Link>
-        </nav>
-
         {!loading && schemaIssues.length > 0 ? (
           <SyncBanner schemaIssues={schemaIssues} />
         ) : (
           <div id="sync-banner" className="sync-banner" hidden />
         )}
-
-        <DashboardHero lastUpdated={lastUpdated} />
 
         <Toolbar
           period={period}
@@ -164,23 +147,23 @@ export function SparksDashboard() {
         >
           {statusMessage}
         </p>
-      </main>
 
-      <ChartTooltip
-        ref={tooltipRef}
-        visible={tooltip.visible}
-        left={tooltip.left}
-        top={tooltip.top}
-      >
-        {tooltip.content}
-      </ChartTooltip>
+        <ChartTooltip
+          ref={tooltipRef}
+          visible={tooltip.visible}
+          left={tooltip.left}
+          top={tooltip.top}
+        >
+          {tooltip.content}
+        </ChartTooltip>
 
-      <GrowthMonthModal
-        monthKey={growthModalMonth}
-        members={data?.members ?? []}
-        events={data?.events ?? []}
-        onClose={() => setGrowthModalMonth(null)}
-      />
+        <GrowthMonthModal
+          monthKey={growthModalMonth}
+          members={data?.members ?? []}
+          events={data?.events ?? []}
+          onClose={() => setGrowthModalMonth(null)}
+        />
+      </div>
     </>
   );
 }

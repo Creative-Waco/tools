@@ -1,11 +1,9 @@
 import { PageHero } from "@/components/PageHero";
-import { ToolNav } from "@/components/ToolNav";
 import { EventCardsTool } from "@/components/event-cards/EventCardsTool";
 
 export default function EventCardsPage() {
   return (
     <main className="page">
-      <ToolNav />
       <PageHero
         eyebrow="Creative Waco tooling"
         title="Event Card Graphics"
