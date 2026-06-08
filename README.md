@@ -92,7 +92,7 @@ Public-facing dashboard for [Creative Spark](https://creativewaco.org/spark) mem
 | Paid members | Active Spark plans (excludes honorary-only contacts); footnote shows honorary + total |
 | New paid this period | Paid `memberSince` in selected period; honorary new sign-ups in footnote |
 | Events held | Event Status = Done, in period |
-| Upcoming events | Event Status = Ready, future `due_on` |
+| Upcoming events | Event Status = Planning, Marketing, or Ready with future `due_on` |
 | Pipeline scheduled | Planning / Marketing / Operations / Ready with `due_on` in next 6 months |
 
 **Goals**
