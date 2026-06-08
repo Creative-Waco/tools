@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  body {
+    @apply m-0 font-sans text-ink antialiased;
+    background: linear-gradient(180deg, #f8f5ef 0%, theme("colors.bg") 100%);
+  }
+}
+
+@layer components {
+  .page {
+    @apply mx-auto max-w-[1200px] px-5 pb-12 pt-8;
+  }
+
+  .panel {
+    @apply rounded-panel border border-line bg-panel p-5 shadow-panel;
+  }
+
+  .field {
+    @apply grid gap-1.5 text-sm;
+  }
+
+  .field > span {
+    @apply font-semibold;
+  }
+
+  .field input:not([type="color"]),
+  .field select,
+  .field textarea {
+    @apply w-full rounded-lg border border-line bg-white px-3 py-2.5 font-sans;
+  }
+
+  .field.checkbox {
+    grid-template-columns: 18px 1fr;
+    @apply items-center;
+  }
+
+  .primary-btn {
+    @apply cursor-pointer rounded-lg border-0 bg-accent px-3.5 py-2.5 font-sans font-bold text-white disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .secondary-btn {
+    @apply cursor-pointer rounded-lg border border-line bg-white px-3.5 py-2.5 font-sans font-bold text-accent disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .status-line {
+    @apply mt-3.5 min-h-5 text-[13px] text-muted;
+  }
+
+  .status-line--success {
+    @apply text-[#17653a];
+  }
+
+  .status-line--error {
+    @apply text-[#9d1c1c];
+  }
+
+  .tool-layout {
+    @apply grid items-start gap-5;
+    grid-template-columns: 360px 1fr;
+  }
+
+  @media (max-width: 960px) {
+    .tool-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+}

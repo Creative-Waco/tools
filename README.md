@@ -10,18 +10,36 @@ Internal tools for Creative Waco, hosted at **https://tools.creativewaco.org**.
 | Event Card Graphics | [/event-cards/](https://tools.creativewaco.org/event-cards/) | 4:5 portrait cards (photo + title) from the events RSS feed |
 | Creative Spark Dashboard | [/sparks-dashboard/](https://tools.creativewaco.org/sparks-dashboard/) | Live Spark membership + event pipeline from Givebutter and Asana |
 
+## Architecture
+
+Next.js 15 App Router app deployed on Vercel at **https://tools.creativewaco.org**.
+
+| Layer | Location |
+|-------|----------|
+| Pages | `app/` — hub, `/rss-email/`, `/event-cards/`, `/sparks-dashboard/` |
+| API | `app/api/` — Route Handlers wrapping `lib/` |
+| UI components | `components/` — shared shell + per-tool React clients |
+| Backend logic | `lib/` — RSS generation, event cards, Givebutter/Asana dashboard |
+
 ## Run locally
 
 ```bash
 npm install
-npm start
+npm run dev
 ```
 
 Open [http://localhost:3847](http://localhost:3847) for the tools hub.
 
+Production build:
+
+```bash
+npm run build
+npm start
+```
+
 ### Creative Spark Dashboard — environment variables
 
-Set these before `npm start` (or in Vercel → Settings → Environment Variables):
+Set these before `npm run dev` / `npm start` (or in Vercel → Settings → Environment Variables):
 
 | Variable | Required | Purpose |
 |----------|----------|---------|
@@ -55,7 +73,7 @@ Example local setup:
 ```bash
 export GIVEBUTTER_API_KEY="..."
 export ASANA_ACCESS_TOKEN="..."
-npm start
+npm run dev
 ```
 
 **Local auto-load:** If env vars are unset, the server reads `Workspace/asana/.asana_token.json` and `Archive/givebutter/.env` (API key and `GIVEBUTTER_ACCOUNT_ID`) automatically. Expired OAuth tokens are refreshed using the saved `refresh_token` (updates the token file locally).
@@ -74,7 +92,15 @@ Override redirect URI if needed:
 ASANA_OAUTH_REDIRECT_URI="http://localhost:3334/oauth/callback" node scripts/refresh-asana-oauth.mjs
 ```
 
-API endpoint: `GET /api/sparks-dashboard?period=fy&membershipType=all`
+**API routes** (trailing slashes match `next.config.ts`):
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| `GET` | `/api/health/` | Health check |
+| `GET` | `/api/tools/` | Tool registry JSON |
+| `GET` | `/api/sparks-dashboard/` | Dashboard data (`period`, `membershipType`, optional `refresh=1`) |
+| `POST` | `/api/generate/` | RSS → HubSpot email HTML |
+| `POST` | `/api/event-cards/generate/` | RSS → 4:5 event card HTML |
 
 ## Creative Spark Dashboard
 
@@ -145,8 +171,8 @@ Grid output includes a `<style>` block with a `@media` query so columns stack on
 
 ## Adding a new tool
 
-1. **UI** — Add a folder under `public/<tool-id>/` with `index.html`, styles, and client JS. Link `/shared.css` for consistent layout and add a card on `public/index.html`.
-2. **API** (if needed) — Add routes in `server.mjs` (e.g. `POST /api/<tool-id>/...`) and logic under `lib/<tool-id>/`.
-3. **Registry** — Add an entry to the `TOOLS` array in `server.mjs` so `/api/tools` lists it.
+1. **Registry** — Add an entry to `TOOLS` in [`lib/tools-registry.ts`](lib/tools-registry.ts) (hub and `/api/tools` read from here).
+2. **UI** — Add `app/<tool-id>/page.tsx` and a client component under `components/<tool-id>/`. Reuse `ToolNav`, `PageHero`, `StatusLine`, and globals from `app/globals.css`.
+3. **API** (if needed) — Add `app/api/<tool-id>/route.ts` and logic under `lib/<tool-id>/`. Set `export const runtime = "nodejs"` for routes that use filesystem auth or long-running fetches.
 
-Deploy by pushing to `main` on [Creative-Waco/tools](https://github.com/Creative-Waco/tools) (Vercel auto-deploys). See [CHANGELOG.md](./CHANGELOG.md) for release notes.
+Deploy by pushing to `main` on [Creative-Waco/tools](https://github.com/Creative-Waco/tools) (Vercel auto-deploys as a Next.js project). See [CHANGELOG.md](./CHANGELOG.md) for release notes.
