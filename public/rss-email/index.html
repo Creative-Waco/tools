@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RSS Email HTML Generator · Creative Waco Tools</title>
+    <link rel="stylesheet" href="/shared.css" />
+    <link rel="stylesheet" href="/rss-email/styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <nav class="tool-nav"><a href="/">← All tools</a></nav>
+
+      <header class="hero">
+        <p class="eyebrow">Creative Waco tooling</p>
+        <h1>RSS Email HTML Generator</h1>
+        <p class="lede">
+          Paste any RSS feed, pull upcoming items, and copy HubSpot-ready HTML with
+          dates and buttons.
+        </p>
+      </header>
+
+      <div class="layout">
+        <section class="panel controls">
+          <form id="generator-form" class="form">
+            <label class="field">
+              <span>RSS feed URL</span>
+              <input
+                id="feed-url"
+                name="feedUrl"
+                type="url"
+                required
+                value="https://creativewaco.org/event/rss.xml"
+              />
+            </label>
+
+            <div class="field-grid">
+              <label class="field">
+                <span>How many items</span>
+                <input id="limit" name="limit" type="number" min="1" max="30" value="8" />
+              </label>
+
+              <label class="field">
+                <span>Sort by</span>
+                <select id="sort" name="sort">
+                  <option value="date-asc" selected>Upcoming date (soonest first)</option>
+                  <option value="date-desc">Date (latest first)</option>
+                  <option value="title">Title (A–Z)</option>
+                  <option value="pub-desc">RSS feed order</option>
+                </select>
+              </label>
+            </div>
+
+            <label class="field">
+              <span>Layout</span>
+              <select id="layout" name="layout">
+                <option value="horizontal-right" selected>Title left, stacked buttons right</option>
+                <option value="buttons-inline">Title left, side-by-side buttons right</option>
+                <option value="grid-2">2-column grid (stacks on mobile)</option>
+                <option value="grid-3">3-column grid (stacks on mobile)</option>
+                <option value="minimal">Title + date only (no buttons)</option>
+              </select>
+            </label>
+
+            <label class="field checkbox">
+              <input id="upcoming-only" name="upcomingOnly" type="checkbox" checked />
+              <span>Only upcoming events (from today)</span>
+            </label>
+
+            <label class="field checkbox">
+              <input id="enrich" name="enrich" type="checkbox" checked />
+              <span>Enrich from event pages (dates + ticket/organizer links)</span>
+            </label>
+
+            <label class="field checkbox">
+              <input id="include-images" name="includeImages" type="checkbox" />
+              <span>Include event images (from RSS or event page)</span>
+            </label>
+
+            <label class="field">
+              <span>Start date filter (optional)</span>
+              <input id="from-date" name="fromDate" type="date" />
+            </label>
+
+            <details class="advanced">
+              <summary>Button labels &amp; styling</summary>
+              <div class="advanced-body">
+                <label class="field">
+                  <span>Learn more label</span>
+                  <input id="learn-label" name="learnLabel" type="text" value="Learn more" />
+                </label>
+                <label class="field">
+                  <span>Event website label</span>
+                  <input
+                    id="website-label"
+                    name="websiteLabel"
+                    type="text"
+                    value="Event website"
+                  />
+                </label>
+                <div class="field field-color">
+                  <span>Button color</span>
+                  <div class="color-picker" role="group" aria-label="Button color">
+                    <div class="color-swatches">
+                      <button
+                        type="button"
+                        class="color-swatch is-active"
+                        data-color="#1a1a1a"
+                        aria-label="Black"
+                        style="background-color: #1a1a1a"
+                      ></button>
+                      <button
+                        type="button"
+                        class="color-swatch"
+                        data-color="#c45c26"
+                        aria-label="Orange"
+                        style="background-color: #c45c26"
+                      ></button>
+                      <button
+                        type="button"
+                        class="color-swatch"
+                        data-color="#2d6a4f"
+                        aria-label="Green"
+                        style="background-color: #2d6a4f"
+                      ></button>
+                      <button
+                        type="button"
+                        class="color-swatch"
+                        data-color="#1d4e89"
+                        aria-label="Blue"
+                        style="background-color: #1d4e89"
+                      ></button>
+                      <button
+                        type="button"
+                        class="color-swatch"
+                        data-color="#6b2d5c"
+                        aria-label="Plum"
+                        style="background-color: #6b2d5c"
+                      ></button>
+                    </div>
+                    <input
+                      id="primary-color"
+                      name="primaryColor"
+                      type="color"
+                      value="#1a1a1a"
+                      aria-label="Custom button color"
+                    />
+                  </div>
+                </div>
+              </div>
+            </details>
+
+            <button class="primary" type="submit" id="generate-btn">Generate HTML</button>
+          </form>
+
+          <p id="status" class="status" aria-live="polite"></p>
+        </section>
+
+        <section class="panel output">
+          <div class="output-header">
+            <h2>Preview</h2>
+            <button type="button" id="copy-html" class="secondary" disabled>Copy HTML</button>
+          </div>
+          <div id="preview" class="preview-card">
+            <p class="placeholder">Generated HTML will appear here.</p>
+          </div>
+
+          <label class="field">
+            <span>HTML output</span>
+            <textarea id="html-output" rows="14" readonly placeholder="HTML output"></textarea>
+          </label>
+        </section>
+      </div>
+    </main>
+
+    <script src="/rss-email/app.js" type="module"></script>
+  </body>
+</html>
