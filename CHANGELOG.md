@@ -34,7 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - README: Google OAuth production setup (Clerk SSO + Google Cloud Console) for `tools.creativewaco.org`.
 - README: Clerk production DNS records for Cloudflare (`clerk`, `accounts`, email CNAMEs on `creativewaco.org`).
 - **Clerk production instance** on app `app_3ErvN68yrbKMBYDQrUkPvkkkK1F` (`ins_3EsLuGOPBiHmHeeRQ3Z78AWoGU2`); Vercel production/preview env updated to new prod keys; DNS CNAMEs added in Cloudflare.
-- Clerk production **sign-up restricted** (invite-only); email allowlist unavailable on current plan in production.
+- Clerk production **Google-only sign-in** — public sign-up (first Google login creates an account), email/password disabled; middleware enforces `@creativewaco.org` email domain.
 - Clerk production **Google OAuth** enabled (`connection_oauth_google`) on app `app_3ErvN68yrbKMBYDQrUkPvkkkK1F`.
 - Local Clerk dev: `.env.development.local` + `npm run dev:3847` for Development keys; default `npm run dev` uses `local.tools.creativewaco.org` (HTTPS :443) via `scripts/dev-local.sh` with production keys and optional Frontend API proxy.
 - Sidebar expanded/collapsed state persists for 7 days via the `sidebar_state` cookie (restored on load).
