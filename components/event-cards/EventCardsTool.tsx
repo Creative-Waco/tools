@@ -2,13 +2,17 @@
 
 import { useCallback, useRef, useState } from "react";
 import { toPng } from "html-to-image";
+import {
+  getCardExportPixelRatio,
+  InstagramCarouselPreview,
+} from "@/components/event-cards/InstagramCarouselPreview";
 import { StatusLine } from "@/components/StatusLine";
+import { syncTicketShapes } from "@/lib/event-cards/sync-ticket-shapes";
 
 type FormOptions = {
   feedUrl: string;
   limit: number;
   sort: string;
-  cardWidth: number;
   upcomingOnly: boolean;
   enrich: boolean;
 };
@@ -35,41 +39,19 @@ function slugify(text: string) {
   );
 }
 
-function wrapCardsForPreview(html: string) {
-  const temp = document.createElement("div");
-  temp.innerHTML = html;
-  const cards = temp.querySelectorAll(".cw-card");
-
-  cards.forEach((card) => {
-    const wrap = document.createElement("div");
-    wrap.className = "preview-card-wrap";
-    card.parentNode?.insertBefore(wrap, card);
-    wrap.appendChild(card);
-
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "card-download";
-    btn.textContent = "PNG";
-    wrap.appendChild(btn);
-  });
-
-  return temp.innerHTML;
-}
-
 export function EventCardsTool() {
   const previewRef = useRef<HTMLDivElement>(null);
   const lastHtmlRef = useRef("");
 
   const [feedUrl, setFeedUrl] = useState(DEFAULT_FEED_URL);
   const [limit, setLimit] = useState(8);
-  const [cardWidth, setCardWidth] = useState(360);
   const [sort, setSort] = useState("date-asc");
   const [upcomingOnly, setUpcomingOnly] = useState(true);
   const [enrich, setEnrich] = useState(true);
 
   const [status, setStatus] = useState("");
   const [statusVariant, setStatusVariant] = useState<StatusVariant>("");
-  const [previewHtml, setPreviewHtml] = useState("");
+  const [previewHtml, setPreviewHtml] = useState<string | null>(null);
   const [hasCards, setHasCards] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [downloadingAll, setDownloadingAll] = useState(false);
@@ -84,11 +66,10 @@ export function EventCardsTool() {
       feedUrl: feedUrl.trim(),
       limit,
       sort,
-      cardWidth,
       upcomingOnly,
       enrich,
     }),
-    [feedUrl, limit, sort, cardWidth, upcomingOnly, enrich],
+    [feedUrl, limit, sort, upcomingOnly, enrich],
   );
 
   const downloadCard = useCallback(
@@ -97,9 +78,11 @@ export function EventCardsTool() {
       setStatusMessage(`Downloading ${title}…`);
 
       try {
+        syncTicketShapes(cardEl);
         const dataUrl = await toPng(cardEl, {
-          pixelRatio: 2,
+          pixelRatio: getCardExportPixelRatio(cardEl),
           cacheBust: true,
+          backgroundColor: "#111111",
         });
         const link = document.createElement("a");
         link.download = `${slugify(title)}.png`;
@@ -118,7 +101,7 @@ export function EventCardsTool() {
   );
 
   const downloadAllCards = useCallback(async () => {
-    const cards = previewRef.current?.querySelectorAll(".cw-card");
+    const cards = previewRef.current?.querySelectorAll(".cw-card-scene");
     if (!cards?.length) return;
 
     setDownloadingAll(true);
@@ -146,7 +129,7 @@ export function EventCardsTool() {
       if (!target.classList.contains("card-download")) return;
 
       const wrap = target.closest(".preview-card-wrap");
-      const card = wrap?.querySelector(".cw-card") as HTMLElement | null;
+      const card = wrap?.querySelector(".cw-card-scene") as HTMLElement | null;
       if (card) void downloadCard(card);
     },
     [downloadCard],
@@ -157,7 +140,6 @@ export function EventCardsTool() {
     const options = readOptions();
 
     setGenerating(true);
-    setHasCards(false);
     setStatusMessage("Fetching feed and building cards…");
 
     try {
@@ -167,13 +149,20 @@ export function EventCardsTool() {
         body: JSON.stringify(options),
       });
 
+      const contentType = response.headers.get("content-type") ?? "";
+      if (!contentType.includes("application/json")) {
+        throw new Error(
+          "Unexpected server response. Refresh the page and sign in again.",
+        );
+      }
+
       const payload = (await response.json()) as GenerateResponse;
       if (!response.ok) {
         throw new Error(payload.error || "Generation failed.");
       }
 
       lastHtmlRef.current = payload.html;
-      setPreviewHtml(wrapCardsForPreview(payload.html));
+      setPreviewHtml(payload.html);
       setHasCards(payload.itemCount > 0);
 
       let message = `Generated ${payload.itemCount} card${payload.itemCount === 1 ? "" : "s"} from ${payload.feedTitle || "feed"}.`;
@@ -182,9 +171,6 @@ export function EventCardsTool() {
       }
       setStatusMessage(message, "success");
     } catch (error) {
-      setPreviewHtml("");
-      lastHtmlRef.current = "";
-      setHasCards(false);
       setStatusMessage(
         error instanceof Error
           ? error.message
@@ -224,49 +210,6 @@ export function EventCardsTool() {
           gap: 8px;
           flex-wrap: wrap;
         }
-
-        .preview-area {
-          min-height: 200px;
-          padding: 16px;
-          border: 1px solid var(--line, #d8d0c4);
-          border-radius: 10px;
-          background: #ebe6dc;
-          overflow: auto;
-        }
-
-        .preview-area .placeholder {
-          margin: 0;
-          color: var(--muted-foreground, #666666);
-        }
-
-        .preview-card-wrap {
-          position: relative;
-          display: inline-block;
-          vertical-align: top;
-        }
-
-        .preview-card-wrap .card-download {
-          position: absolute;
-          top: 8px;
-          right: 8px;
-          z-index: 2;
-          padding: 6px 10px;
-          font-size: 12px;
-          font-weight: 600;
-          border: 0;
-          border-radius: 6px;
-          background: rgba(255, 255, 255, 0.92);
-          color: var(--ink, #1a1a1a);
-          cursor: pointer;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-          opacity: 0;
-          transition: opacity 0.15s ease;
-        }
-
-        .preview-card-wrap:hover .card-download,
-        .preview-card-wrap:focus-within .card-download {
-          opacity: 1;
-        }
       `}</style>
 
       <div className="tool-layout">
@@ -283,33 +226,17 @@ export function EventCardsTool() {
               />
             </label>
 
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <label className="field">
-                <span>How many cards</span>
-                <input
-                  name="limit"
-                  type="number"
-                  min={1}
-                  max={30}
-                  value={limit}
-                  onChange={(event) => setLimit(Number(event.target.value))}
-                />
-              </label>
-
-              <label className="field">
-                <span>Card width (px)</span>
-                <select
-                  name="cardWidth"
-                  value={cardWidth}
-                  onChange={(event) => setCardWidth(Number(event.target.value))}
-                >
-                  <option value={320}>320 (4:5 → 400 tall)</option>
-                  <option value={360}>360 (4:5 → 450 tall)</option>
-                  <option value={400}>400 (4:5 → 500 tall)</option>
-                  <option value={540}>540 (4:5 → 675 tall)</option>
-                </select>
-              </label>
-            </div>
+            <label className="field">
+              <span>How many cards</span>
+              <input
+                name="limit"
+                type="number"
+                min={1}
+                max={30}
+                value={limit}
+                onChange={(event) => setLimit(Number(event.target.value))}
+              />
+            </label>
 
             <label className="field">
               <span>Sort by</span>
@@ -351,7 +278,7 @@ export function EventCardsTool() {
 
         <section className="panel">
           <div className="output-header">
-            <h2>Preview</h2>
+            <h2>Instagram carousel preview</h2>
             <div className="output-actions">
               <button
                 type="button"
@@ -372,13 +299,12 @@ export function EventCardsTool() {
             </div>
           </div>
 
-          <div ref={previewRef} className="preview-area" onClick={handlePreviewClick}>
-            {previewHtml ? (
-              <div dangerouslySetInnerHTML={{ __html: previewHtml }} />
-            ) : (
-              <p className="placeholder">Generated cards will appear here.</p>
-            )}
-          </div>
+          <InstagramCarouselPreview
+            html={previewHtml}
+            isLoading={generating}
+            previewRef={previewRef}
+            onSlideClick={handlePreviewClick}
+          />
         </section>
       </div>
     </>

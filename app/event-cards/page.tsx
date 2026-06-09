@@ -7,7 +7,7 @@ export default function EventCardsPage() {
       <PageHero
         eyebrow="Creative Waco tooling"
         title="Event Card Graphics"
-        lede="Build clean 4:5 portrait cards from the events RSS feed — event photo and title only. Download PNGs for social posts."
+        lede="Build ticket-style Instagram cards (1080px wide) from the events RSS feed — photo, category, date, and venue. Preview as a carousel, then download PNGs ready to post."
       />
       <EventCardsTool />
     </main>

@@ -18,7 +18,6 @@ export async function POST(request: Request) {
       upcomingOnly: body.upcomingOnly !== false,
       fromDate: String(body.fromDate ?? ""),
       enrich: body.enrich !== false,
-      cardWidth: Math.min(Math.max(Number(body.cardWidth) || 360, 240), 600),
     });
 
     return Response.json(result);
