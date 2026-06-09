@@ -27,9 +27,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Clerk CLI wrapper (`scripts/clerk.sh`) and npm scripts `clerk`, `clerk:doctor` — avoids hangs in non-TTY shells; ignore `client_secret_*.json` downloads in `.gitignore`.
+- Clerk Development instance: email allowlist enabled for `*@creativewaco.org` (enforced on sign-in and sign-up).
+- `middleware.ts` — Clerk proxy matcher updated to `'/__clerk/:path*'`; `frontendApiProxy` option typed as `{ enabled: true }` for Clerk SDK compatibility.
 - Clerk setup docs and `.env.example` — require a dedicated Creative Waco Clerk app; do not reuse Tortoise & Hare keys or keyless claim from another account.
 - README: Google OAuth production setup (Clerk SSO + Google Cloud Console) for `tools.creativewaco.org`.
-- README: Clerk production DNS records for Cloudflare (`clerk.tools`, `accounts.tools`, email CNAMEs).
+- README: Clerk production DNS records for Cloudflare (`clerk`, `accounts`, email CNAMEs on `creativewaco.org`).
+- **Clerk production instance** on app `app_3ErvN68yrbKMBYDQrUkPvkkkK1F` (`ins_3EsLuGOPBiHmHeeRQ3Z78AWoGU2`); Vercel production/preview env updated to new prod keys; DNS CNAMEs added in Cloudflare.
+- Clerk production **sign-up restricted** (invite-only); email allowlist unavailable on current plan in production.
+- Clerk production **Google OAuth** enabled (`connection_oauth_google`) on app `app_3ErvN68yrbKMBYDQrUkPvkkkK1F`.
 - Local Clerk dev: `.env.development.local` + `npm run dev:3847` for Development keys; default `npm run dev` uses `local.tools.creativewaco.org` (HTTPS :443) via `scripts/dev-local.sh` with production keys and optional Frontend API proxy.
 - Sidebar expanded/collapsed state persists for 7 days via the `sidebar_state` cookie (restored on load).
 - Sidebar and mobile header logo use the same Creative Waco mark instead of the `CW` initials placeholder.
@@ -45,11 +51,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Vercel config uses native Next.js framework detection (`vercel.json`).
 - Split the monolithic RSS email tool into a dedicated `/rss-email/` page.
 - **90 paid members** goal counts active paid plans only; honorary members tracked separately in KPIs and tier mix.
-- **Upcoming events** KPI counts Planning, Marketing, and Ready events with a future date (previously Ready only).
+- **Upcoming events** KPI counts Planning, Marketing, Operations, and Ready events with a future date.
+- Removed redundant **Pipeline scheduled** KPI; 6-month pipeline progress remains in the Goals section.
 
 ### Fixed
 
-- Sidebar user menu crash (`MenuGroupContext is missing`) — wrap dropdown label in `DropdownMenuGroup` for Base UI.
+- Upcoming events KPI undercounted when an event was in **Operations** status — now includes Planning, Marketing, Operations, and Ready with a future date (matches the events table).
 - Removed colored top accent borders on paid/honorary member table panels.
 - Sidebar nav: all tools listed under a single **Tools** group instead of separate Home/Newsletter/Social/Membership sections.
 - Event cards and RSS email preview placeholder text invisible — use `--muted-foreground` instead of shadcn `--muted` background token.

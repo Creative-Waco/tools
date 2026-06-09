@@ -8,6 +8,8 @@
     "dev:3847": "next dev -p 3847",
     "dev:local": "bash scripts/dev-local.sh",
     "setup:local-clerk": "bash scripts/setup-local-clerk-hosts.sh",
+    "clerk": "bash scripts/clerk.sh",
+    "clerk:doctor": "bash scripts/clerk.sh doctor",
     "build": "next build",
     "start": "next start -p 3847",
     "lint": "next lint"

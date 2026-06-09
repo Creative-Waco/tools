@@ -9,7 +9,7 @@ type KpiGridProps = {
 function SkeletonKpiGrid() {
   return (
     <>
-      {Array.from({ length: 5 }, (_, i) => (
+      {Array.from({ length: 4 }, (_, i) => (
         <article
           key={i}
           className={`kpi-card${i === 0 ? " kpi-card--accent" : ""} skeleton-kpi`}

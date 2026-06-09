@@ -60,9 +60,13 @@ Clerk **production** keys (`pk_live_`) do not work on `http://localhost:3847` �
 
 **Option A — day-to-day dev with test keys** (`npm run dev:3847`)
 
-1. Install the [Clerk CLI](https://clerk.com/docs/guides/development/clerk-cli/overview) (`npm install -g clerk`), then run `clerk auth login`, `clerk link`, and `clerk env pull` to write Development keys to `.env.development.local`.
+1. Install the [Clerk CLI](https://clerk.com/docs/guides/development/clerk-cli/overview) (`npm install -g clerk`), then run `clerk auth login`, `clerk init --app app_3ErvN68yrbKMBYDQrUkPvkkkK1F`, or use the project wrapper: `npm run clerk auth login`.
 2. Or manually: Clerk Dashboard → **Development** instance → **Configure → API keys** → copy into [`.env.development.local.example`](.env.development.local.example) as `.env.development.local`.
 3. Run `npm run dev:3847` → [http://localhost:3847/sign-in/](http://localhost:3847/sign-in/)
+
+**Clerk CLI in Cursor:** the global `clerk` command can hang in non-interactive shells. Use `npm run clerk -- <command>` (runs `scripts/clerk.sh`) or call the native binary with stdin closed.
+
+**Access control:** Development instance allowlists `*@creativewaco.org` (sign-in and sign-up). Manage via Dashboard → **Configure → Restrictions** or `npm run clerk -- api allowlist_identifiers`.
 
 **Option B — default local dev with production keys** (`npm run dev`)
 
@@ -107,7 +111,7 @@ Use a Google Cloud project owned by Creative Waco (not Tortoise & Hare).
 3. **Authorized JavaScript origins:**
    - `https://tools.creativewaco.org`
    - `http://localhost:3847` (local dev)
-4. **Authorized redirect URIs:** paste the URI from Clerk (step 1.4).
+4. **Authorized redirect URIs:** paste the URI from Clerk (step 1.4). For production on `creativewaco.org`, this is typically `https://clerk.creativewaco.org/v1/oauth_callback`. For local dev (`npm run dev:3847`), also add your Development instance callback (shown in Clerk when **Development** is selected), e.g. `https://<instance>.clerk.accounts.dev/v1/oauth_callback`.
 5. Copy the **Client ID** and **Client secret**.
 
 **3. Back in Clerk**
@@ -122,25 +126,28 @@ No code changes are required — the existing `/sign-in/` page shows the Google 
 
 #### Clerk DNS (Cloudflare)
 
-Production Clerk on `tools.creativewaco.org` requires five **CNAME** records in the **creativewaco.org** Cloudflare zone. Set **Proxy status** to **DNS only** (grey cloud) for all of them.
+Production Clerk for **Creative Waco Tools** (`app_3ErvN68yrbKMBYDQrUkPvkkkK1F`) uses the **creativewaco.org** apex domain. Add five **CNAME** records in the **creativewaco.org** Cloudflare zone. Set **Proxy status** to **DNS only** (grey cloud) for all of them.
 
 | Name (Cloudflare) | Target |
 |-------------------|--------|
-| `clerk.tools` | `frontend-api.clerk.services` |
-| `accounts.tools` | `accounts.clerk.services` |
-| `clkmail.tools` | `mail.yw067ya9fpf3.clerk.services` |
-| `clk._domainkey.tools` | `dkim1.yw067ya9fpf3.clerk.services` |
-| `clk2._domainkey.tools` | `dkim2.yw067ya9fpf3.clerk.services` |
+| `clerk` | `frontend-api.clerk.services` |
+| `accounts` | `accounts.clerk.services` |
+| `clkmail` | `mail.3gh8t6w3hecc.clerk.services` |
+| `clk._domainkey` | `dkim1.3gh8t6w3hecc.clerk.services` |
+| `clk2._domainkey` | `dkim2.3gh8t6w3hecc.clerk.services` |
 
-After adding records, click **Verify configuration** in the Clerk Dashboard. SSL certificates issue automatically once DNS verifies.
+After adding records, click **Verify configuration** in the Clerk Dashboard (or run `npm run clerk -- deploy status --wait`). SSL certificates issue automatically once DNS verifies.
 
 From the website repo (with `.cloudflare-env` configured):
 
 ```bash
 cd ../website
 source setup-cloudflare-env.sh
-cf_dns_upsert clerk.tools CNAME frontend-api.clerk.services false
-# …repeat for each row above
+cf_dns_upsert clerk CNAME frontend-api.clerk.services false
+cf_dns_upsert accounts CNAME accounts.clerk.services false
+cf_dns_upsert clkmail CNAME mail.3gh8t6w3hecc.clerk.services false
+cf_dns_upsert clk._domainkey CNAME dkim1.3gh8t6w3hecc.clerk.services false
+cf_dns_upsert clk2._domainkey CNAME dkim2.3gh8t6w3hecc.clerk.services false
 ```
 
 Or use **Cloudflare Dashboard** → **DNS** → **Add record** for each row.
@@ -254,8 +261,7 @@ Public-facing dashboard for [Creative Spark](https://creativewaco.org/spark) mem
 | Paid members | Active Spark plans (excludes honorary-only contacts); footnote shows honorary + total |
 | New paid this period | Paid `memberSince` in selected period; honorary new sign-ups in footnote |
 | Events held | Event Status = Done, in period |
-| Upcoming events | Event Status = Planning, Marketing, or Ready with future `due_on` |
-| Pipeline scheduled | Planning / Marketing / Operations / Ready with `due_on` in next 6 months |
+| Upcoming events | Event Status = Planning, Marketing, Operations, or Ready with future `due_on` |
 
 **Goals**
 

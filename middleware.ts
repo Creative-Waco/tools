@@ -14,13 +14,13 @@ export default clerkMiddleware(
       await auth.protect();
     }
   },
-  useClerkProxy ? { frontendApiProxy: true } : undefined,
+  useClerkProxy ? { frontendApiProxy: { enabled: true } } : undefined,
 );
 
 export const config = {
   matcher: [
     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
     "/(api|trpc)(.*)",
-    "/__clerk/(.*)",
+    "/__clerk/:path*",
   ],
 };
