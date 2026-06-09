@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Event Card Graphics** — **4:5 portrait export** at **1080×1350** with centered large event ticket (920px width), playful typography, natural-height uncropped images, date/time pill, CSS-mask notches, organization/venue stub with grey **Culturalyst** logo, and white-text **Creative Waco** navbar logo centered below the ticket (outside the stub).
 - Clerk production and development: **password auth disabled**; sign-in is **Google** or **email verification code** only.
 - **Event Card Graphics** — redesigned as **ticket-style Instagram cards** (1080px wide at export; height follows each photo): single white ticket with CSS-mask side notches, dashed perforation divider, rounded outer corners, inset hero image, category, date/time, and venue stub.
 - **Event Card Graphics** — each slide uses a **blurred version of the event photo** as the backdrop (replacing rotating gradient themes); PNG export captures the full scene including blur.
@@ -21,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Event Card Graphics** — blurred backdrop overscan and carousel preview scaling (fixes empty preview and right-edge dark strip).
 - **UTM URL Builder** — shareable state uses `window.location` + `history.replaceState` instead of `useSearchParams` / `router.replace` (fixes blank page or stuck “Loading builder…” after dev cache issues).
 - **Event Card Graphics** — ticket stub refactored to one white container with CSS-mask side notches and a dashed divider (replaces split top/bottom SVG shapes that looked disconnected).
 - **Event Card Graphics** — apply card limit **after** filtering to events with images (fixes carousel showing fewer than requested cards).
@@ -30,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Event Card Graphics** — **Instagram carousel preview** (`InstagramCarouselPreview.tsx`): persistent frame, swipe/dots/slide counter, per-slide PNG download; populates on Generate with a loading overlay.
-- **Event Card Graphics** — ticket rendering modules: `sync-ticket-divider.mjs`, `card-styles.mjs`, `constants.mjs` (540px layout width, 2× PNG export → 1080px wide).
+- **Event Card Graphics** — partner assets `public/culturalyst.png` and `public/creative-waco-logo-white.avif`; ticket modules `sync-ticket-divider.mjs`, `card-styles.mjs`, `constants.mjs` (1080×1350 export frame).
 - **Clerk authentication** — all tools and API routes (except `/api/health/`) require sign-in; uses a **Creative Waco–only** Clerk application (separate from Tortoise & Hare); `/sign-in/` and `/sign-up/` use Clerk with the shadcn theme; sidebar user menu wired to Clerk profile and sign-out.
 - **`middleware.ts`** — protected-first route gating; optional Frontend API proxy when `NEXT_PUBLIC_CLERK_PROXY_URL` is set; `@creativewaco.org` email domain enforcement on protected routes.
 - **`lib/clerk-appearance.ts`** — shared Clerk shadcn theme and Creative Waco logo for sign-in/sign-up.

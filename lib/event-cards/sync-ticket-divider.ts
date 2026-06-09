@@ -1,1 +1,5 @@
-export { syncTicketDivider } from "./sync-ticket-divider.mjs";
+export {
+  syncTicketDivider,
+  syncTicketFit,
+  syncTicketLayout,
+} from "./sync-ticket-divider.mjs";

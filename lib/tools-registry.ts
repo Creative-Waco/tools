@@ -22,7 +22,7 @@ export const TOOLS: Tool[] = [
     name: "Event Card Graphics",
     path: "/event-cards/",
     description:
-      "Ticket-style Instagram cards (1080px wide) from the events RSS feed.",
+      "Ticket-style Instagram cards (1080×1350, 4:5 export) from the events RSS feed.",
     tag: "Social",
   },
   {

@@ -3,11 +3,14 @@
 import { useCallback, useRef, useState } from "react";
 import { toPng } from "html-to-image";
 import {
-  getCardExportPixelRatio,
   InstagramCarouselPreview,
 } from "@/components/event-cards/InstagramCarouselPreview";
+import {
+  INSTAGRAM_EXPORT_HEIGHT,
+  INSTAGRAM_EXPORT_WIDTH,
+} from "@/lib/event-cards/constants";
 import { StatusLine } from "@/components/StatusLine";
-import { syncTicketDivider } from "@/lib/event-cards/sync-ticket-divider";
+import { syncTicketLayout } from "@/lib/event-cards/sync-ticket-divider";
 
 type FormOptions = {
   feedUrl: string;
@@ -77,12 +80,26 @@ export function EventCardsTool() {
       const title = cardEl.dataset.cardTitle || "event-card";
       setStatusMessage(`Downloading ${title}…`);
 
+      const previewStyles = {
+        position: cardEl.style.position,
+        top: cardEl.style.top,
+        left: cardEl.style.left,
+        transform: cardEl.style.transform,
+      };
+
       try {
-        syncTicketDivider(cardEl);
+        syncTicketLayout(cardEl);
+        cardEl.style.position = "relative";
+        cardEl.style.top = "0";
+        cardEl.style.left = "0";
+        cardEl.style.transform = "none";
+
         const dataUrl = await toPng(cardEl, {
-          pixelRatio: getCardExportPixelRatio(cardEl),
+          pixelRatio: 1,
+          width: INSTAGRAM_EXPORT_WIDTH,
+          height: INSTAGRAM_EXPORT_HEIGHT,
           cacheBust: true,
-          backgroundColor: "#111111",
+          backgroundColor: "#111318",
         });
         const link = document.createElement("a");
         link.download = `${slugify(title)}.png`;
@@ -95,13 +112,18 @@ export function EventCardsTool() {
           `PNG export failed (image CORS may block this browser). Try a screenshot or copy HTML. ${message}`,
           "error",
         );
+      } finally {
+        cardEl.style.position = previewStyles.position;
+        cardEl.style.top = previewStyles.top;
+        cardEl.style.left = previewStyles.left;
+        cardEl.style.transform = previewStyles.transform;
       }
     },
     [setStatusMessage],
   );
 
   const downloadAllCards = useCallback(async () => {
-    const cards = previewRef.current?.querySelectorAll(".cw-card-scene");
+    const cards = previewRef.current?.querySelectorAll(".cw-export-frame");
     if (!cards?.length) return;
 
     setDownloadingAll(true);
@@ -129,7 +151,7 @@ export function EventCardsTool() {
       if (!target.classList.contains("card-download")) return;
 
       const wrap = target.closest(".preview-card-wrap");
-      const card = wrap?.querySelector(".cw-card-scene") as HTMLElement | null;
+      const card = wrap?.querySelector(".cw-export-frame") as HTMLElement | null;
       if (card) void downloadCard(card);
     },
     [downloadCard],

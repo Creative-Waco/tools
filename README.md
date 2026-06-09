@@ -7,7 +7,7 @@ Internal tools for Creative Waco, hosted at **https://tools.creativewaco.org**.
 | Tool | URL | Description |
 |------|-----|-------------|
 | RSS Email HTML Generator | [/rss-email/](https://tools.creativewaco.org/rss-email/) | RSS feed → HubSpot-ready event email HTML |
-| Event Card Graphics | [/event-cards/](https://tools.creativewaco.org/event-cards/) | Ticket-style Instagram carousel cards (1080px wide export) from the events RSS feed |
+| Event Card Graphics | [/event-cards/](https://tools.creativewaco.org/event-cards/) | Ticket-style Instagram carousel cards (1080×1350, 4:5 export) from the events RSS feed |
 | Creative Spark Dashboard | [/sparks-dashboard/](https://tools.creativewaco.org/sparks-dashboard/) | Live Spark membership + event pipeline from Givebutter and Asana |
 | UTM URL Builder | [/utm-builder/](https://tools.creativewaco.org/utm-builder/) | Build campaign-tagged links with UTM parameters for analytics |
 
@@ -297,10 +297,12 @@ Public-facing dashboard for [Creative Spark](https://creativewaco.org/spark) mem
 
 1. Fetches `https://creativewaco.org/event/rss.xml` (or any feed URL)
 2. Enriches event pages for images and upcoming dates (recommended)
-3. Renders **ticket-style Instagram cards** — single white ticket with CSS-mask side notches at the perforation, dashed divider, rounded outer corners, inset photo, category, title, date/time, and venue stub; each card sits on a **blurred version of its event photo**
-4. Previews as an **Instagram carousel** (swipe, dots, slide counter); download individual or all PNGs (**1080px wide** at 2× export, includes blurred backdrop), or copy HTML
+3. Renders **ticket-style Instagram cards** — large white event ticket (natural-height image, category, prominent title, date/time pill, dashed notches, organization/venue stub with grey **Culturalyst** logo) centered on a **blurred version of its event photo** in a **1080×1350** frame; white-text **Creative Waco** navbar logo sits centered **below the ticket** (outside the stub)
+4. Previews as an **Instagram carousel** (swipe, dots, slide counter); download individual or all PNGs (**1080×1350**, 4:5 portrait, includes blurred backdrop), or copy HTML
 
-Layout is **540px** in the tool; export uses 2× pixel ratio. Divider position is synced after layout (`lib/event-cards/sync-ticket-divider.mjs`) so side notches align with the perforation after each photo loads.
+Layout renders at **1080×1350**; the carousel preview scales down to fit. `syncTicketLayout` (`lib/event-cards/sync-ticket-divider.mjs`) fits tall tickets inside the frame (without cropping images) and aligns side notches after images load.
+
+Assets: [`public/culturalyst.png`](public/culturalyst.png), [`public/creative-waco-logo-white.avif`](public/creative-waco-logo-white.avif) (navbar white-text logo for below-ticket branding). Clerk sign-in still uses [`public/creative-waco-logo-horizontal.avif`](public/creative-waco-logo-horizontal.avif).
 
 Enrichment pulls category, date, venue, and organizer photo from event pages. Events without an image after enrichment are skipped (limit applies after that filter).
 

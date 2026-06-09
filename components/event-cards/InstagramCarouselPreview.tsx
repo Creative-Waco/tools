@@ -10,11 +10,13 @@ import {
   Send,
 } from "lucide-react";
 import { CARD_STYLES } from "@/lib/event-cards/card-styles";
-import { syncTicketDivider } from "@/lib/event-cards/sync-ticket-divider";
+import {
+  INSTAGRAM_EXPORT_HEIGHT,
+  INSTAGRAM_EXPORT_WIDTH,
+} from "@/lib/event-cards/constants";
+import { syncTicketLayout } from "@/lib/event-cards/sync-ticket-divider";
 
-const EXPORT_WIDTH = 540;
-const EXPORT_PIXEL_RATIO = 2;
-const CARD_STYLES_ID = "cw-event-card-styles-v27";
+const CARD_STYLES_ID = "cw-event-card-styles-v39";
 
 type InstagramCarouselPreviewProps = {
   html: string | null;
@@ -35,8 +37,35 @@ function buildSlideMarkup(sceneHtml: string) {
 function slidesFromHtml(html: string) {
   const temp = document.createElement("div");
   temp.innerHTML = html;
-  const scenes = [...temp.querySelectorAll(".cw-card-scene")];
-  return scenes.map((scene) => buildSlideMarkup(scene.outerHTML)).filter(Boolean);
+  const frames = [...temp.querySelectorAll(".cw-export-frame")];
+  return frames.map((frame) => buildSlideMarkup(frame.outerHTML)).filter(Boolean);
+}
+
+function applyPreviewScale(track: HTMLElement | null) {
+  if (!track) return;
+
+  track.querySelectorAll<HTMLElement>(".ig-carousel-slide-inner").forEach((inner) => {
+    const frame = inner.querySelector<HTMLElement>(".cw-export-frame");
+    if (!frame) return;
+
+    const width = inner.clientWidth;
+    if (width < 1) return;
+
+    const scale = width / INSTAGRAM_EXPORT_WIDTH;
+    const offsetX = (width - INSTAGRAM_EXPORT_WIDTH * scale) / 2;
+
+    frame.style.position = "absolute";
+    frame.style.top = "0";
+    frame.style.left = `${offsetX}px`;
+    frame.style.transform = `scale(${scale})`;
+    frame.style.transformOrigin = "top left";
+  });
+}
+
+function slideViewportHeight(slide: HTMLElement | undefined) {
+  if (!slide) return 0;
+  const inner = slide.querySelector<HTMLElement>(".ig-carousel-slide-inner");
+  return inner?.offsetHeight ?? slide.offsetHeight;
 }
 
 export function InstagramCarouselPreview({
@@ -53,12 +82,13 @@ export function InstagramCarouselPreview({
 
   const syncSlideLayout = useCallback((track = trackRef.current) => {
     if (!track) return;
-    syncTicketDivider(track);
+    syncTicketLayout(track);
+    applyPreviewScale(track);
 
     const viewport = viewportRef.current;
     const slide = track.children[activeIndex] as HTMLElement | undefined;
     if (viewport && slide) {
-      viewport.style.height = `${slide.offsetHeight}px`;
+      viewport.style.height = `${slideViewportHeight(slide)}px`;
     }
   }, [activeIndex]);
 
@@ -89,23 +119,32 @@ export function InstagramCarouselPreview({
     setActiveIndex(0);
 
     const syncInitial = () => {
-      syncTicketDivider(track);
+      syncTicketLayout(track);
+      applyPreviewScale(track);
       const viewport = viewportRef.current;
       const slide = track.children[0] as HTMLElement | undefined;
       if (viewport && slide) {
-        viewport.style.height = `${slide.offsetHeight}px`;
+        viewport.style.height = `${slideViewportHeight(slide)}px`;
       }
     };
     syncInitial();
     requestAnimationFrame(syncInitial);
+    requestAnimationFrame(syncInitial);
 
-    track.querySelectorAll<HTMLImageElement>(".cw-ticket img").forEach((img) => {
+    const resizeObserver = new ResizeObserver(() => {
+      syncInitial();
+    });
+    track.querySelectorAll(".ig-carousel-slide-inner").forEach((inner) => {
+      resizeObserver.observe(inner);
+    });
+
+    track.querySelectorAll<HTMLImageElement>(".cw-export-frame img").forEach((img) => {
       if (img.complete) return;
 
       img.addEventListener(
         "load",
         () => {
-          syncTicketDivider(track);
+          syncTicketLayout(track);
           syncInitial();
         },
         { once: true },
@@ -133,11 +172,14 @@ export function InstagramCarouselPreview({
         }
       });
     }
+
+    return () => {
+      resizeObserver.disconnect();
+    };
   }, [html]);
 
   useEffect(() => {
     const onResize = () => {
-      syncTicketDivider(trackRef.current);
       syncSlideLayout();
     };
 
@@ -265,16 +307,19 @@ export function InstagramCarouselPreview({
         }
 
         .ig-carousel-slide-inner {
-          display: block;
+          position: relative;
           width: 100%;
+          aspect-ratio: 4 / 5;
           box-sizing: border-box;
+          overflow: hidden;
         }
 
-        .ig-carousel-slide-inner .cw-card-scene {
-          width: 100% !important;
-          max-width: 100%;
+        .ig-carousel-slide-inner .cw-export-frame {
+          width: 1080px;
+          height: 1350px;
           margin: 0;
           box-sizing: border-box;
+          transform-origin: top left;
         }
 
         .ig-carousel-empty,
@@ -515,6 +560,13 @@ export function InstagramCarouselPreview({
 }
 
 export function getCardExportPixelRatio(cardEl: HTMLElement) {
-  const width = cardEl.offsetWidth || EXPORT_WIDTH;
-  return (EXPORT_WIDTH * EXPORT_PIXEL_RATIO) / width;
+  const frame = cardEl.classList.contains("cw-export-frame")
+    ? cardEl
+    : cardEl.closest<HTMLElement>(".cw-export-frame");
+  if (!frame) return 1;
+
+  const renderedWidth = frame.getBoundingClientRect().width;
+  if (!renderedWidth) return 1;
+
+  return INSTAGRAM_EXPORT_WIDTH / renderedWidth;
 }
