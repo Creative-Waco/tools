@@ -9,6 +9,7 @@ Internal tools for Creative Waco, hosted at **https://tools.creativewaco.org**.
 | RSS Email HTML Generator | [/rss-email/](https://tools.creativewaco.org/rss-email/) | RSS feed → HubSpot-ready event email HTML |
 | Event Card Graphics | [/event-cards/](https://tools.creativewaco.org/event-cards/) | Ticket-style Instagram carousel cards (1080px wide export) from the events RSS feed |
 | Creative Spark Dashboard | [/sparks-dashboard/](https://tools.creativewaco.org/sparks-dashboard/) | Live Spark membership + event pipeline from Givebutter and Asana |
+| UTM URL Builder | [/utm-builder/](https://tools.creativewaco.org/utm-builder/) | Build campaign-tagged links with UTM parameters for analytics |
 
 ## Architecture
 
@@ -16,7 +17,7 @@ Next.js 15 App Router app deployed on Vercel at **https://tools.creativewaco.org
 
 | Layer | Location |
 |-------|----------|
-| Pages | `app/` — hub, `/rss-email/`, `/event-cards/`, `/sparks-dashboard/` |
+| Pages | `app/` — hub, `/rss-email/`, `/event-cards/`, `/sparks-dashboard/`, `/utm-builder/` |
 | API | `app/api/` — Route Handlers wrapping `lib/` |
 | App shell | `components/AppShell.tsx` + `@shadcnblocks/application-shell2` — inset collapsible sidebar; all tools under one **Tools** group from `lib/tools-registry.ts` |
 | UI components | `components/` — shadcn/ui primitives, shared layout, per-tool React clients |
@@ -296,10 +297,10 @@ Public-facing dashboard for [Creative Spark](https://creativewaco.org/spark) mem
 
 1. Fetches `https://creativewaco.org/event/rss.xml` (or any feed URL)
 2. Enriches event pages for images and upcoming dates (recommended)
-3. Renders **ticket-style Instagram cards** — separate top/bottom **SVG vector stubs** with scalloped side punchouts at the perforation, rounded outer corners, dashed tear line, inset photo, category, title, date/time, and venue row; each card sits on a **blurred version of its event photo**
+3. Renders **ticket-style Instagram cards** — single white ticket with CSS-mask side notches at the perforation, dashed divider, rounded outer corners, inset photo, category, title, date/time, and venue stub; each card sits on a **blurred version of its event photo**
 4. Previews as an **Instagram carousel** (swipe, dots, slide counter); download individual or all PNGs (**1080px wide** at 2× export, includes blurred backdrop), or copy HTML
 
-Layout is **540px** in the tool; export uses 2× pixel ratio. Vector paths are synced after layout (`lib/event-cards/sync-ticket-shapes.mjs`) so stub height follows each photo.
+Layout is **540px** in the tool; export uses 2× pixel ratio. Divider position is synced after layout (`lib/event-cards/sync-ticket-divider.mjs`) so side notches align with the perforation after each photo loads.
 
 Enrichment pulls category, date, venue, and organizer photo from event pages. Events without an image after enrichment are skipped (limit applies after that filter).
 
@@ -320,6 +321,34 @@ Grid output includes a `<style>` block with a `@media` query so columns stack on
 - **Enrich from event pages** is recommended for Creative Waco events. It reads JSON-LD dates and finds ticket links (OvationTix, PACC, Levitt, etc.).
 - Without enrichment, the tool falls back to RSS publish dates and only includes a Learn more button.
 - Re-run Generate any time you need fresh HTML for a newsletter send.
+
+## UTM URL Builder
+
+Build tagged destination URLs for Google Analytics and other reporting.
+
+1. Enter the **destination URL** (defaults to `https://creativewaco.org/`) or pick a **destination shortcut** (Home, Events, Spark, About)
+2. Pick a **channel preset** (Instagram, Facebook, newsletter, Google Ads, print/QR, partner) — active preset is highlighted; presets include suggested **content variants**
+3. Set **campaign name** manually or use the **campaign name helper** (event name + date → slug)
+4. Optionally expand **Advanced parameters** (term, content, ID, custom query keys)
+5. Add **content variants** to generate multiple `utm_content` links for carousels or A/B placements
+6. Copy the live preview (**full URL**, **query string only**, or **path + query** for HubSpot/email), open in a new tab, or copy a **shareable builder link**
+
+**Auto-parse** — paste a full tagged URL into Destination URL; UTM parameters are detected and split into fields automatically.
+
+**Recent campaigns** — last copied campaigns are saved in the browser (up to 10) for quick reload.
+
+**Print / QR preset** — shows a downloadable QR code when the tagged URL is ready.
+
+**Keyboard shortcut** — **⌘⇧C** / **Ctrl+Shift+C** copies the full tagged URL (when focus is not in an input).
+
+**Shareable state** — form values sync to the page URL query string so you can bookmark or Slack a pre-filled link (e.g. `/utm-builder/?url=…&utm_campaign=…`).
+
+**Notes**
+
+- Source, medium, and campaign are required before copy/open is enabled.
+- Values are normalized on blur (lowercase, hyphens, special characters removed).
+- If the destination already has `utm_*` tags, the tool warns that they will be replaced.
+- Custom parameters are appended as non-`utm_` query keys (e.g. `ref=partner-name`).
 
 ## Adding a new tool
 

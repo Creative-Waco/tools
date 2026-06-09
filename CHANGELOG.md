@@ -7,23 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **UTM URL Builder** at `/utm-builder/` — build campaign-tagged links with standard UTM parameters, Creative Waco channel presets, custom query params, URL parsing, and one-click copy.
+- **UTM URL Builder UX** — auto-parse on destination paste; active preset indicator; value normalization and field warnings; inline field help tooltips; overwrite warning for existing UTMs; copy full URL / query string / path+query; advanced fields collapsed; destination shortcuts; campaign slug helper; content variant links; recent campaigns (`localStorage`); shareable URL state in query params; color-coded URL breakdown; sticky output panel; Print/QR downloadable QR code; preset content suggestions; **⌘⇧C** copy shortcut.
+
 ### Changed
 
 - Clerk production and development: **password auth disabled**; sign-in is **Google** or **email verification code** only.
-- **Event Card Graphics** — redesigned as **ticket-style Instagram cards** (1080px wide at export; height follows each photo): separate top/bottom **SVG vector stubs**, scalloped side punchouts at the perforation, dashed tear line, rounded outer corners, inset hero image, category, date/time, and venue row.
+- **Event Card Graphics** — redesigned as **ticket-style Instagram cards** (1080px wide at export; height follows each photo): single white ticket with CSS-mask side notches, dashed perforation divider, rounded outer corners, inset hero image, category, date/time, and venue stub.
 - **Event Card Graphics** — each slide uses a **blurred version of the event photo** as the backdrop (replacing rotating gradient themes); PNG export captures the full scene including blur.
 - **Event Card Graphics** — removed card width option and QR codes; enrichment pulls category, location, organizer name, and photo from event pages.
 
 ### Fixed
 
+- **Event Card Graphics** — ticket stub refactored to one white container with CSS-mask side notches and a dashed divider (replaces split top/bottom SVG shapes that looked disconnected).
 - **Event Card Graphics** — apply card limit **after** filtering to events with images (fixes carousel showing fewer than requested cards).
 - **Event Card Graphics** — blurred backdrops load via an `<img>` layer (fixes broken `background-image` from quoted URLs in inline styles).
-- **Event Card Graphics** — vector paths measured after layout (`syncTicketShapes`) so ticket stubs and punchouts stay correct at any content height; carousel viewport height tracks the active slide.
+- **Event Card Graphics** — divider position synced after layout (`syncTicketDivider`) so side-notch cutouts align with the perforation at any content height; carousel viewport height tracks the active slide.
 
 ### Added
 
 - **Event Card Graphics** — **Instagram carousel preview** (`InstagramCarouselPreview.tsx`): persistent frame, swipe/dots/slide counter, per-slide PNG download; populates on Generate with a loading overlay.
-- **Event Card Graphics** — ticket rendering modules: `ticket-paths.mjs`, `sync-ticket-shapes.mjs`, `card-styles.mjs`, `constants.mjs` (540px layout width, 2× PNG export → 1080px wide).
+- **Event Card Graphics** — ticket rendering modules: `sync-ticket-divider.mjs`, `card-styles.mjs`, `constants.mjs` (540px layout width, 2× PNG export → 1080px wide).
 - **Clerk authentication** — all tools and API routes (except `/api/health/`) require sign-in; uses a **Creative Waco–only** Clerk application (separate from Tortoise & Hare); `/sign-in/` and `/sign-up/` use Clerk with the shadcn theme; sidebar user menu wired to Clerk profile and sign-out.
 - **`middleware.ts`** — protected-first route gating; optional Frontend API proxy when `NEXT_PUBLIC_CLERK_PROXY_URL` is set; `@creativewaco.org` email domain enforcement on protected routes.
 - **`lib/clerk-appearance.ts`** — shared Clerk shadcn theme and Creative Waco logo for sign-in/sign-up.

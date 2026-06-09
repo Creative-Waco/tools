@@ -7,7 +7,7 @@ import {
   InstagramCarouselPreview,
 } from "@/components/event-cards/InstagramCarouselPreview";
 import { StatusLine } from "@/components/StatusLine";
-import { syncTicketShapes } from "@/lib/event-cards/sync-ticket-shapes";
+import { syncTicketDivider } from "@/lib/event-cards/sync-ticket-divider";
 
 type FormOptions = {
   feedUrl: string;
@@ -78,7 +78,7 @@ export function EventCardsTool() {
       setStatusMessage(`Downloading ${title}…`);
 
       try {
-        syncTicketShapes(cardEl);
+        syncTicketDivider(cardEl);
         const dataUrl = await toPng(cardEl, {
           pixelRatio: getCardExportPixelRatio(cardEl),
           cacheBust: true,

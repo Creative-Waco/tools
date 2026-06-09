@@ -10,11 +10,11 @@ import {
   Send,
 } from "lucide-react";
 import { CARD_STYLES } from "@/lib/event-cards/card-styles";
-import { syncTicketShapes } from "@/lib/event-cards/sync-ticket-shapes";
+import { syncTicketDivider } from "@/lib/event-cards/sync-ticket-divider";
 
 const EXPORT_WIDTH = 540;
 const EXPORT_PIXEL_RATIO = 2;
-const CARD_STYLES_ID = "cw-event-card-styles-v26";
+const CARD_STYLES_ID = "cw-event-card-styles-v27";
 
 type InstagramCarouselPreviewProps = {
   html: string | null;
@@ -53,7 +53,7 @@ export function InstagramCarouselPreview({
 
   const syncSlideLayout = useCallback((track = trackRef.current) => {
     if (!track) return;
-    syncTicketShapes(track);
+    syncTicketDivider(track);
 
     const viewport = viewportRef.current;
     const slide = track.children[activeIndex] as HTMLElement | undefined;
@@ -89,7 +89,7 @@ export function InstagramCarouselPreview({
     setActiveIndex(0);
 
     const syncInitial = () => {
-      syncTicketShapes(track);
+      syncTicketDivider(track);
       const viewport = viewportRef.current;
       const slide = track.children[0] as HTMLElement | undefined;
       if (viewport && slide) {
@@ -98,6 +98,19 @@ export function InstagramCarouselPreview({
     };
     syncInitial();
     requestAnimationFrame(syncInitial);
+
+    track.querySelectorAll<HTMLImageElement>(".cw-ticket img").forEach((img) => {
+      if (img.complete) return;
+
+      img.addEventListener(
+        "load",
+        () => {
+          syncTicketDivider(track);
+          syncInitial();
+        },
+        { once: true },
+      );
+    });
 
     const images = track.querySelectorAll("img");
     let pending = images.length;
@@ -121,6 +134,16 @@ export function InstagramCarouselPreview({
       });
     }
   }, [html]);
+
+  useEffect(() => {
+    const onResize = () => {
+      syncTicketDivider(trackRef.current);
+      syncSlideLayout();
+    };
+
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [syncSlideLayout]);
 
   const goTo = useCallback(
     (index: number) => {
