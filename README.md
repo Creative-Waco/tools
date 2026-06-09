@@ -21,7 +21,7 @@ Next.js 15 App Router app deployed on Vercel at **https://tools.creativewaco.org
 | API | `app/api/` — Route Handlers wrapping `lib/` |
 | App shell | `components/AppShell.tsx` + `@shadcnblocks/application-shell2` — inset collapsible sidebar; all tools under one **Tools** group from `lib/tools-registry.ts` |
 | UI components | `components/` — shadcn/ui primitives, shared layout, per-tool React clients |
-| Backend logic | `lib/` — RSS generation, event cards, Givebutter/Asana dashboard |
+| Backend logic | `lib/` — RSS generation, event cards, UTM URL builder, Givebutter/Asana dashboard |
 
 Navigation is provided by the Application Shell 2 layout (inset sidebar with icon collapse). The sidebar lists **All tools** plus every registry entry under a single **Tools** group; the Creative Waco branding block at the top is display-only (use **All tools** or **⌘B** / **Ctrl+B** to collapse the sidebar). Collapsed vs expanded state is remembered for 7 days in a browser cookie. The hub at `/` and each tool page render inside the shell's main content area.
 
@@ -341,7 +341,7 @@ Build tagged destination URLs for Google Analytics and other reporting.
 
 **Keyboard shortcut** — **⌘⇧C** / **Ctrl+Shift+C** copies the full tagged URL (when focus is not in an input).
 
-**Shareable state** — form values sync to the page URL query string so you can bookmark or Slack a pre-filled link (e.g. `/utm-builder/?url=…&utm_campaign=…`).
+**Shareable state** — form values sync to the browser URL via `history.replaceState` (no full page reload) so you can bookmark or Slack a pre-filled link (e.g. `/utm-builder/?url=…&utm_campaign=…`). Use **Copy share link** to send the current builder state.
 
 **Notes**
 

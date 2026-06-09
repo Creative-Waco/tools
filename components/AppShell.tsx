@@ -5,6 +5,7 @@ import {
   BarChart3,
   ImageIcon,
   LayoutDashboard,
+  Link2,
   Mail,
 } from "lucide-react";
 import Link from "next/link";
@@ -37,6 +38,7 @@ const TAG_ICONS = {
   Newsletter: Mail,
   Social: ImageIcon,
   Membership: BarChart3,
+  Marketing: Link2,
 } as const;
 
 function normalizePath(path: string) {

@@ -1,4 +1,4 @@
-export type ToolTag = "Newsletter" | "Social" | "Membership";
+export type ToolTag = "Newsletter" | "Social" | "Membership" | "Marketing";
 
 export type Tool = {
   id: string;
@@ -32,5 +32,13 @@ export const TOOLS: Tool[] = [
     description:
       "Track Creative Spark membership growth, tier mix, and member event momentum.",
     tag: "Membership",
+  },
+  {
+    id: "utm-builder",
+    name: "UTM URL Builder",
+    path: "/utm-builder/",
+    description:
+      "Build campaign-tagged links with UTM parameters for newsletters, social, and paid ads.",
+    tag: "Marketing",
   },
 ];
