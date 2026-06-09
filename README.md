@@ -120,9 +120,13 @@ Paste the Google Client ID and Client secret into the Google connection → **Sa
 
 **4. Restrict who can sign in** (recommended for internal tools)
 
-Production uses **Google sign-in only** (`@creativewaco.org` accounts). Clerk sign-up is public so first-time Google users can create an account; middleware rejects non-`@creativewaco.org` emails. In Google Cloud, set the OAuth consent screen **User type** to **Internal** if Creative Waco uses Google Workspace — that limits Google auth to your organization before accounts reach Clerk.
+Production supports **Google** and **email** sign-in; middleware still rejects accounts whose email is not `@creativewaco.org`. In Google Cloud, set the OAuth consent screen **User type** to **Internal** if Creative Waco uses Google Workspace.
 
 Development still uses Clerk’s email allowlist (`*@creativewaco.org`) when testing with `npm run dev:3847`.
+
+#### Sign-in branding
+
+The Clerk sign-in and sign-up pages use the Creative Waco horizontal logo from [`public/creative-waco-logo-horizontal.avif`](public/creative-waco-logo-horizontal.avif), configured in [`lib/clerk-appearance.ts`](lib/clerk-appearance.ts) on `ClerkProvider`.
 
 No code changes are required — the existing `/sign-in/` page shows the Google button automatically once the connection is enabled.
 

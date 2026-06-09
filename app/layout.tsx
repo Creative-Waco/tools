@@ -1,9 +1,9 @@
 import { ClerkProvider } from "@clerk/nextjs";
-import { shadcn } from "@clerk/ui/themes";
 import type { Metadata } from "next";
 
 import { AppShellGate } from "@/components/AppShellGate";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { clerkAppearance } from "@/lib/clerk-appearance";
 
 import "./globals.css";
 
@@ -21,12 +21,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <ClerkProvider
-          appearance={{
-            theme: shadcn,
-            options: {
-              unsafe_disableDevelopmentModeWarnings: true,
-            },
-          }}
+          appearance={clerkAppearance}
           signInUrl="/sign-in/"
           signUpUrl="/sign-up/"
           signInFallbackRedirectUrl="/"
