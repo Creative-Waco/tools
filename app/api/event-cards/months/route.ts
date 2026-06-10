@@ -1,4 +1,4 @@
-import { generateEventCards } from "@/lib/event-cards/generate.mjs";
+import { getFeedMonths } from "@/lib/event-cards/feed-months.mjs";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -11,22 +11,16 @@ export async function POST(request: Request) {
       return Response.json({ error: "Feed URL is required." }, { status: 400 });
     }
 
-    const result = await generateEventCards({
+    const result = await getFeedMonths({
       feedUrl,
-      limit: Math.min(Math.max(Number(body.limit) || 8, 1), 30),
-      sort: String(body.sort ?? "date-asc"),
-      upcomingOnly: body.upcomingOnly !== false,
-      fromDate: String(body.fromDate ?? ""),
-      toDate: String(body.toDate ?? ""),
       enrich: body.enrich !== false,
-      format: body.format === "slideshow" ? "slideshow" : "instagram",
     });
 
     return Response.json(result);
   } catch (error) {
     return Response.json(
       {
-        error: error instanceof Error ? error.message : "Generation failed.",
+        error: error instanceof Error ? error.message : "Could not load feed months.",
       },
       { status: 500 },
     );

@@ -7,7 +7,7 @@ Internal tools for Creative Waco, hosted at **https://tools.creativewaco.org**.
 | Tool | URL | Description |
 |------|-----|-------------|
 | RSS Email HTML Generator | [/rss-email/](https://tools.creativewaco.org/rss-email/) | RSS feed → HubSpot-ready event email HTML |
-| Event Card Graphics | [/event-cards/](https://tools.creativewaco.org/event-cards/) | Ticket-style Instagram carousel cards (1080×1350, 4:5 export) from the events RSS feed |
+| Event Card Graphics | [/event-cards/](https://tools.creativewaco.org/event-cards/) | Instagram carousel cards (1080×1350, 4:5) or landscape display slideshow cards (1920px wide) from the events RSS feed |
 | Creative Spark Dashboard | [/sparks-dashboard/](https://tools.creativewaco.org/sparks-dashboard/) | Live Spark membership + event pipeline from Givebutter and Asana |
 | UTM URL Builder | [/utm-builder/](https://tools.creativewaco.org/utm-builder/) | Build campaign-tagged links with UTM parameters for analytics |
 
@@ -23,7 +23,7 @@ Next.js 15 App Router app deployed on Vercel at **https://tools.creativewaco.org
 | UI components | `components/` — shadcn/ui primitives, shared layout, per-tool React clients |
 | Backend logic | `lib/` — RSS generation, event cards, UTM URL builder, Givebutter/Asana dashboard |
 
-Navigation is provided by the Application Shell 2 layout (inset sidebar with icon collapse). The sidebar lists **All tools** plus every registry entry under a single **Tools** group; the Creative Waco branding block at the top is display-only (use **All tools** or **⌘B** / **Ctrl+B** to collapse the sidebar). Collapsed vs expanded state is remembered for 7 days in a browser cookie. The hub at `/` and each tool page render inside the shell's main content area.
+Navigation is provided by the Application Shell 2 layout (inset sidebar with icon collapse). The sidebar lists **All tools** plus every registry entry under a single **Tools** group; the current page is highlighted with a dark active state (visible in both expanded and collapsed icon mode). The Creative Waco branding block at the top is display-only (use **All tools** or **⌘B** / **Ctrl+B** to collapse the sidebar). Collapsed vs expanded state is remembered for 7 days in a browser cookie. The hub at `/` and each tool page render inside the shell's main content area.
 
 Favicon and Apple touch icon match [creativewaco.org](https://creativewaco.org/) (`app/icon.png`, `app/apple-icon.png`).
 
@@ -37,6 +37,18 @@ npm run dev
 Default dev server: **https://local.tools.creativewaco.org/** (HTTPS on port 443, production Clerk keys in `.env.local`). First run adds a hosts entry via `npm run setup:local-clerk` (sudo). Unauthenticated visits redirect to `/sign-in/`.
 
 For **Development** instance keys on `http://localhost:3847`, use `npm run dev:3847` with [`.env.development.local`](.env.development.local.example) (see Clerk section below).
+
+#### Troubleshooting local dev
+
+If the app shows a blank page, **Internal Server Error**, or terminal errors like `Cannot find module './873.js'`, the Next.js dev cache (`.next/`) is usually stale — common after killing the dev server mid-compile, running two dev servers on the same port, or many rapid hot-reloads during edits.
+
+```bash
+npm run dev:clean:3847
+```
+
+That stops anything on port 3847, deletes `.next`, and starts fresh. Avoid running `npm run build` while `dev:3847` is running (both write to `.next` and can corrupt chunks). If port 3847 is already in use, stop the other process first or use the clean script above.
+
+During active code edits you may briefly see a **500** or “Fast Refresh had to perform a full reload” in the terminal; save the file again or hard-refresh the browser once the compile finishes.
 
 ### Clerk (Creative Waco account)
 
@@ -253,6 +265,7 @@ ASANA_OAUTH_REDIRECT_URI="http://localhost:3334/oauth/callback" node scripts/ref
 | `GET` | `/api/sparks-dashboard/` | Dashboard data (`period`, `membershipType`, optional `refresh=1`) |
 | `POST` | `/api/generate/` | RSS → HubSpot email HTML |
 | `POST` | `/api/event-cards/generate/` | RSS → Instagram-width event card HTML |
+| `POST` | `/api/event-cards/months/` | RSS → months with events (for month picker) |
 
 ## Creative Spark Dashboard
 
@@ -297,10 +310,15 @@ Public-facing dashboard for [Creative Spark](https://creativewaco.org/spark) mem
 
 1. Fetches `https://creativewaco.org/event/rss.xml` (or any feed URL)
 2. Enriches event pages for images and upcoming dates (recommended)
-3. Renders **ticket-style Instagram cards** — large white event ticket (natural-height image, category, prominent title, date/time pill, dashed notches, organization/venue stub with grey **Culturalyst** logo) centered on a **blurred version of its event photo** in a **1080×1350** frame; white-text **Creative Waco** navbar logo sits centered **below the ticket** (outside the stub)
-4. Previews as an **Instagram carousel** (swipe, dots, slide counter); download individual or all PNGs (**1080×1350**, 4:5 portrait, includes blurred backdrop), or copy HTML
+3. Filters via one **Date range** control (upcoming, quick presets, months found in the feed, or custom start/end); then sorts by event date
+4. Choose an **output format** (tabs above **Generate cards**), then generate:
+   - **Instagram carousel** — ticket-style portrait cards in a **1080×1350** (4:5) frame with blurred photo backdrop, dashed notches, and Creative Waco branding below the ticket
+   - **Display slideshow** — horizontal landscape cards (**1920px** wide; height follows content) for TVs, projectors, and venue displays — card only (no backdrop or footer logo), event image on the left (full width, natural height, white panel, rounded corners), details on the right
+5. Previews match the selected format (carousel or landscape slideshow). Below the preview, click **Download cards…** to open the **Select cards** panel: range summary dropdown, **Current card** and **Select all** presets, per-card thumbnails with checkboxes (click a row to jump the preview), then **Done** for one PNG or a ZIP. Per-slide PNG buttons remain in the preview; **Copy HTML** stays in the preview header.
 
-Layout renders at **1080×1350**; the carousel preview scales down to fit. `syncTicketLayout` (`lib/event-cards/sync-ticket-divider.mjs`) fits tall tickets inside the frame (without cropping images) and aligns side notches after images load.
+Pass `format: "instagram"` or `format: "slideshow"` to `POST /api/event-cards/generate/`. Each format caches its own preview HTML when you switch tabs.
+
+Instagram layout renders at **1080×1350**; `syncTicketLayout` (`lib/event-cards/sync-ticket-divider.mjs`) fits tall tickets inside the frame and aligns side notches after images load. Slideshow cards export at **1920px** width with height driven by the uncropped event image and text column; PNGs use a transparent background (no card drop shadow).
 
 Assets: [`public/culturalyst.png`](public/culturalyst.png), [`public/creative-waco-logo-white.avif`](public/creative-waco-logo-white.avif) (navbar white-text logo for below-ticket branding). Clerk sign-in still uses [`public/creative-waco-logo-horizontal.avif`](public/creative-waco-logo-horizontal.avif).
 

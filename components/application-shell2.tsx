@@ -75,23 +75,20 @@ type SidebarData = {
   user?: UserData;
 };
 
-type LinkComponent = React.ComponentType<{
+type LinkComponentProps = React.ComponentPropsWithoutRef<"a"> & {
   href: string;
-  children?: React.ReactNode;
-  className?: string;
-}>;
+};
+
+type LinkComponent = React.ComponentType<LinkComponentProps>;
 
 function DefaultLink({
   href,
   children = null,
   className,
-}: {
-  href: string;
-  children?: React.ReactNode;
-  className?: string;
-}) {
+  ...props
+}: LinkComponentProps) {
   return (
-    <a href={href} className={className}>
+    <a href={href} className={className} {...props}>
       {children}
     </a>
   );

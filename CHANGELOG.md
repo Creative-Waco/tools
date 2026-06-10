@@ -9,11 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Event Card Graphics** — selective PNG download with checkboxes; one selection downloads a single PNG, multiple selections download a ZIP (`jszip`).
+- **Event Card Graphics** — **Display slideshow** output format: landscape cards at **1920px** width (variable height), image-left/details-right layout, format selector above **Generate cards**, and `format` param on `POST /api/event-cards/generate/` (`instagram` | `slideshow`).
+- **Event Card Graphics** — optional **date range** filter (start/end) on the generate form; events are sorted within the selected range (default: upcoming from today).
+- **Event Card Graphics** — **quick date range** presets (next 1/2/4 weeks, 2/6 months) plus **Month in feed** selector populated from the RSS feed (`POST /api/event-cards/months/`).
 - **UTM URL Builder** at `/utm-builder/` — client-side campaign link builder with channel presets (Instagram, Facebook, newsletter, Google Ads, print/QR, partner), destination shortcuts, campaign slug helper, content variant links, recent campaigns (`localStorage`), shareable URL state, color-coded URL preview, and Print/QR downloadable QR code (`qrcode`).
 - **UTM URL Builder** — copy full URL, query string only, or path+query for HubSpot/email; auto-parse tagged URLs on paste; field help tooltips; **⌘⇧C** / **Ctrl+Shift+C** copy shortcut; **Marketing** sidebar tag with link icon in `lib/tools-registry.ts`.
 
 ### Changed
 
+- **Event Card Graphics** — output format tabs (Instagram / Display slideshow) moved to the left panel, directly above **Generate cards**.
+- **Event Card Graphics** — **Download cards…** trigger sits below the preview (primary button style); collapsible **Select cards** panel opens there with range summary, presets (all / current / select all), thumbnail rows, and a **Done** button (single PNG or ZIP); clicking a row jumps the preview to that card.
+- **Event Card Graphics** — display slideshow typography scaled up for venue readability (title **88px**, date pill **48px**, venue **52px**, category **36px** at 1920px export).
+- **Event Card Graphics** — display slideshow exports as transparent PNGs (no drop shadow, no white matte behind the card).
+- **Event Card Graphics** — display slideshow image uses full column width at natural aspect ratio (no crop); white panel with rounded corners; card height stays variable at **1920px** export width.
+- **Event Card Graphics** — display slideshow slides are **card-only** (no blurred backdrop or Creative Waco logo); image-left/details-right layout; export height follows card content at **1920px** width.
+- **Event Card Graphics** — simplified date range UI to one grouped dropdown (presets, feed months, custom dates) with start/end fields only for custom ranges.
 - **Event Card Graphics** — **4:5 portrait export** at **1080×1350** with centered large event ticket (920px width), playful typography, natural-height uncropped images, date/time pill, CSS-mask notches, organization/venue stub with grey **Culturalyst** logo, and white-text **Creative Waco** navbar logo centered below the ticket (outside the stub).
 - Clerk production and development: **password auth disabled**; sign-in is **Google** or **email verification code** only.
 - **Event Card Graphics** — redesigned as **ticket-style Instagram cards** (1080px wide at export; height follows each photo): single white ticket with CSS-mask side notches, dashed perforation divider, rounded outer corners, inset hero image, category, date/time, and venue stub.
@@ -22,7 +33,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **Event Card Graphics** — blurred backdrop overscan and carousel preview scaling (fixes empty preview and right-edge dark strip).
+- **Event Card Graphics** — landscape slideshow preview no longer overlaps the per-slide **PNG** hover button with the slide counter (e.g. **4/8**); PNG moves to the bottom-right when multiple slides are shown.
+- **Event Card Graphics** — removed redundant **All cards** preset row from the download picker (still available in the range dropdown and **Select all**).
+- **Event Card Graphics** — **Select all** in the download picker toggles off and clears every card when clicked again.
+- **Event Card Graphics** — download picker selection controls use square checkboxes (with checkmark) instead of circular radio-style toggles.
+- **Event Card Graphics** — download picker range dropdown no longer lists duplicate “1–8” and “All cards (1–8)” entries when every card is selected.
+- **Local dev** — document stale `.next` cache recovery (`npm run dev:clean:3847`) for `Cannot find module './873.js'` and similar dev-server chunk errors.
+- **Event Card Graphics** — slideshow preview sizes to the active slide and centers the scaled card; slideshow image column vertically centers the photo when the details column is taller.
+- **Event Card Graphics** — slideshow preview viewport no longer shows a grey band below the card (`min-height` conflict); dots sit below the card on the dark chrome; light grey background only for the empty state.
+- **Event Card Graphics** — slideshow empty-state hint text contrast on the light preview viewport.
+- **App shell sidebar** — active tool link is highlighted again (dark fill on current page); `ShellLink` now forwards `data-active` and other anchor props from the sidebar menu button.
 - **UTM URL Builder** — shareable state uses `window.location` + `history.replaceState` instead of `useSearchParams` / `router.replace` (fixes blank page or stuck “Loading builder…” after dev cache issues).
 - **Event Card Graphics** — ticket stub refactored to one white container with CSS-mask side notches and a dashed divider (replaces split top/bottom SVG shapes that looked disconnected).
 - **Event Card Graphics** — apply card limit **after** filtering to events with images (fixes carousel showing fewer than requested cards).

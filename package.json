@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "bash scripts/dev-local.sh",
     "dev:3847": "next dev -p 3847",
+    "dev:clean:3847": "lsof -ti :3847 | xargs kill -9 2>/dev/null || true; rm -rf .next && next dev -p 3847",
     "dev:local": "bash scripts/dev-local.sh",
     "setup:local-clerk": "bash scripts/setup-local-clerk-hosts.sh",
     "clerk": "bash scripts/clerk.sh",
@@ -23,6 +24,7 @@
     "clsx": "^2.1.1",
     "fast-xml-parser": "^5.0.9",
     "html-to-image": "^1.11.13",
+    "jszip": "^3.10.1",
     "lucide-react": "^1.17.0",
     "next": "^15.5.19",
     "qrcode": "^1.5.4",

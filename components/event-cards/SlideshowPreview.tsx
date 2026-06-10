@@ -1,24 +1,16 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { SLIDESHOW_STYLES } from "@/lib/event-cards/slideshow-styles.mjs";
 import {
-  Bookmark,
-  ChevronLeft,
-  ChevronRight,
-  Heart,
-  MessageCircle,
-  Send,
-} from "lucide-react";
-import { CARD_STYLES } from "@/lib/event-cards/card-styles";
-import {
-  INSTAGRAM_EXPORT_HEIGHT,
-  INSTAGRAM_EXPORT_WIDTH,
+  SLIDESHOW_EXPORT_HEIGHT,
+  SLIDESHOW_EXPORT_WIDTH,
 } from "@/lib/event-cards/constants";
-import { syncTicketLayout } from "@/lib/event-cards/sync-ticket-divider";
 
-const CARD_STYLES_ID = "cw-event-card-styles-v39";
+const SLIDESHOW_STYLES_ID = "cw-slideshow-styles-v1";
 
-type InstagramCarouselPreviewProps = {
+type SlideshowPreviewProps = {
   html: string | null;
   isLoading: boolean;
   previewRef: React.RefObject<HTMLDivElement | null>;
@@ -28,8 +20,8 @@ type InstagramCarouselPreviewProps = {
 };
 
 function buildSlideMarkup(sceneHtml: string) {
-  return `<div class="ig-carousel-slide">
-  <div class="preview-card-wrap ig-carousel-slide-inner">
+  return `<div class="ss-carousel-slide">
+  <div class="preview-card-wrap ss-carousel-slide-inner">
     ${sceneHtml}
     <button type="button" class="card-download">PNG</button>
   </div>
@@ -39,71 +31,113 @@ function buildSlideMarkup(sceneHtml: string) {
 function slidesFromHtml(html: string) {
   const temp = document.createElement("div");
   temp.innerHTML = html;
-  const frames = [...temp.querySelectorAll(".cw-export-frame")];
+  const frames = [...temp.querySelectorAll(".cw-slideshow-frame")];
   return frames.map((frame) => buildSlideMarkup(frame.outerHTML)).filter(Boolean);
 }
 
-function applyPreviewScale(track: HTMLElement | null) {
-  if (!track) return;
+function measureCardHeight(frame: HTMLElement, scale: number) {
+  const card = frame.querySelector<HTMLElement>(".cw-slideshow-card");
+  const source = card ?? frame;
+  return source.offsetHeight * scale;
+}
 
-  track.querySelectorAll<HTMLElement>(".ig-carousel-slide-inner").forEach((inner) => {
-    const frame = inner.querySelector<HTMLElement>(".cw-export-frame");
+type SlideMeasurement = {
+  inner: HTMLElement;
+  frame: HTMLElement;
+  cardHeight: number;
+  offsetX: number;
+};
+
+function measureSlides(track: HTMLElement) {
+  const measurements: SlideMeasurement[] = [];
+
+  track.querySelectorAll<HTMLElement>(".ss-carousel-slide-inner").forEach((inner) => {
+    const frame = inner.querySelector<HTMLElement>(".cw-slideshow-frame");
     if (!frame) return;
 
     const width = inner.clientWidth;
     if (width < 1) return;
 
-    const scale = width / INSTAGRAM_EXPORT_WIDTH;
-    const offsetX = (width - INSTAGRAM_EXPORT_WIDTH * scale) / 2;
+    const scale = width / SLIDESHOW_EXPORT_WIDTH;
+    const offsetX = (width - SLIDESHOW_EXPORT_WIDTH * scale) / 2;
 
     frame.style.position = "absolute";
     frame.style.top = "0";
     frame.style.left = `${offsetX}px`;
     frame.style.transform = `scale(${scale})`;
     frame.style.transformOrigin = "top left";
+
+    const cardHeight = measureCardHeight(frame, scale);
+    measurements.push({ inner, frame, cardHeight, offsetX });
   });
+
+  return measurements;
 }
 
-function slideViewportHeight(slide: HTMLElement | undefined) {
-  if (!slide) return 0;
-  const inner = slide.querySelector<HTMLElement>(".ig-carousel-slide-inner");
-  return inner?.offsetHeight ?? slide.offsetHeight;
+function applyPreviewScale(track: HTMLElement | null, activeIndex = 0) {
+  if (!track) return 280;
+
+  const measurements = measureSlides(track);
+  if (!measurements.length) return 280;
+
+  const activeMeasurement = measurements[activeIndex] ?? measurements[0];
+  const viewportHeight = Math.max(280, activeMeasurement.cardHeight);
+
+  measurements.forEach(({ inner, frame, cardHeight, offsetX }) => {
+    const offsetY = Math.max(0, (viewportHeight - cardHeight) / 2);
+
+    frame.style.left = `${offsetX}px`;
+    frame.style.top = `${offsetY}px`;
+    inner.style.height = `${viewportHeight}px`;
+    inner.style.overflow = "visible";
+  });
+
+  return viewportHeight;
 }
 
-export function InstagramCarouselPreview({
+export function SlideshowPreview({
   html,
   isLoading,
   previewRef,
   onSlideClick,
   activeSlideIndex,
   onActiveSlideIndexChange,
-}: InstagramCarouselPreviewProps) {
+}: SlideshowPreviewProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [slideCount, setSlideCount] = useState(0);
   const trackRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
 
-  const syncSlideLayout = useCallback((track = trackRef.current) => {
-    if (!track) return;
-    syncTicketLayout(track);
-    applyPreviewScale(track);
+  const syncPreview = useCallback(
+    (track = trackRef.current) => {
+      if (!track) return;
 
-    const viewport = viewportRef.current;
-    const slide = track.children[activeIndex] as HTMLElement | undefined;
-    if (viewport && slide) {
-      viewport.style.height = `${slideViewportHeight(slide)}px`;
-    }
-  }, [activeIndex]);
+      const updateViewportHeight = () => {
+        const viewportHeight = applyPreviewScale(track, activeIndex);
+        const viewport = viewportRef.current;
+        if (viewport) {
+          viewport.style.height = `${viewportHeight}px`;
+        }
+      };
+
+      updateViewportHeight();
+      requestAnimationFrame(() => {
+        updateViewportHeight();
+        requestAnimationFrame(updateViewportHeight);
+      });
+    },
+    [activeIndex],
+  );
 
   useEffect(() => {
-    let style = document.getElementById(CARD_STYLES_ID);
+    let style = document.getElementById(SLIDESHOW_STYLES_ID);
     if (!style) {
       style = document.createElement("style");
-      style.id = CARD_STYLES_ID;
+      style.id = SLIDESHOW_STYLES_ID;
       document.head.appendChild(style);
     }
-    style.textContent = CARD_STYLES;
+    style.textContent = SLIDESHOW_STYLES;
   }, []);
 
   useEffect(() => {
@@ -123,59 +157,27 @@ export function InstagramCarouselPreview({
     setActiveIndex(0);
 
     const syncInitial = () => {
-      syncTicketLayout(track);
-      applyPreviewScale(track);
+      const viewportHeight = applyPreviewScale(track, 0);
       const viewport = viewportRef.current;
-      const slide = track.children[0] as HTMLElement | undefined;
-      if (viewport && slide) {
-        viewport.style.height = `${slideViewportHeight(slide)}px`;
+      if (viewport) {
+        viewport.style.height = `${viewportHeight}px`;
       }
     };
     syncInitial();
-    requestAnimationFrame(syncInitial);
     requestAnimationFrame(syncInitial);
 
     const resizeObserver = new ResizeObserver(() => {
       syncInitial();
     });
-    track.querySelectorAll(".ig-carousel-slide-inner").forEach((inner) => {
+    track.querySelectorAll(".ss-carousel-slide-inner").forEach((inner) => {
       resizeObserver.observe(inner);
     });
 
-    track.querySelectorAll<HTMLImageElement>(".cw-export-frame img").forEach((img) => {
+    track.querySelectorAll("img").forEach((img) => {
       if (img.complete) return;
-
-      img.addEventListener(
-        "load",
-        () => {
-          syncTicketLayout(track);
-          syncInitial();
-        },
-        { once: true },
-      );
+      img.addEventListener("load", syncInitial, { once: true });
+      img.addEventListener("error", syncInitial, { once: true });
     });
-
-    const images = track.querySelectorAll("img");
-    let pending = images.length;
-    if (pending === 0) {
-      syncInitial();
-    } else {
-      images.forEach((img) => {
-        if (img.complete) {
-          pending -= 1;
-          if (pending === 0) syncInitial();
-        } else {
-          img.addEventListener("load", () => {
-            pending -= 1;
-            if (pending === 0) syncInitial();
-          });
-          img.addEventListener("error", () => {
-            pending -= 1;
-            if (pending === 0) syncInitial();
-          });
-        }
-      });
-    }
 
     return () => {
       resizeObserver.disconnect();
@@ -183,13 +185,14 @@ export function InstagramCarouselPreview({
   }, [html]);
 
   useEffect(() => {
-    const onResize = () => {
-      syncSlideLayout();
-    };
-
+    const onResize = () => syncPreview();
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
-  }, [syncSlideLayout]);
+  }, [syncPreview]);
+
+  useEffect(() => {
+    syncPreview();
+  }, [activeIndex, slideCount, syncPreview]);
 
   const goTo = useCallback(
     (index: number) => {
@@ -197,22 +200,18 @@ export function InstagramCarouselPreview({
       const nextIndex = ((index % slideCount) + slideCount) % slideCount;
       setActiveIndex(nextIndex);
       onActiveSlideIndexChange?.(nextIndex);
-      requestAnimationFrame(() => syncSlideLayout(trackRef.current));
+      requestAnimationFrame(() => syncPreview(trackRef.current));
     },
-    [slideCount, syncSlideLayout, onActiveSlideIndexChange],
+    [slideCount, syncPreview, onActiveSlideIndexChange],
   );
 
   useEffect(() => {
     if (activeSlideIndex === undefined || slideCount === 0) return;
     if (activeSlideIndex !== activeIndex) {
       setActiveIndex(((activeSlideIndex % slideCount) + slideCount) % slideCount);
-      requestAnimationFrame(() => syncSlideLayout(trackRef.current));
+      requestAnimationFrame(() => syncPreview(trackRef.current));
     }
-  }, [activeSlideIndex, slideCount, activeIndex, syncSlideLayout]);
-
-  useEffect(() => {
-    syncSlideLayout();
-  }, [activeIndex, slideCount, syncSlideLayout]);
+  }, [activeSlideIndex, slideCount, activeIndex, syncPreview]);
 
   const goPrev = useCallback(() => goTo(activeIndex - 1), [activeIndex, goTo]);
   const goNext = useCallback(() => goTo(activeIndex + 1), [activeIndex, goTo]);
@@ -249,95 +248,78 @@ export function InstagramCarouselPreview({
   return (
     <>
       <style>{`
-        .ig-preview {
+        .ss-preview {
           display: flex;
           justify-content: center;
           padding: 20px 12px 24px;
-          background: #f3f4f6;
+          background: #1a1d24;
           border: 1px solid var(--line, #d8d0c4);
           border-radius: 10px;
           min-height: 220px;
         }
 
-        .ig-post {
+        .ss-display {
           width: 100%;
-          max-width: 390px;
-          background: #ffffff;
-          border: 1px solid #dbdbdb;
-          border-radius: 8px;
-          overflow: hidden;
-          box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+          max-width: 960px;
         }
 
-        .ig-post-header {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          padding: 10px 12px;
-          border-bottom: 1px solid #efefef;
-        }
-
-        .ig-post-avatar {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 32px;
-          height: 32px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #f58529, #dd2a7b 55%, #8134af);
-          color: #ffffff;
-          font-size: 11px;
-          font-weight: 700;
-          line-height: 1;
-          letter-spacing: -0.02em;
-        }
-
-        .ig-post-username {
-          font-size: 14px;
+        .ss-display-label {
+          margin: 0 0 10px;
+          font-size: 12px;
           font-weight: 600;
-          color: #262626;
-          line-height: 1;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: rgba(255, 255, 255, 0.55);
         }
 
-        .ig-carousel-viewport {
+        .ss-carousel-viewport {
           position: relative;
-          background: #1e1e24;
+          display: flex;
+          background: transparent;
+          border-radius: 8px;
           overflow: hidden;
           touch-action: pan-y;
           min-height: 0;
+          transition: height 0.2s ease;
         }
 
-        .ig-carousel-track {
+        .ss-carousel-viewport.is-empty {
+          background: #eef0f3;
+          min-height: 220px;
+        }
+
+        .ss-carousel-track {
           display: flex;
-          align-items: flex-start;
+          align-items: stretch;
+          width: 100%;
+          min-height: 100%;
           transition: transform 0.28s ease-out;
           will-change: transform;
         }
 
-        .ig-carousel-slide {
+        .ss-carousel-slide {
           flex: 0 0 100%;
           min-width: 0;
-          align-self: flex-start;
+          align-self: stretch;
         }
 
-        .ig-carousel-slide-inner {
+        .ss-carousel-slide-inner {
           position: relative;
           width: 100%;
-          aspect-ratio: 4 / 5;
           box-sizing: border-box;
-          overflow: hidden;
+          overflow: visible;
         }
 
-        .ig-carousel-slide-inner .cw-export-frame {
-          width: 1080px;
-          height: 1350px;
+        .ss-carousel-slide-inner .cw-slideshow-frame {
+          width: 1920px;
+          height: auto;
           margin: 0;
           box-sizing: border-box;
           transform-origin: top left;
         }
 
-        .ig-carousel-empty,
-        .ig-carousel-loading {
+        .ss-carousel-empty,
+        .ss-carousel-loading {
           position: absolute;
           inset: 0;
           display: flex;
@@ -345,20 +327,24 @@ export function InstagramCarouselPreview({
           justify-content: center;
           padding: 24px;
           text-align: center;
-          font-size: 14px;
+          font-size: 15px;
           line-height: 1.45;
-          color: rgba(255, 255, 255, 0.72);
+          font-weight: 600;
           pointer-events: none;
           z-index: 1;
         }
 
-        .ig-carousel-loading {
+        .ss-carousel-empty {
+          color: #3d4654;
+        }
+
+        .ss-carousel-loading {
           background: rgba(0, 0, 0, 0.35);
           color: #ffffff;
           z-index: 4;
         }
 
-        .ig-carousel-nav {
+        .ss-carousel-nav {
           position: absolute;
           top: 50%;
           transform: translateY(-50%);
@@ -366,8 +352,8 @@ export function InstagramCarouselPreview({
           display: flex;
           align-items: center;
           justify-content: center;
-          width: 30px;
-          height: 30px;
+          width: 34px;
+          height: 34px;
           border: 0;
           border-radius: 50%;
           background: rgba(255, 255, 255, 0.92);
@@ -378,50 +364,46 @@ export function InstagramCarouselPreview({
           transition: opacity 0.15s ease;
         }
 
-        .ig-carousel-viewport:hover .ig-carousel-nav,
-        .ig-carousel-viewport:focus-within .ig-carousel-nav {
+        .ss-carousel-viewport:hover .ss-carousel-nav,
+        .ss-carousel-viewport:focus-within .ss-carousel-nav {
           opacity: 1;
         }
 
-        .ig-carousel-nav--prev {
-          left: 10px;
+        .ss-carousel-nav--prev {
+          left: 12px;
         }
 
-        .ig-carousel-nav--next {
-          right: 10px;
+        .ss-carousel-nav--next {
+          right: 12px;
         }
 
-        .ig-carousel-dots {
-          position: absolute;
-          left: 0;
-          right: 0;
-          bottom: 10px;
+        .ss-carousel-dots {
           display: flex;
           justify-content: center;
-          gap: 5px;
-          z-index: 2;
+          gap: 6px;
+          margin-top: 12px;
           pointer-events: none;
         }
 
-        .ig-carousel-dot {
-          width: 6px;
-          height: 6px;
+        .ss-carousel-dot {
+          width: 7px;
+          height: 7px;
           border-radius: 50%;
-          background: rgba(255, 255, 255, 0.45);
+          background: rgba(255, 255, 255, 0.35);
           transition: transform 0.15s ease, background-color 0.15s ease;
         }
 
-        .ig-carousel-dot.is-active {
-          background: #0095f6;
+        .ss-carousel-dot.is-active {
+          background: rgba(255, 255, 255, 0.9);
           transform: scale(1.15);
         }
 
-        .ig-carousel-counter {
+        .ss-carousel-counter {
           position: absolute;
-          top: 10px;
-          right: 10px;
+          top: 12px;
+          right: 12px;
           z-index: 2;
-          padding: 4px 8px;
+          padding: 5px 10px;
           border-radius: 999px;
           background: rgba(0, 0, 0, 0.55);
           color: #ffffff;
@@ -429,30 +411,6 @@ export function InstagramCarouselPreview({
           font-weight: 600;
           line-height: 1;
           pointer-events: none;
-        }
-
-        .ig-post-actions {
-          display: flex;
-          align-items: center;
-          gap: 14px;
-          padding: 10px 12px 4px;
-          color: #262626;
-        }
-
-        .ig-post-actions svg:last-child {
-          margin-left: auto;
-        }
-
-        .ig-post-caption {
-          padding: 0 12px 12px;
-          font-size: 14px;
-          line-height: 1.45;
-          color: #262626;
-        }
-
-        .ig-post-caption strong {
-          font-weight: 600;
-          margin-right: 6px;
         }
 
         .preview-card-wrap {
@@ -482,32 +440,32 @@ export function InstagramCarouselPreview({
         .preview-card-wrap:focus-within .card-download {
           opacity: 1;
         }
+
+        .ss-carousel-viewport.has-carousel-ui .preview-card-wrap .card-download {
+          top: auto;
+          bottom: 8px;
+        }
       `}</style>
 
-      <div ref={previewRef} className="ig-preview" onClick={onSlideClick}>
-        <article className="ig-post" aria-label="Instagram carousel preview">
-          <header className="ig-post-header">
-            <div className="ig-post-avatar" aria-hidden="true">
-              CW
-            </div>
-            <span className="ig-post-username">creativewaco</span>
-          </header>
+      <div ref={previewRef} className="ss-preview" onClick={onSlideClick}>
+        <div className="ss-display" aria-label="Display slideshow preview">
+          <p className="ss-display-label">Landscape card preview</p>
 
           <div
             ref={viewportRef}
-            className="ig-carousel-viewport"
+            className={`ss-carousel-viewport${slideCount === 0 ? " is-empty" : ""}${showCarouselUi ? " has-carousel-ui" : ""}`}
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
           >
             {slideCount === 0 && !isLoading ? (
-              <div className="ig-carousel-empty">
-                Click Generate cards to fill the carousel.
+              <div className="ss-carousel-empty">
+                Click Generate cards to fill the slideshow.
               </div>
             ) : null}
 
             {isLoading ? (
-              <div className="ig-carousel-loading" aria-live="polite">
-                Building cards…
+              <div className="ss-carousel-loading" aria-live="polite">
+                Building slides…
               </div>
             ) : null}
 
@@ -515,7 +473,7 @@ export function InstagramCarouselPreview({
               <>
                 <button
                   type="button"
-                  className="ig-carousel-nav ig-carousel-nav--prev"
+                  className="ss-carousel-nav ss-carousel-nav--prev"
                   aria-label="Previous slide"
                   onClick={(event) => {
                     event.stopPropagation();
@@ -526,7 +484,7 @@ export function InstagramCarouselPreview({
                 </button>
                 <button
                   type="button"
-                  className="ig-carousel-nav ig-carousel-nav--next"
+                  className="ss-carousel-nav ss-carousel-nav--next"
                   aria-label="Next slide"
                   onClick={(event) => {
                     event.stopPropagation();
@@ -535,52 +493,31 @@ export function InstagramCarouselPreview({
                 >
                   <ChevronRight size={18} strokeWidth={2.25} />
                 </button>
-                <div className="ig-carousel-counter" aria-hidden="true">
+                <div className="ss-carousel-counter" aria-hidden="true">
                   {activeIndex + 1}/{slideCount}
-                </div>
-                <div className="ig-carousel-dots" aria-hidden="true">
-                  {Array.from({ length: slideCount }, (_, index) => (
-                    <span
-                      key={index}
-                      className={`ig-carousel-dot${index === activeIndex ? " is-active" : ""}`}
-                    />
-                  ))}
                 </div>
               </>
             ) : null}
 
             <div
               ref={trackRef}
-              className="ig-carousel-track"
+              className="ss-carousel-track"
               style={{ transform: `translateX(-${activeIndex * 100}%)` }}
             />
           </div>
 
-          <div className="ig-post-actions" aria-hidden="true">
-            <Heart size={22} strokeWidth={1.75} />
-            <MessageCircle size={22} strokeWidth={1.75} />
-            <Send size={22} strokeWidth={1.75} />
-            <Bookmark size={22} strokeWidth={1.75} />
-          </div>
-
-          <p className="ig-post-caption">
-            <strong>creativewaco</strong>
-            Upcoming arts &amp; culture events in Waco
-          </p>
-        </article>
+          {showCarouselUi ? (
+            <div className="ss-carousel-dots" aria-hidden="true">
+              {Array.from({ length: slideCount }, (_, index) => (
+                <span
+                  key={index}
+                  className={`ss-carousel-dot${index === activeIndex ? " is-active" : ""}`}
+                />
+              ))}
+            </div>
+          ) : null}
+        </div>
       </div>
     </>
   );
-}
-
-export function getCardExportPixelRatio(cardEl: HTMLElement) {
-  const frame = cardEl.classList.contains("cw-export-frame")
-    ? cardEl
-    : cardEl.closest<HTMLElement>(".cw-export-frame");
-  if (!frame) return 1;
-
-  const renderedWidth = frame.getBoundingClientRect().width;
-  if (!renderedWidth) return 1;
-
-  return INSTAGRAM_EXPORT_WIDTH / renderedWidth;
 }

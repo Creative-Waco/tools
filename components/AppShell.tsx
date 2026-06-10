@@ -22,13 +22,10 @@ function ShellLink({
   href,
   children = null,
   className,
-}: {
-  href: string;
-  children?: React.ReactNode;
-  className?: string;
-}) {
+  ...props
+}: React.ComponentPropsWithoutRef<"a"> & { href: string }) {
   return (
-    <Link href={href} className={className}>
+    <Link href={href} className={className} {...props}>
       {children}
     </Link>
   );
