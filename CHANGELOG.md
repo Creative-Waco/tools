@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **UTM URL Builder** — **From analytics** panel loads top UTM combinations from GA4 (last 90 days via `GET /api/utm-builder/history/`); **Load** fills the builder; GA4-only sources/mediums/campaigns append to Quick start chips when not in the static lists.
 - **Analytics Dashboard** — Search queries panel: sortable columns (click headers), **Keywords / Pages** toggle, click a keyword to filter landing pages (switches to Pages), click a page to filter keywords (switches to Keywords); filter chips with clear.
-- **Analytics Dashboard** — **User demographics** card in the overview grid: GA4 age brackets, gender, and interests (`brandingInterest`) with coverage % and a note that most visitors are not assigned demographics; interest labels truncate with hover for the full Google category path.
+- **Analytics Dashboard** — **User demographics** card in the overview grid: GA4 age brackets, gender, interests (`brandingInterest`), and **top cities** with coverage % and a note that most visitors are not assigned demographics; interest labels truncate with hover for the full Google category path; city rows show region/country subtitles and hover for share, engagement, new vs returning, top sources, and top landing pages.
 - **Analytics Dashboard** — **Path exploration** redesigned as a single horizontal row: column 1 loads all session-start pages; each selection loads the next column from that path only; **Add step** extends up to 8 columns with horizontal scroll (`mode=landings|next` API).
 - **Analytics Dashboard** — **Sponsorship** program filter for all sponsor/sponsorship pages site-wide (`program=sponsorship`).
 - **Analytics Dashboard** — per-program **season date presets** in the date dropdown (e.g. Last Día de los Muertos season Oct 1–Nov 15, Last concert season May–Sep, Previous calendar year for year-round programs); shareable as `preset=last-season` with `program`.
@@ -38,7 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **UTM URL Builder** — **Quick start** page chips highlight the active destination when the URL matches a shortcut (same active style as channel presets).
 - **UTM URL Builder** — **Quick start** adds **Sources**, **Mediums**, and **Campaigns** chip rows with active highlighting; campaign suggestions match analytics program names.
 - **Analytics Dashboard** — path exploration uses GA4 **funnel reports** so each step counts sessions that followed the full selected path in order; counts narrow as you go deeper. API accepts `pathSteps` JSON array (up to 5 next-page options per step — GA4 limit).
-- **Analytics Dashboard** — Top cities overview card replaced by **User demographics**; per-city hover breakdowns removed. Program insights still show top cities in the “Who’s visiting” panel (lighter GA4 query).
+- **Analytics Dashboard** — standalone **Top cities** overview card merged into **User demographics** (age, gender, interests, and cities in one panel). Program insights still show top cities in the “Who’s visiting” panel (lighter GA4 query). Session cache bumped to `v4` so stale `sessionStorage` without cities is ignored.
 
 ### Removed
 
@@ -46,6 +46,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **UTM URL Builder** — GA4 history entries with identical UTM/landing combos (after placeholder cleanup) are merged so React keys stay unique and session counts are summed correctly.
+- **Analytics Dashboard** — Singapore is excluded from top-city lists (user demographics and program insights); common GA4 noise for this property.
 - **Event Card Graphics** — landscape slideshow and Instagram PNG downloads no longer export blank event images for off-screen carousel slides; card images are preloaded before `html-to-image` export and card templates use eager loading instead of lazy loading.
 - **Analytics Dashboard** — sessions trend tooltip reads top pages from the full daily dataset (not Recharts payload alone) so “Top pages that day” lists paths and view counts; dashboard cache bumped to `v2` so stale sessionStorage without per-day pages is ignored.
 - **Analytics Dashboard** — path exploration no longer expands the page width; horizontal step columns scroll inside a contained area while the rest of the dashboard stays within the viewport. App shell and sidebar inset also clip horizontal overflow so cards below (e.g. Search queries) stay aligned.

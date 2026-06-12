@@ -3,7 +3,7 @@ import type { DateRange } from "react-day-picker";
 
 import type { AnalyticsDashboardData } from "./types";
 
-const CACHE_PREFIX = "cw-analytics-dashboard:v2:";
+const CACHE_PREFIX = "cw-analytics-dashboard:v4:";
 
 type CacheEntry = {
   data: AnalyticsDashboardData;

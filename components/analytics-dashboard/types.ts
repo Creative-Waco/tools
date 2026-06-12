@@ -55,6 +55,30 @@ export type DemographicBreakdown = {
   totalUsers: number;
 };
 
+export type CitySourceRow = {
+  source: string;
+  sessions: number;
+};
+
+export type CityLandingRow = {
+  path: string;
+  sessions: number;
+};
+
+export type TopCityRow = {
+  city: string;
+  country?: string;
+  region?: string;
+  users: number;
+  sessions: number;
+  share: number;
+  engagementRate: number;
+  newUsers: number;
+  returningUsers: number;
+  sources?: CitySourceRow[];
+  landingPages?: CityLandingRow[];
+};
+
 export type UserDemographics = {
   coveragePercent: number;
   knownUsers: number;
@@ -62,6 +86,7 @@ export type UserDemographics = {
   age: DemographicBreakdown;
   gender: DemographicBreakdown;
   interests: DemographicBreakdown;
+  cities: TopCityRow[];
 };
 
 export type SearchQueryRow = {

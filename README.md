@@ -356,7 +356,7 @@ Live **Google Analytics 4** and **Search Console** overview for creativewaco.org
 
 **Data sources**
 
-- **GA4 Data API** — active users, sessions, engagement, bounce rate, daily trends (hover a day for top pages that day — paths wrap in the tooltip; list comes from the full daily dataset), traffic channels (hover a segment or legend row for top sources), **user demographics** (age, gender, interests — modeled by Google for a subset of visitors; shares are among known users only), top pages, referrers, **path exploration** (session-start landing → next page in order; not link-click tracking)
+- **GA4 Data API** — active users, sessions, engagement, bounce rate, daily trends (hover a day for top pages that day — paths wrap in the tooltip; list comes from the full daily dataset), traffic channels (hover a segment or legend row for top sources), **user demographics** (age, gender, interests, and top cities — modeled demographics for a subset of visitors; shares are among known users only; hover a city for share, engagement, sources, and landing pages; Singapore is excluded from city lists as GA4 noise), top pages, referrers, **path exploration** (session-start landing → next page in order; not link-click tracking)
 - **Search Console API** — organic search **queries** and **pages** (clicks, impressions, CTR, position), plus query–page pairs for cross-filtering in the UI. GA4 Organic Search shows volume only; keywords appear as `(not provided)` in GA4.
 
 **Program filters and shareable URLs**

@@ -740,6 +740,7 @@ export function AnalyticsDashboard() {
         <UserDemographicsPanel
           demographics={userDemographics}
           loading={loading}
+          isProgramScope={isProgramScope}
         />
 
         <Card className="md:col-span-2">
