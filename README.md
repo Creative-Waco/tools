@@ -416,7 +416,7 @@ When a program is selected, four **program insight** panels answer:
 | What they're doing | Engagement time, scrolls, form starts/submits, clicks |
 | Where they go next | Next page after a program page (internal navigation) |
 
-A **Search queries** table (Search Console) lists the actual Google keywords driving traffic to those pages. GSC **clicks** count only when someone clicked a Google search result to a program URL; GA4 **organic sessions** also include visitors who landed elsewhere (e.g. homepage) and navigated to program pages, plus Google Discover/News.
+A **Search queries** table (Search Console) lists the actual Google keywords driving traffic to those pages. Rows truncate in the table (hover for the full query); obvious spam strings (`-site:` chains, HTML entity noise, 100+ characters) are filtered out before display. GSC **clicks** count only when someone clicked a Google search result to a program URL; GA4 **organic sessions** also include visitors who landed elsewhere (e.g. homepage) and navigated to program pages, plus Google Discover/News.
 
 GA4 and Search Console report aggregated counts only — not individual identities. Search Console data is typically **2–3 days behind** GA4.
 
