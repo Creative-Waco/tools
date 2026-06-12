@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Analytics Dashboard** — Search queries panel: sortable columns (click headers), **Keywords / Pages** toggle, click a keyword to filter landing pages (switches to Pages), click a page to filter keywords (switches to Keywords); filter chips with clear.
+- **Analytics Dashboard** — **User demographics** card in the overview grid: GA4 age brackets, gender, and interests (`brandingInterest`) with coverage % and a note that most visitors are not assigned demographics; interest labels truncate with hover for the full Google category path.
+- **Analytics Dashboard** — **Path exploration** redesigned as a single horizontal row: column 1 loads all session-start pages; each selection loads the next column from that path only; **Add step** extends up to 8 columns with horizontal scroll (`mode=landings|next` API).
 - **Analytics Dashboard** — **Sponsorship** program filter for all sponsor/sponsorship pages site-wide (`program=sponsorship`).
 - **Analytics Dashboard** — per-program **season date presets** in the date dropdown (e.g. Last Día de los Muertos season Oct 1–Nov 15, Last concert season May–Sep, Previous calendar year for year-round programs); shareable as `preset=last-season` with `program`.
 - **Analytics Dashboard** — official Google product icons (`public/logos/ga4.png`, `public/logos/gsc.png` from Google gstatic) beside section titles for charts, tables, and program insights.
@@ -28,12 +31,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Analytics Dashboard** — **Top cities** card in the overview grid (GA4 `city` dimension with active users and sessions); site-wide and program-scoped.
 - **Analytics Dashboard** — city rows show region/country subtitles; hover for share, engagement rate, new vs returning, top sources, and top landing pages per city.
 
+### Changed
+
+- **Analytics Dashboard** — Top cities overview card replaced by **User demographics**; per-city hover breakdowns removed. Program insights still show top cities in the “Who’s visiting” panel (lighter GA4 query).
+
 ### Removed
 
-- **Analytics Dashboard** — visitor journeys flow UI and related GA4 site-wide journey queries.
+- **Analytics Dashboard** — earlier five-column visitor journeys cards (replaced by Path exploration tree graph).
 
 ### Fixed
 
+- **Event Card Graphics** — landscape slideshow and Instagram PNG downloads no longer export blank event images for off-screen carousel slides; card images are preloaded before `html-to-image` export and card templates use eager loading instead of lazy loading.
+- **Analytics Dashboard** — path exploration no longer expands the page width; horizontal step columns scroll inside a contained area while the rest of the dashboard stays within the viewport. App shell and sidebar inset also clip horizontal overflow so cards below (e.g. Search queries) stay aligned.
 - **Analytics Dashboard** — Día de los Muertos program filter now matches the current `/dia-de-los-muertos` URL (and legacy `/diadelosmuertos` paths); the old filter only matched the no-hyphen slug, so recent date ranges showed zero sessions despite traffic in GA4.
 - **Analytics Dashboard** — sessions trend tooltip no longer clips session counts or page view numbers; reads the metric from row data when Recharts omits `value`, truncates long paths, and scrolls the top-pages list.
 - **Analytics Dashboard** — program trend charts (e.g. Events) no longer look zoomed in: Y-axis always starts at 0 and chart height stays fixed like the all-site view.

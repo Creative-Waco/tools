@@ -348,8 +348,10 @@ export function ApplicationShell2({
             <span className="font-semibold">{data.logo.title}</span>
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
-          <div className="min-h-0 flex-1 rounded-xl bg-muted/50 md:min-h-min">{children}</div>
+        <div className="flex min-w-0 flex-1 flex-col gap-4 p-4 md:p-6">
+          <div className="min-h-0 min-w-0 flex-1 overflow-x-hidden rounded-xl bg-muted/50 md:min-h-min">
+            {children}
+          </div>
         </div>
       </SidebarInset>
     </SidebarProvider>

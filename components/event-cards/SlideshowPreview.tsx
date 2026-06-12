@@ -174,6 +174,7 @@ export function SlideshowPreview({
     });
 
     track.querySelectorAll("img").forEach((img) => {
+      img.loading = "eager";
       if (img.complete) return;
       img.addEventListener("load", syncInitial, { once: true });
       img.addEventListener("error", syncInitial, { once: true });

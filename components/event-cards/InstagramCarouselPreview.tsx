@@ -156,6 +156,9 @@ export function InstagramCarouselPreview({
     });
 
     const images = track.querySelectorAll("img");
+    images.forEach((img) => {
+      img.loading = "eager";
+    });
     let pending = images.length;
     if (pending === 0) {
       syncInitial();

@@ -322,7 +322,7 @@ Public-facing dashboard for [Creative Spark](https://creativewaco.org/spark) mem
 4. Choose an **output format** (tabs above **Generate cards**), then generate:
    - **Instagram carousel** — ticket-style portrait cards in a **1080×1350** (4:5) frame with blurred photo backdrop, dashed notches, and Creative Waco branding below the ticket
    - **Display slideshow** — horizontal landscape cards (**1920px** wide; height follows content) for TVs, projectors, and venue displays — card only (no backdrop or footer logo), event image on the left (full width, natural height, white panel, rounded corners), details on the right
-5. Previews match the selected format (carousel or landscape slideshow). Below the preview, click **Download cards…** to open the **Select cards** panel: range summary dropdown, **Current card** and **Select all** presets, per-card thumbnails with checkboxes (click a row to jump the preview), then **Done** for one PNG or a ZIP. Per-slide PNG buttons remain in the preview; **Copy HTML** stays in the preview header.
+5. Previews match the selected format (carousel or landscape slideshow). Below the preview, click **Download cards…** to open the **Select cards** panel: range summary dropdown, **Current card** and **Select all** presets, per-card thumbnails with checkboxes (click a row to jump the preview), then **Done** for one PNG or a ZIP. Per-slide PNG buttons remain in the preview; **Copy HTML** stays in the preview header. PNG export preloads each card’s images before capture so off-screen slides in the carousel still include event artwork.
 
 Pass `format: "instagram"` or `format: "slideshow"` to `POST /api/event-cards/generate/`. Each format caches its own preview HTML when you switch tabs.
 
@@ -356,8 +356,8 @@ Live **Google Analytics 4** and **Search Console** overview for creativewaco.org
 
 **Data sources**
 
-- **GA4 Data API** — active users, sessions, engagement, bounce rate, daily trends (hover a day for top pages that day), traffic channels (hover a segment or legend row for top sources), top cities (hover a row for location, share, engagement, sources, and landing pages), top pages, referrers
-- **Search Console API** — organic search **queries** (clicks, impressions, CTR, position). GA4 Organic Search shows volume only; keywords appear as `(not provided)` in GA4.
+- **GA4 Data API** — active users, sessions, engagement, bounce rate, daily trends (hover a day for top pages that day), traffic channels (hover a segment or legend row for top sources), **user demographics** (age, gender, interests — modeled by Google for a subset of visitors; shares are among known users only), top pages, referrers, **path exploration** (tree graph of landing → next-page flows; click a node to re-root)
+- **Search Console API** — organic search **queries** and **pages** (clicks, impressions, CTR, position), plus query–page pairs for cross-filtering in the UI. GA4 Organic Search shows volume only; keywords appear as `(not provided)` in GA4.
 
 **Program filters and shareable URLs**
 
@@ -404,7 +404,9 @@ When a program is selected, four **program insight** panels answer:
 | What they're doing | Engagement time, scrolls, form starts/submits, clicks |
 | Where they go next | Next page after a program page (internal navigation) |
 
-A **Search queries** table (Search Console) lists the actual Google keywords driving traffic to those pages. Rows truncate in the table (hover for the full query); obvious spam strings (`-site:` chains, HTML entity noise, 100+ characters) are filtered out before display. GSC **clicks** count only when someone clicked a Google search result to a program URL; GA4 **organic sessions** also include visitors who landed elsewhere (e.g. homepage) and navigated to program pages, plus Google Discover/News.
+**Path exploration** (below KPI cards) works like GA4: column 1 lists all session-start landing pages; selecting one loads the next column for that page only. Each later step depends on the previous selection. Columns scroll horizontally in a single row; use **Add step** to extend the path (up to 8 columns).
+
+A **Search queries** table (Search Console) lists the actual Google keywords driving traffic to those pages, with a **Pages** view for top landing URLs from Google Search. Click column headers to sort; click a keyword to see which pages received those clicks, or click a page to see its queries. Rows truncate in the table (hover for the full text); obvious spam strings (`-site:` chains, HTML entity noise, 100+ characters) are filtered out before display. GSC **clicks** count only when someone clicked a Google search result to a program URL; GA4 **organic sessions** also include visitors who landed elsewhere (e.g. homepage) and navigated to program pages, plus Google Discover/News.
 
 GA4 and Search Console report aggregated counts only — not individual identities. Search Console data is typically **2–3 days behind** GA4.
 
@@ -438,7 +440,14 @@ Until Search Console is connected, the dashboard shows in-panel setup instructio
 
 `GET /api/analytics-dashboard/?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&program=creative-spark`
 
-Returns KPIs (with period-over-period change), daily series, channels, top cities, top pages, referrers, `programInsights` (when `program` is set), and `searchConsole` (queries + totals or setup error). Query params:
+Returns KPIs (with period-over-period change), daily series, channels, `userDemographics` (age, gender, interests with coverage %), top pages, referrers, `programInsights` (when `program` is set), and `searchConsole` (queries + totals or setup error).
+
+`GET /api/analytics-dashboard/path-exploration/?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&mode=landings|next&fromPath=/events&program=events`
+
+- `mode=landings` — all session-start landing pages (column 1)
+- `mode=next&fromPath=/…` — next pages after the selected path (subsequent columns)
+
+Main dashboard query params:
 
 | Param | Default | Values |
 |-------|---------|--------|

@@ -6,12 +6,12 @@ import { PageHero } from "@/components/PageHero";
 export const metadata: Metadata = {
   title: "Analytics Dashboard · Creative Waco Tools",
   description:
-    "GA4 traffic overview for creativewaco.org — sessions, channels, top pages, and referrers.",
+    "GA4 traffic overview for creativewaco.org — sessions, channels, top pages, path exploration, and referrers.",
 };
 
 export default function AnalyticsDashboardPage() {
   return (
-    <main className="page min-w-0">
+    <main className="page min-w-0 max-w-full overflow-x-hidden">
       <PageHero
         eyebrow="Creative Waco tooling"
         title="Analytics Dashboard"

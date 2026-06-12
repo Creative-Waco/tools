@@ -42,28 +42,26 @@ export type TopReferrerRow = {
   sessions: number;
 };
 
-export type CitySourceRow = {
-  source: string;
-  sessions: number;
-};
-
-export type CityLandingRow = {
-  path: string;
-  sessions: number;
-};
-
-export type TopCityRow = {
-  city: string;
-  country?: string;
-  region?: string;
+export type DemographicRow = {
+  label: string;
+  fullLabel?: string;
   users: number;
-  sessions: number;
   share: number;
-  engagementRate: number;
-  newUsers: number;
-  returningUsers: number;
-  sources?: CitySourceRow[];
-  landingPages?: CityLandingRow[];
+};
+
+export type DemographicBreakdown = {
+  rows: DemographicRow[];
+  knownUsers: number;
+  totalUsers: number;
+};
+
+export type UserDemographics = {
+  coveragePercent: number;
+  knownUsers: number;
+  totalUsers: number;
+  age: DemographicBreakdown;
+  gender: DemographicBreakdown;
+  interests: DemographicBreakdown;
 };
 
 export type SearchQueryRow = {
@@ -74,11 +72,25 @@ export type SearchQueryRow = {
   position: number;
 };
 
+export type SearchPageRow = {
+  page: string;
+  path: string;
+  clicks: number;
+  impressions: number;
+  ctr: number;
+  position: number;
+};
+
+export type SearchQueryPageRow = SearchQueryRow &
+  Pick<SearchPageRow, "page" | "path">;
+
 export type SearchConsoleData = {
   available: boolean;
   siteUrl: string | null;
   programId: string;
   queries: SearchQueryRow[];
+  pages: SearchPageRow[];
+  pairs: SearchQueryPageRow[];
   totals: {
     clicks: number;
     impressions: number;
@@ -168,7 +180,7 @@ export type AnalyticsDashboardData = {
   channelConfig: Record<string, { label: string; color: string }>;
   topPages: TopPageRow[];
   topReferrers: TopReferrerRow[];
-  topCities: TopCityRow[];
+  userDemographics: UserDemographics | null;
   programInsights: ProgramInsights | null;
   searchConsole: SearchConsoleData;
   fetchedAt: string;

@@ -73,6 +73,49 @@ export function parseCardItemsFromHtml(html: string, frameSelector: string) {
   );
 }
 
+function preloadDomImage(img: HTMLImageElement): Promise<void> {
+  if (img.complete && img.naturalWidth > 0) {
+    return Promise.resolve();
+  }
+
+  const src = img.currentSrc || img.src;
+  if (!src) {
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve, reject) => {
+    const loader = new Image();
+    loader.crossOrigin = img.crossOrigin || "anonymous";
+
+    loader.onload = () => {
+      if (img.complete && img.naturalWidth > 0) {
+        resolve();
+        return;
+      }
+
+      img.addEventListener("load", () => resolve(), { once: true });
+      img.addEventListener(
+        "error",
+        () => reject(new Error(`Failed to load image: ${src}`)),
+        { once: true },
+      );
+      img.loading = "eager";
+      img.src = loader.src;
+    };
+
+    loader.onerror = () => {
+      reject(new Error(`Failed to load image: ${src}`));
+    };
+
+    loader.src = src;
+  });
+}
+
+async function waitForCardImages(cardEl: HTMLElement) {
+  const images = [...cardEl.querySelectorAll<HTMLImageElement>("img")];
+  await Promise.all(images.map(preloadDomImage));
+}
+
 export function formatSelectionSummary(selected: Set<number>, total: number) {
   if (total === 0 || selected.size === 0) return "None";
   if (selected.size === total) return `1–${total}`;
@@ -109,6 +152,8 @@ export async function cardElementToPngBlob(
     cardEl.style.top = "0";
     cardEl.style.left = "0";
     cardEl.style.transform = "none";
+
+    await waitForCardImages(cardEl);
 
     const exportHeight =
       format === "slideshow"

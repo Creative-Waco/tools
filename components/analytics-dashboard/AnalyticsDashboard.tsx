@@ -54,14 +54,15 @@ import { cn } from "@/lib/cn";
 import { StatusLine } from "@/components/StatusLine";
 import { DataSourceTitle } from "./DataSourceLogos";
 import { ProgramInsights } from "./ProgramInsights";
+import { UserDemographicsPanel } from "./UserDemographics";
 import { PROGRAM_SEASON_SLUG } from "./program-seasons";
 import { PROGRAM_OPTIONS } from "./programs";
+import { PathExploration } from "./PathExploration";
 import { SearchQueriesPanel } from "./SearchQueriesPanel";
 import type {
   AnalyticsDashboardData,
   ChannelRow,
   DailyRow,
-  TopCityRow,
 } from "./types";
 import { buildDashboardCacheKey, readCachedDashboard } from "./cache";
 import {
@@ -197,99 +198,6 @@ function ChannelChartTooltip({
   return (
     <div className="rounded-lg border border-border/50 bg-background px-2.5 py-2 shadow-xl">
       <ChannelBreakdownContent channel={channel} />
-    </div>
-  );
-}
-
-function formatCityLocation(city: TopCityRow) {
-  const parts: string[] = [];
-  if (city.region) parts.push(city.region);
-  if (city.country && city.country !== city.city) parts.push(city.country);
-  return parts.join(", ");
-}
-
-function CityBreakdownContent({ city }: { city: TopCityRow }) {
-  const location = formatCityLocation(city);
-  const sources = city.sources ?? [];
-  const landingPages = city.landingPages ?? [];
-  const totalUsers = city.newUsers + city.returningUsers;
-
-  return (
-    <div className="grid min-w-52 max-w-xs gap-2 text-xs">
-      <div>
-        <div className="font-medium">{city.city}</div>
-        {location ? (
-          <div className="text-muted-foreground">{location}</div>
-        ) : null}
-      </div>
-      <div className="flex items-center justify-between gap-4">
-        <span className="text-muted-foreground">Users</span>
-        <span className="font-mono font-medium tabular-nums">
-          {city.users.toLocaleString()}
-        </span>
-      </div>
-      <div className="flex items-center justify-between gap-4">
-        <span className="text-muted-foreground">Sessions</span>
-        <span className="font-mono font-medium tabular-nums">
-          {city.sessions.toLocaleString()}
-        </span>
-      </div>
-      <div className="flex items-center justify-between gap-4">
-        <span className="text-muted-foreground">Share</span>
-        <span className="font-mono font-medium tabular-nums">{city.share}%</span>
-      </div>
-      <div className="flex items-center justify-between gap-4">
-        <span className="text-muted-foreground">Engagement</span>
-        <span className="font-mono font-medium tabular-nums">
-          {city.engagementRate}%
-        </span>
-      </div>
-      {totalUsers > 0 ? (
-        <div className="flex items-center justify-between gap-4">
-          <span className="text-muted-foreground">New vs returning</span>
-          <span className="font-mono font-medium tabular-nums">
-            {Math.round((city.newUsers / totalUsers) * 100)}% new
-          </span>
-        </div>
-      ) : null}
-      {sources.length > 0 ? (
-        <div className="space-y-1 border-t border-border/50 pt-2">
-          <p className="text-muted-foreground">Top sources</p>
-          <ul className="space-y-1">
-            {sources.map((source) => (
-              <li
-                key={source.source}
-                className="flex items-start justify-between gap-3"
-              >
-                <span className="min-w-0 truncate font-medium">
-                  {source.source}
-                </span>
-                <span className="shrink-0 font-mono tabular-nums text-muted-foreground">
-                  {source.sessions.toLocaleString()}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
-      {landingPages.length > 0 ? (
-        <div className="space-y-1 border-t border-border/50 pt-2">
-          <p className="text-muted-foreground">Top landing pages</p>
-          <ul className="space-y-1">
-            {landingPages.map((page) => (
-              <li
-                key={page.path}
-                className="flex items-start justify-between gap-3"
-              >
-                <span className="min-w-0 truncate font-medium">{page.path}</span>
-                <span className="shrink-0 font-mono tabular-nums text-muted-foreground">
-                  {page.sessions.toLocaleString()}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
     </div>
   );
 }
@@ -527,7 +435,7 @@ export function AnalyticsDashboard() {
   const channels = data?.channels ?? [];
   const topPages = data?.topPages ?? [];
   const topReferrers = data?.topReferrers ?? [];
-  const topCities = data?.topCities ?? [];
+  const userDemographics = data?.userDemographics ?? null;
 
   const trendData = isProgramScope
     ? daily.map((row) => ({
@@ -541,7 +449,7 @@ export function AnalyticsDashboard() {
   const trendKey = isProgramScope ? "pageViews" : "sessions";
 
   return (
-    <div className="min-w-0 space-y-6">
+    <div className="min-w-0 max-w-full space-y-6 overflow-x-hidden">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-wrap items-center gap-2">
           <Select
@@ -624,7 +532,7 @@ export function AnalyticsDashboard() {
         </p>
       ) : null}
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid min-w-0 grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-4">
         {loading ? (
           <>
             <KpiSkeleton />
@@ -713,7 +621,16 @@ export function AnalyticsDashboard() {
             </Card>
           </>
         )}
+      </div>
 
+      <PathExploration
+        dateRange={dateRange}
+        programId={programId}
+        programName={data?.program.name ?? selectedProgram?.name ?? "Site"}
+        isProgramScope={isProgramScope}
+      />
+
+      <div className="grid min-w-0 grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card className="md:col-span-2">
           <CardHeader className="pb-2">
             <CardTitle className="text-base">
@@ -797,71 +714,10 @@ export function AnalyticsDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="md:col-span-2">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">
-              <DataSourceTitle source="ga4">
-                {isProgramScope ? "Top visitor cities" : "Top cities"}
-              </DataSourceTitle>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="space-y-3">
-                {Array.from({ length: 5 }).map((_, index) => (
-                  <Skeleton key={index} className="h-5 w-full" />
-                ))}
-              </div>
-            ) : topCities.length > 0 ? (
-              <div className="space-y-3">
-                {topCities.map((city, index) => {
-                  const location = formatCityLocation(city);
-
-                  return (
-                    <Tooltip key={`${city.city}-${index}`}>
-                      <TooltipTrigger
-                        render={
-                          <div className="flex cursor-default items-center justify-between rounded-md px-1 py-0.5 transition-colors hover:bg-muted/60" />
-                        }
-                      >
-                        <div className="flex min-w-0 items-center gap-3">
-                          <span className="w-5 shrink-0 text-center text-sm text-muted-foreground">
-                            {index + 1}
-                          </span>
-                          <div className="min-w-0">
-                            <span className="block truncate text-sm font-medium">
-                              {city.city}
-                            </span>
-                            {location ? (
-                              <span className="block truncate text-xs text-muted-foreground">
-                                {location}
-                              </span>
-                            ) : null}
-                          </div>
-                        </div>
-                        <Badge variant="secondary" className="shrink-0">
-                          {city.users.toLocaleString()} users ·{" "}
-                          {city.sessions.toLocaleString()} sessions
-                        </Badge>
-                      </TooltipTrigger>
-                      <TooltipContent
-                        side="left"
-                        align="start"
-                        className="border border-border/50 bg-background px-2.5 py-2 text-foreground shadow-xl"
-                      >
-                        <CityBreakdownContent city={city} />
-                      </TooltipContent>
-                    </Tooltip>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                No city data in this range.
-              </p>
-            )}
-          </CardContent>
-        </Card>
+        <UserDemographicsPanel
+          demographics={userDemographics}
+          loading={loading}
+        />
 
         <Card className="md:col-span-2">
           <CardHeader className="pb-2">
