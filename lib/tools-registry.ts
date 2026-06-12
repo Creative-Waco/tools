@@ -1,4 +1,11 @@
-export type ToolTag = "Newsletter" | "Social" | "Membership" | "Marketing";
+export type ToolTag =
+  | "Newsletter"
+  | "Social"
+  | "Membership"
+  | "Marketing"
+  | "Analytics";
+
+export type ToolKind = "tool" | "dashboard";
 
 export type Tool = {
   id: string;
@@ -6,6 +13,7 @@ export type Tool = {
   path: string;
   description: string;
   tag: ToolTag;
+  kind: ToolKind;
 };
 
 export const TOOLS: Tool[] = [
@@ -16,6 +24,7 @@ export const TOOLS: Tool[] = [
     description:
       "Turn an events RSS feed into HubSpot-ready HTML with dates, images, and ticket links.",
     tag: "Newsletter",
+    kind: "tool",
   },
   {
     id: "event-cards",
@@ -24,6 +33,7 @@ export const TOOLS: Tool[] = [
     description:
       "Ticket-style Instagram cards (1080×1350, 4:5 export) from the events RSS feed.",
     tag: "Social",
+    kind: "tool",
   },
   {
     id: "sparks-dashboard",
@@ -32,6 +42,7 @@ export const TOOLS: Tool[] = [
     description:
       "Track Creative Spark membership growth, tier mix, and member event momentum.",
     tag: "Membership",
+    kind: "dashboard",
   },
   {
     id: "utm-builder",
@@ -40,5 +51,18 @@ export const TOOLS: Tool[] = [
     description:
       "Build campaign-tagged links with UTM parameters for newsletters, social, and paid ads.",
     tag: "Marketing",
+    kind: "tool",
+  },
+  {
+    id: "analytics-dashboard",
+    name: "Analytics Dashboard",
+    path: "/analytics-dashboard/",
+    description:
+      "GA4 overview for creativewaco.org — sessions, channels, top pages, and referrers.",
+    tag: "Analytics",
+    kind: "dashboard",
   },
 ];
+
+export const DASHBOARDS = TOOLS.filter((tool) => tool.kind === "dashboard");
+export const UTILITY_TOOLS = TOOLS.filter((tool) => tool.kind === "tool");

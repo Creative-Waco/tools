@@ -9,15 +9,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Analytics Dashboard** — official Google product icons (`public/logos/ga4.png`, `public/logos/gsc.png` from Google gstatic) beside section titles for charts, tables, and program insights.
+- **Analytics Dashboard** — traffic channels pie chart and legend tooltips show session count, share, and top sources per channel (GA4 `sessionDefaultChannelGroup` + `sessionSource` breakdown).
+- **Analytics Dashboard** — sessions/page-views trend chart tooltip shows the full date, daily total, and top pages viewed that day (GA4 `date` + `pagePath` breakdown).
+- **Analytics Dashboard** at `/analytics-dashboard/` — GA4 site overview (Shadcnblocks **chart-group14**, `@google-analytics/data`, `recharts`) with date presets, KPI cards, sessions/page-views trend, traffic channels, top pages, and referrers; **Analytics** sidebar tag in `lib/tools-registry.ts`.
+- **Analytics Dashboard** — **program filters** (Creative Spark, Events, Levitt, Día de los Muertos, Artprenticeship, Waco Wonderland) with scoped KPIs and four GA4 insight panels (who visits, how they find it, what they do, where they go next); `program` query param on `GET /api/analytics-dashboard/`.
+- **Analytics Dashboard** — **Google Search Console** integration for organic search queries (clicks, impressions, CTR, position), scoped to program page paths; in-dashboard setup instructions when API access is missing; `googleapis` dependency.
+- **Analytics Dashboard** — local credential auto-load from `~/.config/creativewaco/` (`ga4-service-account.json`, `ga4-property-id.txt`).
 - **Event Card Graphics** — selective PNG download with checkboxes; one selection downloads a single PNG, multiple selections download a ZIP (`jszip`).
 - **Event Card Graphics** — **Display slideshow** output format: landscape cards at **1920px** width (variable height), image-left/details-right layout, format selector above **Generate cards**, and `format` param on `POST /api/event-cards/generate/` (`instagram` | `slideshow`).
 - **Event Card Graphics** — optional **date range** filter (start/end) on the generate form; events are sorted within the selected range (default: upcoming from today).
 - **Event Card Graphics** — **quick date range** presets (next 1/2/4 weeks, 2/6 months) plus **Month in feed** selector populated from the RSS feed (`POST /api/event-cards/months/`).
 - **UTM URL Builder** at `/utm-builder/` — client-side campaign link builder with channel presets (Instagram, Facebook, newsletter, Google Ads, print/QR, partner), destination shortcuts, campaign slug helper, content variant links, recent campaigns (`localStorage`), shareable URL state, color-coded URL preview, and Print/QR downloadable QR code (`qrcode`).
 - **UTM URL Builder** — copy full URL, query string only, or path+query for HubSpot/email; auto-parse tagged URLs on paste; field help tooltips; **⌘⇧C** / **Ctrl+Shift+C** copy shortcut; **Marketing** sidebar tag with link icon in `lib/tools-registry.ts`.
+- **Analytics Dashboard** — shareable URL params for program and date filters (`?program=creative-spark&preset=last-30-days` or `startDate`/`endDate`); session-scoped cache avoids refetching GA4/GSC on page refresh until **Refresh** is clicked.
+- **Analytics Dashboard** — **Top cities** card in the overview grid (GA4 `city` dimension with active users and sessions); site-wide and program-scoped.
+- **Analytics Dashboard** — city rows show region/country subtitles; hover for share, engagement rate, new vs returning, top sources, and top landing pages per city.
+
+### Fixed
+
+- **Analytics Dashboard** — sessions trend tooltip no longer clips session counts or page view numbers; reads the metric from row data when Recharts omits `value`, truncates long paths, and scrolls the top-pages list.
+- **Analytics Dashboard** — program trend charts (e.g. Events) no longer look zoomed in: Y-axis always starts at 0 and chart height stays fixed like the all-site view.
+- **Analytics Dashboard** — Search queries table uses fixed column widths and truncates long keywords (hover for full text); filters spammy GSC rows (`-site:` chains, HTML entity noise, 100+ chars).
+- **Analytics Dashboard** — Search Console program filters no longer send unsupported `groupType: "or"`; multiple page paths are combined with a single `includingRegex` filter (GSC only supports `"and"` within a filter group).
+- **Analytics Dashboard** — Search Console click/impression totals now come from an aggregate query instead of summing only the top 15 keyword rows (which undercounted totals).
 
 ### Changed
 
+- **App shell** — sidebar splits **Tools** (utilities + All tools) and **Dashboards** (Creative Spark, Analytics) via `kind` on `lib/tools-registry.ts`.
 - **Event Card Graphics** — output format tabs (Instagram / Display slideshow) moved to the left panel, directly above **Generate cards**.
 - **Event Card Graphics** — **Download cards…** trigger sits below the preview (primary button style); collapsible **Select cards** panel opens there with range summary, presets (all / current / select all), thumbnail rows, and a **Done** button (single PNG or ZIP); clicking a row jumps the preview to that card.
 - **Event Card Graphics** — display slideshow typography scaled up for venue readability (title **88px**, date pill **48px**, venue **52px**, category **36px** at 1920px export).
@@ -33,6 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Analytics Dashboard** — clearer “Loading GA4 data…” state during slow first fetch; empty traffic-channel guard to avoid chart render errors; document stale `.next` recovery (`npm run dev:clean:3847`) for blank page / 500 errors on `/analytics-dashboard/`; document **unstyled page** recovery when disk is full (`ENOSPC`).
 - **Event Card Graphics** — landscape slideshow preview no longer overlaps the per-slide **PNG** hover button with the slide counter (e.g. **4/8**); PNG moves to the bottom-right when multiple slides are shown.
 - **Event Card Graphics** — removed redundant **All cards** preset row from the download picker (still available in the range dropdown and **Select all**).
 - **Event Card Graphics** — **Select all** in the download picker toggles off and clears every card when clicked again.

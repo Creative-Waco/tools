@@ -8,8 +8,14 @@ Internal tools for Creative Waco, hosted at **https://tools.creativewaco.org**.
 |------|-----|-------------|
 | RSS Email HTML Generator | [/rss-email/](https://tools.creativewaco.org/rss-email/) | RSS feed → HubSpot-ready event email HTML |
 | Event Card Graphics | [/event-cards/](https://tools.creativewaco.org/event-cards/) | Instagram carousel cards (1080×1350, 4:5) or landscape display slideshow cards (1920px wide) from the events RSS feed |
-| Creative Spark Dashboard | [/sparks-dashboard/](https://tools.creativewaco.org/sparks-dashboard/) | Live Spark membership + event pipeline from Givebutter and Asana |
 | UTM URL Builder | [/utm-builder/](https://tools.creativewaco.org/utm-builder/) | Build campaign-tagged links with UTM parameters for analytics |
+
+## Dashboards
+
+| Dashboard | URL | Description |
+|-----------|-----|-------------|
+| Creative Spark Dashboard | [/sparks-dashboard/](https://tools.creativewaco.org/sparks-dashboard/) | Live Spark membership + event pipeline from Givebutter and Asana |
+| Analytics Dashboard | [/analytics-dashboard/](https://tools.creativewaco.org/analytics-dashboard/) | GA4 + Search Console — site and program analytics, organic keywords, traffic channels |
 
 ## Architecture
 
@@ -17,13 +23,13 @@ Next.js 15 App Router app deployed on Vercel at **https://tools.creativewaco.org
 
 | Layer | Location |
 |-------|----------|
-| Pages | `app/` — hub, `/rss-email/`, `/event-cards/`, `/sparks-dashboard/`, `/utm-builder/` |
+| Pages | `app/` — hub, `/rss-email/`, `/event-cards/`, `/sparks-dashboard/`, `/utm-builder/`, `/analytics-dashboard/` |
 | API | `app/api/` — Route Handlers wrapping `lib/` |
-| App shell | `components/AppShell.tsx` + `@shadcnblocks/application-shell2` — inset collapsible sidebar; all tools under one **Tools** group from `lib/tools-registry.ts` |
+| App shell | `components/AppShell.tsx` + `@shadcnblocks/application-shell2` — inset collapsible sidebar; **Tools** and **Dashboards** groups from `lib/tools-registry.ts` (`kind: "tool"` \| `"dashboard"`) |
 | UI components | `components/` — shadcn/ui primitives, shared layout, per-tool React clients |
-| Backend logic | `lib/` — RSS generation, event cards, UTM URL builder, Givebutter/Asana dashboard |
+| Backend logic | `lib/` — RSS generation, event cards, UTM URL builder, Givebutter/Asana dashboard, GA4/Search Console analytics |
 
-Navigation is provided by the Application Shell 2 layout (inset sidebar with icon collapse). The sidebar lists **All tools** plus every registry entry under a single **Tools** group; the current page is highlighted with a dark active state (visible in both expanded and collapsed icon mode). The Creative Waco branding block at the top is display-only (use **All tools** or **⌘B** / **Ctrl+B** to collapse the sidebar). Collapsed vs expanded state is remembered for 7 days in a browser cookie. The hub at `/` and each tool page render inside the shell's main content area.
+Navigation is provided by the Application Shell 2 layout (inset sidebar with icon collapse). The sidebar has a **Tools** group (**All tools** plus utilities) and a **Dashboards** group (Creative Spark, Analytics); the current page is highlighted with a dark active state (visible in both expanded and collapsed icon mode). The Creative Waco branding block at the top is display-only (use **All tools** or **⌘B** / **Ctrl+B** to collapse the sidebar). Collapsed vs expanded state is remembered for 7 days in a browser cookie. The hub at `/` and each tool page render inside the shell's main content area.
 
 Favicon and Apple touch icon match [creativewaco.org](https://creativewaco.org/) (`app/icon.png`, `app/apple-icon.png`).
 
@@ -227,10 +233,11 @@ Local file auto-load does **not** run on Vercel. Set at minimum:
 | `GIVEBUTTER_ACCOUNT_ID` | Numeric ID from dashboard URL (`145191` for Creative Waco) — required for member links |
 | `ASANA_ACCESS_TOKEN` | Current OAuth access token |
 | `ASANA_REFRESH_TOKEN` | From `Workspace/asana/.asana_token.json` after running `scripts/refresh-asana-oauth.mjs` — keeps Asana working when the access token expires |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Creative Waco Clerk publishable key |
-| `CLERK_SECRET_KEY` | Creative Waco Clerk secret key |
+| `GA4_PROPERTY_ID` | Numeric GA4 property ID (`306499072` for creativewaco.org) |
+| `GA4_SERVICE_ACCOUNT_JSON` | Service account JSON with GA4 **Viewer** (same account as Search Console reader) |
+| `GSC_SITE_URL` | Optional Search Console property URL (defaults to `sc-domain:creativewaco.org`) |
 
-Optional overrides match the table above (`ASANA_SPARKS_PROJECT_GID`, campaign/tier aliases, etc.).
+Optional overrides match the Spark Dashboard table above (`ASANA_SPARKS_PROJECT_GID`, campaign/tier aliases, etc.).
 
 Example local setup:
 
@@ -263,6 +270,7 @@ ASANA_OAUTH_REDIRECT_URI="http://localhost:3334/oauth/callback" node scripts/ref
 | `GET` | `/api/health/` | Health check |
 | `GET` | `/api/tools/` | Tool registry JSON |
 | `GET` | `/api/sparks-dashboard/` | Dashboard data (`period`, `membershipType`, optional `refresh=1`) |
+| `GET` | `/api/analytics-dashboard/` | GA4 + Search Console (`startDate`, `endDate`, optional `program`) |
 | `POST` | `/api/generate/` | RSS → HubSpot email HTML |
 | `POST` | `/api/event-cards/generate/` | RSS → Instagram-width event card HTML |
 | `POST` | `/api/event-cards/months/` | RSS → months with events (for month picker) |
@@ -342,6 +350,96 @@ Grid output includes a `<style>` block with a `@media` query so columns stack on
 - Without enrichment, the tool falls back to RSS publish dates and only includes a Learn more button.
 - Re-run Generate any time you need fresh HTML for a newsletter send.
 
+## Analytics Dashboard
+
+Live **Google Analytics 4** and **Search Console** overview for creativewaco.org at `/analytics-dashboard/`. Built on Shadcnblocks **chart-group14** (recharts KPI cards, area chart, channel donut, date presets). Official Google product icons (`public/logos/ga4.png`, `public/logos/gsc.png`) appear beside section titles for charts, tables, and program insights.
+
+**Data sources**
+
+- **GA4 Data API** — active users, sessions, engagement, bounce rate, daily trends (hover a day for top pages that day), traffic channels (hover a segment or legend row for top sources), top cities (hover a row for location, share, engagement, sources, and landing pages), top pages, referrers
+- **Search Console API** — organic search **queries** (clicks, impressions, CTR, position). GA4 Organic Search shows volume only; keywords appear as `(not provided)` in GA4.
+
+**Program filters and shareable URLs**
+
+Select a program from the toolbar (default: **All site**). Filter state is synced to the URL and cached in `sessionStorage` for the browser tab, so refresh and back/forward reuse loaded data without another GA4/GSC round-trip. Click **Refresh** to force a new fetch.
+
+| URL param | Example | Purpose |
+|-----------|---------|---------|
+| `program` | `creative-spark` | Program scope (omit for all site) |
+| `preset` | `last-30-days` | Date preset: `today`, `this-week`, `this-month`, `last-7-days`, `last-30-days`, `last-3-months` |
+| `startDate` / `endDate` | `2026-05-01` | Custom range when not using a preset |
+
+Examples: `/analytics-dashboard/?program=creative-spark&preset=last-30-days` · `/analytics-dashboard/?program=events&startDate=2026-05-01&endDate=2026-05-31`
+
+Scoped mode filters both GA4 and Search Console to that program’s page paths:
+
+| Program | Example paths |
+|---------|----------------|
+| Creative Spark | `/programs/spark`, `/creative-spark`, `/sparks-only`, `/spark`, `/es/spark` |
+| Events | `/event/…` |
+| Día de los Muertos | `/diadelosmuertos` |
+| Levitt | `/levitt` |
+| Artprenticeship | `/artprenticeship` |
+| Waco Wonderland | `/waco-wonderland-parade` |
+
+When a program is selected, four **program insight** panels answer:
+
+| Question | GA4 signals |
+|----------|-------------|
+| Who's visiting | New vs returning users, devices, top cities |
+| How they find it | Source/medium, landing pages, traffic channels |
+| What they're doing | Engagement time, scrolls, form starts/submits, clicks |
+| Where they go next | Next page after a program page (internal navigation) |
+
+A **Search queries** table (Search Console) lists the actual Google keywords driving traffic to those pages.
+
+GA4 and Search Console report aggregated counts only — not individual identities. Search Console data is typically **2–3 days behind** GA4.
+
+**Environment variables**
+
+| Variable | Required | Purpose |
+|----------|----------|---------|
+| `GA4_PROPERTY_ID` | Yes | Numeric GA4 property ID (Admin → Property settings) |
+| `GA4_SERVICE_ACCOUNT_JSON` | Yes (Vercel) | Service account JSON with **Viewer** on the GA4 property |
+| `GA4_SERVICE_ACCOUNT_PATH` | Local alt | Path to service account JSON file |
+| `GSC_SITE_URL` | No | Search Console property (default tries `sc-domain:creativewaco.org`) |
+| `GOOGLE_APPLICATION_CREDENTIALS` | Local alt | Standard Google client env path |
+
+**Setup — GA4**
+
+1. In [Google Analytics](https://analytics.google.com/) → Admin → Property access management, add the service account as **Viewer**.
+2. In Google Cloud, enable the **Google Analytics Data API** for project `civic-shell-472218-g7`.
+3. Set `GA4_PROPERTY_ID` and credentials in `.env.local` (or Vercel env vars).
+
+Local dev auto-loads `~/.config/creativewaco/ga4-service-account.json` and `ga4-property-id.txt` when env vars are unset (reader: `cursor-ga4-reader@civic-shell-472218-g7.iam.gserviceaccount.com`, property **306499072**).
+
+**Setup — Search Console (organic keywords)**
+
+1. Enable [Search Console API](https://console.cloud.google.com/apis/library/searchconsole.googleapis.com?project=civic-shell-472218-g7) in Google Cloud (same project as the GA4 reader).
+2. In [Search Console](https://search.google.com/search-console) → **Settings → Users and permissions**, add `cursor-ga4-reader@civic-shell-472218-g7.iam.gserviceaccount.com` as a user on `creativewaco.org`.
+3. Optionally set `GSC_SITE_URL` if your property URL differs (e.g. `https://www1.creativewaco.org/`).
+
+Until Search Console is connected, the dashboard shows in-panel setup instructions instead of query data.
+
+**API**
+
+`GET /api/analytics-dashboard/?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&program=creative-spark`
+
+Returns KPIs (with period-over-period change), daily series, channels, top cities, top pages, referrers, `programInsights` (when `program` is set), and `searchConsole` (queries + totals or setup error). Query params:
+
+| Param | Default | Values |
+|-------|---------|--------|
+| `startDate` | 30 days ago | `YYYY-MM-DD` |
+| `endDate` | today | `YYYY-MM-DD` |
+| `program` | `all` | `all`, `creative-spark`, `events`, `levitt`, `dia-de-los-muertos`, `artprenticeship`, `waco-wonderland` |
+
+**Troubleshooting**
+
+- Blank page or **500** on `/analytics-dashboard/` during local dev — stale `.next` cache. Run `npm run dev:clean:3847` and hard-refresh.
+- **Unstyled page** (black background, blue default links, no sidebar chrome) — CSS failed to compile, often because the disk is full (`ENOSPC` in the terminal). Free space, delete `.next` (`rm -rf .next`), then run `npm run dev:clean:3847`.
+- First GA4 load can take several seconds; skeleton placeholders and “Loading GA4 data…” are normal. Repeat visits in the same tab load instantly from session cache until **Refresh**.
+- Search Console panel shows setup steps when the API is disabled or the service account lacks property access.
+
 ## UTM URL Builder
 
 Build tagged destination URLs for Google Analytics and other reporting.
@@ -372,8 +470,8 @@ Build tagged destination URLs for Google Analytics and other reporting.
 
 ## Adding a new tool
 
-1. **Registry** — Add an entry to `TOOLS` in [`lib/tools-registry.ts`](lib/tools-registry.ts) (hub and `/api/tools` read from here).
-2. **UI** — Add `app/<tool-id>/page.tsx` and a client component under `components/<tool-id>/`. The sidebar picks up new tools automatically from the registry (single **Tools** group; `tag` controls the nav icon). Reuse `PageHero`, `StatusLine`, and globals from `app/globals.css`.
+1. **Registry** — Add an entry to `TOOLS` in [`lib/tools-registry.ts`](lib/tools-registry.ts) with `kind: "tool"` or `kind: "dashboard"` (hub, sidebar, and `/api/tools` read from here).
+2. **UI** — Add `app/<tool-id>/page.tsx` and a client component under `components/<tool-id>/`. The sidebar picks up new entries automatically (`kind` places them under **Tools** or **Dashboards**; `tag` controls the nav icon). Reuse `PageHero`, `StatusLine`, and globals from `app/globals.css`.
 3. **API** (if needed) — Add `app/api/<tool-id>/route.ts` and logic under `lib/<tool-id>/`. Set `export const runtime = "nodejs"` for routes that use filesystem auth or long-running fetches.
 
 Deploy by pushing to `main` on [Creative-Waco/tools](https://github.com/Creative-Waco/tools) (Vercel auto-deploys as a Next.js project). See [CHANGELOG.md](./CHANGELOG.md) for release notes.

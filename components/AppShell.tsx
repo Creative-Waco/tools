@@ -5,6 +5,7 @@ import {
   BarChart3,
   ImageIcon,
   LayoutDashboard,
+  LineChart,
   Link2,
   Mail,
 } from "lucide-react";
@@ -16,7 +17,7 @@ import {
   ApplicationShell2,
   type SidebarData,
 } from "@/components/application-shell2";
-import { TOOLS } from "@/lib/tools-registry";
+import { DASHBOARDS, UTILITY_TOOLS } from "@/lib/tools-registry";
 
 function ShellLink({
   href,
@@ -36,6 +37,7 @@ const TAG_ICONS = {
   Social: ImageIcon,
   Membership: BarChart3,
   Marketing: Link2,
+  Analytics: LineChart,
 } as const;
 
 function normalizePath(path: string) {
@@ -83,13 +85,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               href: "/",
               isActive: isActivePath(pathname, "/"),
             },
-            ...TOOLS.map((tool) => ({
+            ...UTILITY_TOOLS.map((tool) => ({
               label: tool.name,
               icon: TAG_ICONS[tool.tag],
               href: tool.path,
               isActive: isActivePath(pathname, tool.path),
             })),
           ],
+        },
+        {
+          title: "Dashboards",
+          defaultOpen: true,
+          items: DASHBOARDS.map((tool) => ({
+            label: tool.name,
+            icon: TAG_ICONS[tool.tag],
+            href: tool.path,
+            isActive: isActivePath(pathname, tool.path),
+          })),
         },
       ],
       footerGroup: {
