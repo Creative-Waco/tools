@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-06-12
+
 ### Added
 
 - **UTM URL Builder** — **From analytics** panel loads top UTM combinations from GA4 (last 90 days via `GET /api/utm-builder/history/`); **Load** fills the builder; GA4-only sources/mediums/campaigns append to Quick start chips when not in the static lists.

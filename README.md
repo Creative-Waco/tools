@@ -504,4 +504,4 @@ Returns top UTM source/medium/campaign combinations from GA4 session-scoped dime
 2. **UI** — Add `app/<tool-id>/page.tsx` and a client component under `components/<tool-id>/`. The sidebar picks up new entries automatically (`kind` places them under **Tools** or **Dashboards**; `tag` controls the nav icon). Reuse `PageHero`, `StatusLine`, and globals from `app/globals.css`.
 3. **API** (if needed) — Add `app/api/<tool-id>/route.ts` and logic under `lib/<tool-id>/`. Set `export const runtime = "nodejs"` for routes that use filesystem auth or long-running fetches.
 
-Deploy by pushing to `main` on [Creative-Waco/tools](https://github.com/Creative-Waco/tools) (Vercel auto-deploys as a Next.js project). See [CHANGELOG.md](./CHANGELOG.md) for release notes.
+Deploy by pushing to `main` on [Creative-Waco/tools](https://github.com/Creative-Waco/tools) (Vercel auto-deploys as a Next.js project). See [CHANGELOG.md](./CHANGELOG.md) for release notes (current release: **1.1.0**, 2026-06-12).
