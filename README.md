@@ -391,7 +391,7 @@ When a program is selected, four **program insight** panels answer:
 | What they're doing | Engagement time, scrolls, form starts/submits, clicks |
 | Where they go next | Next page after a program page (internal navigation) |
 
-A **Search queries** table (Search Console) lists the actual Google keywords driving traffic to those pages.
+A **Search queries** table (Search Console) lists the actual Google keywords driving traffic to those pages. GSC **clicks** count only when someone clicked a Google search result to a program URL; GA4 **organic sessions** also include visitors who landed elsewhere (e.g. homepage) and navigated to program pages, plus Google Discover/News.
 
 GA4 and Search Console report aggregated counts only — not individual identities. Search Console data is typically **2–3 days behind** GA4.
 
@@ -435,6 +435,7 @@ Returns KPIs (with period-over-period change), daily series, channels, top citie
 
 **Troubleshooting**
 
+- **`ERR_CONNECTION_REFUSED` on `localhost:3847`** — dev server is not running. Start with `npm run dev:3847` (or `npm run dev:clean:3847` if the port is stuck).
 - Blank page or **500** on `/analytics-dashboard/` during local dev — stale `.next` cache. Run `npm run dev:clean:3847` and hard-refresh.
 - **Unstyled page** (black background, blue default links, no sidebar chrome) — CSS failed to compile, often because the disk is full (`ENOSPC` in the terminal). Free space, delete `.next` (`rm -rf .next`), then run `npm run dev:clean:3847`.
 - First GA4 load can take several seconds; skeleton placeholders and “Loading GA4 data…” are normal. Repeat visits in the same tab load instantly from session cache until **Refresh**.

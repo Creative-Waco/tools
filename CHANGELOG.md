@@ -37,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Analytics Dashboard** — README clarifies GSC clicks vs GA4 organic sessions and documents `ERR_CONNECTION_REFUSED` when the dev server is not running on port 3847.
 - **App shell** — sidebar splits **Tools** (utilities + All tools) and **Dashboards** (Creative Spark, Analytics) via `kind` on `lib/tools-registry.ts`.
 - **Event Card Graphics** — output format tabs (Instagram / Display slideshow) moved to the left panel, directly above **Generate cards**.
 - **Event Card Graphics** — **Download cards…** trigger sits below the preview (primary button style); collapsible **Select cards** panel opens there with range summary, presets (all / current / select all), thumbnail rows, and a **Done** button (single PNG or ZIP); clicking a row jumps the preview to that card.
