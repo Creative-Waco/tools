@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Analytics Dashboard** — **Sponsorship** program filter for all sponsor/sponsorship pages site-wide (`program=sponsorship`).
+- **Analytics Dashboard** — per-program **season date presets** in the date dropdown (e.g. Last Día de los Muertos season Oct 1–Nov 15, Last concert season May–Sep, Previous calendar year for year-round programs); shareable as `preset=last-season` with `program`.
+- **Analytics Dashboard** — **Visitor journeys** flow UI (arrival → landing → views → next steps → engagement events) for all-site and program scopes, built from GA4 aggregates with ranked steps, share bars, and path tooltips.
 - **Analytics Dashboard** — official Google product icons (`public/logos/ga4.png`, `public/logos/gsc.png` from Google gstatic) beside section titles for charts, tables, and program insights.
 - **Analytics Dashboard** — traffic channels pie chart and legend tooltips show session count, share, and top sources per channel (GA4 `sessionDefaultChannelGroup` + `sessionSource` breakdown).
 - **Analytics Dashboard** — sessions/page-views trend chart tooltip shows the full date, daily total, and top pages viewed that day (GA4 `date` + `pagePath` breakdown).

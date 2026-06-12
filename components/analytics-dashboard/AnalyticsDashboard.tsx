@@ -54,6 +54,8 @@ import { cn } from "@/lib/cn";
 import { StatusLine } from "@/components/StatusLine";
 import { DataSourceTitle } from "./DataSourceLogos";
 import { ProgramInsights } from "./ProgramInsights";
+import { VisitorJourneys } from "./VisitorJourneys";
+import { PROGRAM_SEASON_SLUG } from "./program-seasons";
 import { PROGRAM_OPTIONS } from "./programs";
 import { SearchQueriesPanel } from "./SearchQueriesPanel";
 import type {
@@ -65,7 +67,8 @@ import type {
 import { buildDashboardCacheKey, readCachedDashboard } from "./cache";
 import {
   buildDashboardPath,
-  DASHBOARD_PRESETS,
+  DEFAULT_PRESET,
+  getDatePresetsForProgram,
   presetLabelForRange,
   readDashboardUrlState,
 } from "./url-state";
@@ -82,7 +85,7 @@ const pageViewsConfig = {
 const TREND_CHART_HEIGHT =
   "!aspect-auto h-52 min-h-52 max-h-52 w-full overflow-hidden";
 
-function trendChartYDomain([, dataMax]: [number, number]): [number, number] {
+function trendChartYDomain([, dataMax]: readonly [number, number]): [number, number] {
   const max = Math.max(0, Number.isFinite(dataMax) ? dataMax : 0);
   if (max === 0) return [0, 10];
 
@@ -395,6 +398,10 @@ export function AnalyticsDashboard() {
 
   const isProgramScope = programId !== "all";
   const selectedProgram = PROGRAM_OPTIONS.find((p) => p.id === programId);
+  const datePresets = useMemo(
+    () => getDatePresetsForProgram(programId),
+    [programId],
+  );
 
   useEffect(() => {
     const state = readDashboardUrlState();
@@ -480,10 +487,39 @@ export function AnalyticsDashboard() {
 
   const handlePresetChange = (value: string | null) => {
     if (!value) return;
-    const preset = DASHBOARD_PRESETS.find((p) => p.label === value);
+    const preset = datePresets.find((item) => item.label === value);
     if (preset) {
       setDateRange(preset.getValue());
       setSelectedPreset(value);
+    }
+  };
+
+  const handleProgramChange = (value: string | null) => {
+    if (!value) return;
+    const nextProgramId = value;
+    const nextPresets = getDatePresetsForProgram(nextProgramId);
+    const seasonPreset = nextPresets.find(
+      (preset) => preset.slug === PROGRAM_SEASON_SLUG,
+    );
+
+    setProgramId(nextProgramId);
+
+    if (
+      seasonPreset &&
+      selectedPreset === seasonPreset.label &&
+      nextProgramId !== programId
+    ) {
+      setDateRange(seasonPreset.getValue());
+      setSelectedPreset(seasonPreset.label);
+      return;
+    }
+
+    if (
+      selectedPreset !== "Custom" &&
+      !nextPresets.some((preset) => preset.label === selectedPreset)
+    ) {
+      setDateRange(DEFAULT_PRESET.getValue());
+      setSelectedPreset(DEFAULT_PRESET.label);
     }
   };
 
@@ -511,7 +547,7 @@ export function AnalyticsDashboard() {
         <div className="flex flex-wrap items-center gap-2">
           <Select
             value={programId}
-            onValueChange={(value) => value && setProgramId(value)}
+            onValueChange={handleProgramChange}
           >
             <SelectTrigger className="w-[180px]">
               <SelectValue />
@@ -525,11 +561,11 @@ export function AnalyticsDashboard() {
             </SelectContent>
           </Select>
           <Select value={selectedPreset} onValueChange={handlePresetChange}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-[220px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {DASHBOARD_PRESETS.map((preset) => (
+              {datePresets.map((preset) => (
                 <SelectItem key={preset.label} value={preset.label}>
                   {preset.label}
                 </SelectItem>
@@ -559,7 +595,7 @@ export function AnalyticsDashboard() {
                 selected={dateRange}
                 onSelect={(range) => {
                   setDateRange(range);
-                  setSelectedPreset(presetLabelForRange(range));
+                  setSelectedPreset(presetLabelForRange(range, programId));
                 }}
               />
             </PopoverContent>
@@ -986,6 +1022,13 @@ export function AnalyticsDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      <VisitorJourneys
+        journey={data?.visitorJourney ?? null}
+        loading={loading}
+        programName={data?.program.name ?? selectedProgram?.name ?? "Site"}
+        isProgramScope={isProgramScope}
+      />
 
       <SearchQueriesPanel
         data={data?.searchConsole ?? null}

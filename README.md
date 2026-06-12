@@ -356,7 +356,7 @@ Live **Google Analytics 4** and **Search Console** overview for creativewaco.org
 
 **Data sources**
 
-- **GA4 Data API** — active users, sessions, engagement, bounce rate, daily trends (hover a day for top pages that day), traffic channels (hover a segment or legend row for top sources), top cities (hover a row for location, share, engagement, sources, and landing pages), top pages, referrers
+- **GA4 Data API** — active users, sessions, engagement, bounce rate, daily trends (hover a day for top pages that day), traffic channels (hover a segment or legend row for top sources), top cities (hover a row for location, share, engagement, sources, and landing pages), top pages, referrers, **visitor journeys** (five-stage aggregate flow: arrival → landing → views → next page → engagement events; site-wide or program-scoped)
 - **Search Console API** — organic search **queries** (clicks, impressions, CTR, position). GA4 Organic Search shows volume only; keywords appear as `(not provided)` in GA4.
 
 **Program filters and shareable URLs**
@@ -366,7 +366,7 @@ Select a program from the toolbar (default: **All site**). Filter state is synce
 | URL param | Example | Purpose |
 |-----------|---------|---------|
 | `program` | `creative-spark` | Program scope (omit for all site) |
-| `preset` | `last-30-days` | Date preset: `today`, `this-week`, `this-month`, `last-7-days`, `last-30-days`, `last-3-months` |
+| `preset` | `last-30-days` | Date preset: `today`, `this-week`, `this-month`, `last-7-days`, `last-30-days`, `last-3-months`, `last-season` (with a program selected) |
 | `startDate` / `endDate` | `2026-05-01` | Custom range when not using a preset |
 
 Examples: `/analytics-dashboard/?program=creative-spark&preset=last-30-days` · `/analytics-dashboard/?program=events&startDate=2026-05-01&endDate=2026-05-31`
@@ -381,6 +381,31 @@ Scoped mode filters both GA4 and Search Console to that program’s page paths:
 | Levitt | `/levitt` |
 | Artprenticeship | `/artprenticeship` |
 | Waco Wonderland | `/waco-wonderland-parade` |
+| Sponsorship | Any page path containing `sponsor` (e.g. `/portfolio-sponsorship`, `/events/levitt/sponsorship`, `/diadelosmuertos/sponsors/`) |
+
+When a program is selected, the date preset dropdown adds a **program season** option (shareable as `preset=last-season`):
+
+| Program | Season preset | Date range |
+|---------|---------------|------------|
+| Día de los Muertos | Last Día de los Muertos season | Oct 1 – Nov 15 |
+| Levitt | Last concert season | May 1 – Sep 30 |
+| Artprenticeship | Last program year | Aug 1 – May 31 |
+| Waco Wonderland | Last parade season | Nov 15 – Dec 31 |
+| Creative Spark, Events, Sponsorship | Previous calendar year | Jan 1 – Dec 31 (prior year) |
+
+During an active season, the preset runs from season start through today. After a season ends, it uses the most recently completed season.
+
+**Visitor journeys** (below the overview grid) shows a five-stage flow for the current scope:
+
+| Stage | All site | Program scope |
+|-------|----------|---------------|
+| How they arrive | Traffic channels | Source / medium |
+| Where they land | Session landing pages | Program landing pages |
+| What they view | Top pages | Top program pages |
+| Where they go next | Next page after internal link | Next page after a program page |
+| What they do | Form, scroll, and click events | Same (scoped to program paths) |
+
+Each step shows rank, volume, share bar, and hover tooltip with the full path or label.
 
 When a program is selected, four **program insight** panels answer:
 
@@ -431,7 +456,8 @@ Returns KPIs (with period-over-period change), daily series, channels, top citie
 |-------|---------|--------|
 | `startDate` | 30 days ago | `YYYY-MM-DD` |
 | `endDate` | today | `YYYY-MM-DD` |
-| `program` | `all` | `all`, `creative-spark`, `events`, `levitt`, `dia-de-los-muertos`, `artprenticeship`, `waco-wonderland` |
+| `program` | `all` | `all`, `creative-spark`, `events`, `levitt`, `dia-de-los-muertos`, `artprenticeship`, `waco-wonderland`, `sponsorship` |
+| `preset` | `last-30-days` | `today`, `this-week`, `this-month`, `last-7-days`, `last-30-days`, `last-3-months`, `last-season` (with a program selected) |
 
 **Troubleshooting**
 

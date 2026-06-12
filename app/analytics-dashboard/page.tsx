@@ -15,7 +15,7 @@ export default function AnalyticsDashboardPage() {
       <PageHero
         eyebrow="Creative Waco tooling"
         title="Analytics Dashboard"
-        lede="Live Google Analytics 4 metrics for creativewaco.org — sessions, engagement, traffic channels, and top content."
+        lede="Live Google Analytics 4 metrics for creativewaco.org — visitor journeys, sessions, engagement, traffic channels, and top content."
       />
       <AnalyticsDashboard />
     </main>

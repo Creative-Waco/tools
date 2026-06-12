@@ -37,4 +37,9 @@ export const PROGRAM_OPTIONS: ProgramOption[] = [
     name: "Waco Wonderland",
     description: "Waco Wonderland Parade program pages",
   },
+  {
+    id: "sponsorship",
+    name: "Sponsorship",
+    description: "Sponsorship and sponsor pages across all programs",
+  },
 ];
