@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { StatusLine } from "@/components/StatusLine";
+import { Ga4UtmHistoryPanel } from "@/components/utm-builder/Ga4UtmHistoryPanel";
 import { QrCodePreview } from "@/components/utm-builder/QrCodePreview";
 import { UrlBreakdown } from "@/components/utm-builder/UrlBreakdown";
 import { UtmField } from "@/components/utm-builder/UtmField";
@@ -17,7 +18,10 @@ import {
   type UrlCopyFormat,
   type UtmParams,
 } from "@/lib/utm-builder/build-url";
-import { DESTINATION_SHORTCUTS } from "@/lib/utm-builder/destinations";
+import {
+  DESTINATION_SHORTCUTS,
+  detectDestinationId,
+} from "@/lib/utm-builder/destinations";
 import {
   buildCampaignSlug,
   getUtmFieldWarnings,
@@ -29,13 +33,44 @@ import {
   saveRecentCampaign,
   type RecentCampaign,
 } from "@/lib/utm-builder/recent-campaigns";
+import type {
+  Ga4UtmHistoryEntry,
+  Ga4UtmHistoryResult,
+} from "@/lib/utm-builder/ga4-history-types";
+import {
+  CAMPAIGN_SUGGESTIONS,
+  detectSuggestionId,
+  mergeGa4Suggestions,
+  MEDIUM_SUGGESTIONS,
+  SOURCE_SUGGESTIONS,
+  type UtmSuggestion,
+} from "@/lib/utm-builder/suggestions";
 import {
   builderPathFromForm,
+  DEFAULT_BASE_URL,
   DEFAULT_FORM,
   formStateToSearchParams,
   readShareableStateFromLocation,
   type BuilderFormState,
 } from "@/lib/utm-builder/url-state";
+
+function landingPageToUrl(landingPage: string): string {
+  if (!landingPage) return "";
+
+  try {
+    const origin = new URL(DEFAULT_BASE_URL).origin;
+    const path = landingPage.startsWith("/") ? landingPage : `/${landingPage}`;
+    return `${origin}${path}`;
+  } catch {
+    return "";
+  }
+}
+
+function formatGa4EntryLabel(entry: Ga4UtmHistoryEntry): string {
+  return [entry.utm.utm_campaign, entry.utm.utm_source, entry.utm.utm_medium]
+    .filter(Boolean)
+    .join(" · ");
+}
 
 function emptyCustomParam(): CustomParam {
   return { key: "", value: "" };
@@ -58,6 +93,56 @@ function mergeParsedIntoForm(
   };
 }
 
+function formHasMoreOptions(form: BuilderFormState): boolean {
+  return Boolean(
+    form.utm.utm_term.trim() ||
+      form.utm.utm_content.trim() ||
+      form.utm.utm_id.trim() ||
+      form.customParams.some((param) => param.key.trim() || param.value.trim()) ||
+      form.contentVariants.length > 0,
+  );
+}
+
+type QuickStartChipsProps = {
+  label: string;
+  suggestions: UtmSuggestion[];
+  activeId: string;
+  onSelect: (value: string) => void;
+  titleFor?: (suggestion: UtmSuggestion) => string | undefined;
+};
+
+function QuickStartChips({
+  label,
+  suggestions,
+  activeId,
+  onSelect,
+  titleFor,
+}: QuickStartChipsProps) {
+  return (
+    <div>
+      <p className="utm-builder-quick-start-label">{label}</p>
+      <div className="utm-builder-chip-list">
+        {suggestions.map((suggestion) => (
+          <button
+            key={suggestion.id}
+            type="button"
+            className={[
+              "utm-builder-chip-btn",
+              activeId === suggestion.id ? "is-active" : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+            title={titleFor?.(suggestion)}
+            onClick={() => onSelect(suggestion.value)}
+          >
+            {suggestion.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function UtmBuilderTool() {
   const skipUrlSync = useRef(true);
 
@@ -67,11 +152,15 @@ export function UtmBuilderTool() {
   const [slugEventName, setSlugEventName] = useState("");
   const [slugDateLabel, setSlugDateLabel] = useState("");
   const [variantInput, setVariantInput] = useState("");
+  const [moreOpen, setMoreOpen] = useState(false);
+  const [ga4History, setGa4History] = useState<Ga4UtmHistoryResult | null>(null);
+  const [ga4HistoryLoading, setGa4HistoryLoading] = useState(true);
 
   useEffect(() => {
     const shared = readShareableStateFromLocation();
     if (shared) {
       setForm(shared);
+      if (formHasMoreOptions(shared)) setMoreOpen(true);
       setStatus({ message: "Loaded shared link settings.", variant: "success" });
     }
 
@@ -82,6 +171,32 @@ export function UtmBuilderTool() {
     }, 300);
 
     return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadGa4History() {
+      try {
+        const response = await fetch("/api/utm-builder/history?days=90");
+        const data = (await response.json()) as Ga4UtmHistoryResult;
+        if (!cancelled) setGa4History(data);
+      } catch {
+        if (!cancelled) {
+          setGa4History({
+            configured: false,
+            message: "Could not load GA4 campaign history.",
+          });
+        }
+      } finally {
+        if (!cancelled) setGa4HistoryLoading(false);
+      }
+    }
+
+    void loadGa4History();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -109,6 +224,43 @@ export function UtmBuilderTool() {
   const existingUtmKeys = useMemo(() => getExistingUtmKeys(form.baseUrl), [form.baseUrl]);
   const fieldWarnings = useMemo(() => getUtmFieldWarnings(form.utm), [form.utm]);
   const activePreset = findPresetById(form.activePresetId);
+  const activeDestinationId = useMemo(
+    () => detectDestinationId(form.baseUrl),
+    [form.baseUrl],
+  );
+  const sourceSuggestions = useMemo(
+    () =>
+      ga4History?.configured
+        ? mergeGa4Suggestions(SOURCE_SUGGESTIONS, ga4History.suggestions.sources)
+        : SOURCE_SUGGESTIONS,
+    [ga4History],
+  );
+  const mediumSuggestions = useMemo(
+    () =>
+      ga4History?.configured
+        ? mergeGa4Suggestions(MEDIUM_SUGGESTIONS, ga4History.suggestions.mediums)
+        : MEDIUM_SUGGESTIONS,
+    [ga4History],
+  );
+  const campaignSuggestions = useMemo(
+    () =>
+      ga4History?.configured
+        ? mergeGa4Suggestions(CAMPAIGN_SUGGESTIONS, ga4History.suggestions.campaigns)
+        : CAMPAIGN_SUGGESTIONS,
+    [ga4History],
+  );
+  const activeSourceId = useMemo(
+    () => detectSuggestionId("utm_source", form.utm.utm_source, sourceSuggestions),
+    [form.utm.utm_source, sourceSuggestions],
+  );
+  const activeMediumId = useMemo(
+    () => detectSuggestionId("utm_medium", form.utm.utm_medium, mediumSuggestions),
+    [form.utm.utm_medium, mediumSuggestions],
+  );
+  const activeCampaignId = useMemo(
+    () => detectSuggestionId("utm_campaign", form.utm.utm_campaign, campaignSuggestions),
+    [form.utm.utm_campaign, campaignSuggestions],
+  );
 
   const contentVariantLinks = useMemo(
     () =>
@@ -165,7 +317,11 @@ export function UtmBuilderTool() {
     if (urlContainsUtmParams(value)) {
       const result = parseUtmUrl(value);
       if (result.data) {
-        setForm((current) => mergeParsedIntoForm(current, result.data!));
+        setForm((current) => {
+          const next = mergeParsedIntoForm(current, result.data!);
+          if (formHasMoreOptions(next)) setMoreOpen(true);
+          return next;
+        });
         setStatusMessage("Detected UTM tags in URL and split them into fields.", "success");
         return;
       }
@@ -182,7 +338,11 @@ export function UtmBuilderTool() {
     const result = parseUtmUrl(pasted);
     if (!result.data) return;
 
-    setForm((current) => mergeParsedIntoForm(current, result.data!));
+    setForm((current) => {
+      const next = mergeParsedIntoForm(current, result.data!);
+      if (formHasMoreOptions(next)) setMoreOpen(true);
+      return next;
+    });
     setStatusMessage("Pasted tagged URL — parameters loaded.", "success");
   }
 
@@ -209,7 +369,11 @@ export function UtmBuilderTool() {
     if (urlContainsUtmParams(url)) {
       const result = parseUtmUrl(url);
       if (result.data) {
-        setForm((current) => mergeParsedIntoForm({ ...current, baseUrl: url }, result.data!));
+        setForm((current) => {
+          const next = mergeParsedIntoForm({ ...current, baseUrl: url }, result.data!);
+          if (formHasMoreOptions(next)) setMoreOpen(true);
+          return next;
+        });
         return;
       }
     }
@@ -264,14 +428,29 @@ export function UtmBuilderTool() {
     const campaign = recentCampaigns.find((entry) => entry.id === campaignId);
     if (!campaign) return;
 
-    setForm({
+    const nextForm = {
       baseUrl: campaign.baseUrl,
       utm: campaign.utm,
       customParams: campaign.customParams.length ? campaign.customParams : [],
       contentVariants: [],
       activePresetId: detectPresetId(campaign.utm.utm_source, campaign.utm.utm_medium),
-    });
+    };
+    setForm(nextForm);
+    if (formHasMoreOptions(nextForm)) setMoreOpen(true);
     setStatusMessage(`Loaded recent campaign: ${campaign.label}.`, "success");
+  }
+
+  function applyGa4Entry(entry: Ga4UtmHistoryEntry) {
+    const nextForm: BuilderFormState = {
+      baseUrl: entry.landingPage ? landingPageToUrl(entry.landingPage) : form.baseUrl,
+      utm: { ...entry.utm },
+      customParams: form.customParams,
+      contentVariants: form.contentVariants,
+      activePresetId: detectPresetId(entry.utm.utm_source, entry.utm.utm_medium),
+    };
+    setForm(nextForm);
+    if (formHasMoreOptions(nextForm)) setMoreOpen(true);
+    setStatusMessage(`Loaded from GA4: ${formatGa4EntryLabel(entry) || "campaign"}.`, "success");
   }
 
   function addCustomParam() {
@@ -302,6 +481,7 @@ export function UtmBuilderTool() {
     setSlugEventName("");
     setSlugDateLabel("");
     setVariantInput("");
+    setMoreOpen(false);
     setStatusMessage("Form reset.", "success");
     window.history.replaceState(null, "", "/utm-builder/");
   }
@@ -368,15 +548,6 @@ export function UtmBuilderTool() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [builtUrl, requiredComplete, form]);
 
-  const activeParams = [
-    { label: "Source", value: form.utm.utm_source, required: true },
-    { label: "Medium", value: form.utm.utm_medium, required: true },
-    { label: "Campaign", value: form.utm.utm_campaign, required: true },
-    { label: "Term", value: form.utm.utm_term, required: false },
-    { label: "Content", value: form.utm.utm_content, required: false },
-    { label: "ID", value: form.utm.utm_id, required: false },
-  ].filter((entry) => entry.value.trim());
-
   return (
     <>
       <style>{`
@@ -397,12 +568,24 @@ export function UtmBuilderTool() {
           }
         }
 
-        .utm-builder-presets,
-        .utm-builder-destinations,
-        .utm-builder-slug-helper,
-        .utm-builder-variants {
+        .utm-builder-quick-start,
+        .utm-builder-more-body {
+          display: grid;
+          gap: 10px;
+        }
+
+        .utm-builder-quick-start-groups {
           display: grid;
           gap: 8px;
+        }
+
+        .utm-builder-quick-start-label {
+          margin: 0;
+          font-size: 11px;
+          font-weight: 600;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+          color: var(--muted-foreground, #666);
         }
 
         .utm-builder-chip-list {
@@ -413,6 +596,7 @@ export function UtmBuilderTool() {
 
         .utm-builder-preset-btn,
         .utm-builder-destination-btn,
+        .utm-builder-chip-btn,
         .utm-builder-suggestion-btn {
           border: 1px solid var(--border, #e5e5e5);
           border-radius: 999px;
@@ -425,11 +609,14 @@ export function UtmBuilderTool() {
 
         .utm-builder-preset-btn:hover,
         .utm-builder-destination-btn:hover,
+        .utm-builder-chip-btn:hover,
         .utm-builder-suggestion-btn:hover {
           background: var(--accent, #f5f5f5);
         }
 
-        .utm-builder-preset-btn.is-active {
+        .utm-builder-preset-btn.is-active,
+        .utm-builder-destination-btn.is-active,
+        .utm-builder-chip-btn.is-active {
           border-color: var(--primary, #1a1a1a);
           background: var(--primary, #1a1a1a);
           color: var(--primary-foreground, #fff);
@@ -471,10 +658,53 @@ export function UtmBuilderTool() {
           font-size: 18px;
         }
 
-        .utm-builder-output-actions {
+        .utm-builder-output-secondary {
           display: flex;
           flex-wrap: wrap;
           gap: 8px;
+          margin-top: 10px;
+        }
+
+        .utm-builder-form-footer {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          justify-content: space-between;
+          gap: 8px;
+        }
+
+        .utm-builder-reset-link {
+          border: 0;
+          background: transparent;
+          color: var(--muted-foreground, #666);
+          cursor: pointer;
+          font-size: 13px;
+          padding: 0;
+          text-decoration: underline;
+        }
+
+        .utm-builder-reset-link:hover {
+          color: var(--foreground, #1a1a1a);
+        }
+
+        .utm-builder-more summary {
+          cursor: pointer;
+          font-weight: 600;
+          font-size: 14px;
+        }
+
+        .utm-builder-more-body {
+          margin-top: 12px;
+        }
+
+        .utm-builder-more-section {
+          display: grid;
+          gap: 8px;
+        }
+
+        .utm-builder-more-section + .utm-builder-more-section {
+          padding-top: 12px;
+          border-top: 1px solid var(--border, #e5e5e5);
         }
 
         .utm-builder-url-box {
@@ -566,17 +796,6 @@ export function UtmBuilderTool() {
           color: #7a4d00;
         }
 
-        .utm-builder-advanced summary {
-          cursor: pointer;
-          font-weight: 600;
-        }
-
-        .utm-builder-advanced-body {
-          display: grid;
-          gap: 12px;
-          margin-top: 12px;
-        }
-
         .utm-field-label {
           display: inline-flex;
           align-items: center;
@@ -641,6 +860,70 @@ export function UtmBuilderTool() {
           font-size: 14px;
           background: #fff;
         }
+
+        .utm-builder-ga4-history summary {
+          cursor: pointer;
+          font-weight: 600;
+          font-size: 14px;
+        }
+
+        .utm-builder-ga4-history-body {
+          display: grid;
+          gap: 10px;
+          margin-top: 12px;
+        }
+
+        .utm-builder-ga4-history-list {
+          display: grid;
+          gap: 8px;
+          margin: 0;
+          padding: 0;
+          list-style: none;
+        }
+
+        .utm-builder-ga4-history-item {
+          display: flex;
+          justify-content: space-between;
+          gap: 12px;
+          align-items: flex-start;
+          border-bottom: 1px solid var(--border, #e5e5e5);
+          padding-bottom: 8px;
+        }
+
+        .utm-builder-ga4-history-item:last-child {
+          border-bottom: 0;
+          padding-bottom: 0;
+        }
+
+        .utm-builder-ga4-history-copy {
+          display: grid;
+          gap: 4px;
+          min-width: 0;
+        }
+
+        .utm-builder-ga4-history-label {
+          font-size: 13px;
+          font-weight: 600;
+        }
+
+        .utm-builder-ga4-history-meta {
+          font-size: 12px;
+          color: var(--muted-foreground, #666);
+          word-break: break-word;
+        }
+
+        .utm-builder-ga4-history-actions {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          flex-shrink: 0;
+        }
+
+        .utm-builder-ga4-history-sessions {
+          font-size: 12px;
+          color: var(--muted-foreground, #666);
+          white-space: nowrap;
+        }
       `}</style>
 
       <div className="tool-layout">
@@ -649,7 +932,7 @@ export function UtmBuilderTool() {
             {recentCampaigns.length > 0 ? (
               <div className="utm-builder-recent">
                 <label className="field">
-                  <span>Recent campaigns</span>
+                  <span>Recent</span>
                   <select
                     defaultValue=""
                     onChange={(event) => {
@@ -679,64 +962,71 @@ export function UtmBuilderTool() {
                 onChange={(event) => handleBaseUrlChange(event.target.value)}
                 onPaste={handleBaseUrlPaste}
               />
-              <span className="utm-builder-hint">
-                Paste a full tagged URL here — UTM parameters are detected and split automatically.
-              </span>
             </label>
 
             {existingUtmKeys.length > 0 ? (
               <div className="utm-builder-banner utm-builder-banner--warning" role="status">
-                This destination already includes {existingUtmKeys.join(", ")}. Building will replace
-                those tags with your current values.
+                Existing {existingUtmKeys.join(", ")} on this URL will be replaced.
               </div>
             ) : null}
 
-            <div className="utm-builder-destinations">
-              <span className="text-sm font-semibold">Destination shortcuts</span>
-              <div className="utm-builder-chip-list">
-                {DESTINATION_SHORTCUTS.map((shortcut) => (
-                  <button
-                    key={shortcut.id}
-                    type="button"
-                    className="utm-builder-destination-btn"
-                    onClick={() => applyDestination(shortcut.url)}
-                  >
-                    {shortcut.label}
-                  </button>
-                ))}
+            <div className="utm-builder-quick-start">
+              <span className="text-sm font-semibold">Quick start</span>
+              <div className="utm-builder-quick-start-groups">
+                <QuickStartChips
+                  label="Pages"
+                  suggestions={DESTINATION_SHORTCUTS.map((shortcut) => ({
+                    id: shortcut.id,
+                    label: shortcut.label,
+                    value: shortcut.url,
+                  }))}
+                  activeId={activeDestinationId}
+                  onSelect={applyDestination}
+                />
+                <QuickStartChips
+                  label="Channels"
+                  suggestions={UTM_PRESETS.map((preset) => ({
+                    id: preset.id,
+                    label: preset.label,
+                    value: preset.id,
+                  }))}
+                  activeId={form.activePresetId}
+                  onSelect={applyPreset}
+                  titleFor={(suggestion) =>
+                    findPresetById(suggestion.value)?.description
+                  }
+                />
+                <QuickStartChips
+                  label="Sources"
+                  suggestions={sourceSuggestions}
+                  activeId={activeSourceId}
+                  onSelect={(value) => updateUtmField("utm_source", value)}
+                />
+                <QuickStartChips
+                  label="Mediums"
+                  suggestions={mediumSuggestions}
+                  activeId={activeMediumId}
+                  onSelect={(value) => updateUtmField("utm_medium", value)}
+                />
+                <QuickStartChips
+                  label="Campaigns"
+                  suggestions={campaignSuggestions}
+                  activeId={activeCampaignId}
+                  onSelect={(value) => updateUtmField("utm_campaign", value)}
+                />
               </div>
             </div>
 
-            <div className="utm-builder-presets">
-              <span className="text-sm font-semibold">Channel presets</span>
-              <div className="utm-builder-chip-list">
-                {UTM_PRESETS.map((preset) => (
-                  <button
-                    key={preset.id}
-                    type="button"
-                    className={[
-                      "utm-builder-preset-btn",
-                      form.activePresetId === preset.id ? "is-active" : "",
-                    ]
-                      .filter(Boolean)
-                      .join(" ")}
-                    title={preset.description}
-                    onClick={() => applyPreset(preset.id)}
-                  >
-                    {preset.label}
-                  </button>
-                ))}
-                {form.activePresetId === "" &&
-                (form.utm.utm_source.trim() || form.utm.utm_medium.trim()) ? (
-                  <span className="utm-builder-hint self-center">Custom channel</span>
-                ) : null}
-              </div>
-            </div>
+            <Ga4UtmHistoryPanel
+              data={ga4History}
+              loading={ga4HistoryLoading}
+              onLoad={applyGa4Entry}
+            />
 
             <div className="utm-builder-field-grid">
               <UtmField
                 fieldKey="utm_source"
-                label="Campaign source"
+                label="Source"
                 required
                 placeholder="instagram"
                 value={form.utm.utm_source}
@@ -746,7 +1036,7 @@ export function UtmBuilderTool() {
               />
               <UtmField
                 fieldKey="utm_medium"
-                label="Campaign medium"
+                label="Medium"
                 required
                 placeholder="social"
                 value={form.utm.utm_medium}
@@ -758,7 +1048,7 @@ export function UtmBuilderTool() {
 
             <UtmField
               fieldKey="utm_campaign"
-              label="Campaign name"
+              label="Campaign"
               required
               placeholder="spring-art-walk-2026"
               value={form.utm.utm_campaign}
@@ -767,75 +1057,79 @@ export function UtmBuilderTool() {
               onBlur={() => normalizeUtmOnBlur("utm_campaign")}
             />
 
-            <div className="utm-builder-slug-helper">
-              <span className="text-sm font-semibold">Campaign name helper</span>
-              <div className="utm-builder-field-grid">
-                <label className="field">
-                  <span>Event name</span>
-                  <input
-                    type="text"
-                    placeholder="Art Walk"
-                    value={slugEventName}
-                    onChange={(event) => setSlugEventName(event.target.value)}
-                  />
-                </label>
-                <label className="field">
-                  <span>Date label</span>
-                  <input
-                    type="text"
-                    placeholder="Jun 2026"
-                    value={slugDateLabel}
-                    onChange={(event) => setSlugDateLabel(event.target.value)}
-                  />
-                </label>
-              </div>
-              <button type="button" className="secondary-btn w-fit" onClick={applyCampaignSlug}>
-                Apply slug to campaign
-              </button>
-            </div>
+            <details
+              className="utm-builder-more"
+              open={moreOpen}
+              onToggle={(event) => setMoreOpen(event.currentTarget.open)}
+            >
+              <summary>More options</summary>
+              <div className="utm-builder-more-body">
+                <div className="utm-builder-more-section">
+                  <span className="text-sm font-semibold">Campaign slug</span>
+                  <div className="utm-builder-field-grid">
+                    <label className="field">
+                      <span>Event name</span>
+                      <input
+                        type="text"
+                        placeholder="Art Walk"
+                        value={slugEventName}
+                        onChange={(event) => setSlugEventName(event.target.value)}
+                      />
+                    </label>
+                    <label className="field">
+                      <span>Date</span>
+                      <input
+                        type="text"
+                        placeholder="Jun 2026"
+                        value={slugDateLabel}
+                        onChange={(event) => setSlugDateLabel(event.target.value)}
+                      />
+                    </label>
+                  </div>
+                  <button type="button" className="secondary-btn w-fit" onClick={applyCampaignSlug}>
+                    Apply to campaign
+                  </button>
+                </div>
 
-            <details className="utm-builder-advanced">
-              <summary>Advanced parameters</summary>
-              <div className="utm-builder-advanced-body">
-                <div className="utm-builder-field-grid">
+                <div className="utm-builder-more-section">
+                  <div className="utm-builder-field-grid">
+                    <UtmField
+                      fieldKey="utm_term"
+                      label="Term"
+                      placeholder="keyword"
+                      value={form.utm.utm_term}
+                      warning={warningByField.get("utm_term")}
+                      onChange={(value) => updateUtmField("utm_term", value)}
+                      onBlur={() => normalizeUtmOnBlur("utm_term")}
+                    />
+                    <UtmField
+                      fieldKey="utm_content"
+                      label="Content"
+                      placeholder="story-slide-1"
+                      value={form.utm.utm_content}
+                      warning={warningByField.get("utm_content")}
+                      onChange={(value) => updateUtmField("utm_content", value)}
+                      onBlur={() => normalizeUtmOnBlur("utm_content")}
+                    />
+                  </div>
                   <UtmField
-                    fieldKey="utm_term"
-                    label="Campaign term"
-                    placeholder="paid keyword (optional)"
-                    value={form.utm.utm_term}
-                    warning={warningByField.get("utm_term")}
-                    onChange={(value) => updateUtmField("utm_term", value)}
-                    onBlur={() => normalizeUtmOnBlur("utm_term")}
-                  />
-                  <UtmField
-                    fieldKey="utm_content"
-                    label="Campaign content"
-                    placeholder="story-slide-1 (optional)"
-                    value={form.utm.utm_content}
-                    warning={warningByField.get("utm_content")}
-                    onChange={(value) => updateUtmField("utm_content", value)}
-                    onBlur={() => normalizeUtmOnBlur("utm_content")}
+                    fieldKey="utm_id"
+                    label="Campaign ID"
+                    placeholder="tracking-id"
+                    value={form.utm.utm_id}
+                    warning={warningByField.get("utm_id")}
+                    onChange={(value) => updateUtmField("utm_id", value)}
+                    onBlur={() => normalizeUtmOnBlur("utm_id")}
                   />
                 </div>
 
-                <UtmField
-                  fieldKey="utm_id"
-                  label="Campaign ID"
-                  placeholder="Optional tracking ID"
-                  value={form.utm.utm_id}
-                  warning={warningByField.get("utm_id")}
-                  onChange={(value) => updateUtmField("utm_id", value)}
-                  onBlur={() => normalizeUtmOnBlur("utm_id")}
-                />
-
-                <div>
-                  <div className="mb-2 flex items-center justify-between gap-3">
-                    <span className="text-sm font-semibold">Custom parameters</span>
+                <div className="utm-builder-more-section">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-sm font-semibold">Custom params</span>
                     <button type="button" className="secondary-btn" onClick={addCustomParam}>
-                      Add param
+                      Add
                     </button>
                   </div>
-
                   {form.customParams.length > 0 ? (
                     <div className="utm-builder-custom-params">
                       {form.customParams.map((param, index) => (
@@ -873,120 +1167,79 @@ export function UtmBuilderTool() {
                       ))}
                     </div>
                   ) : (
-                    <p className="utm-builder-hint">
-                      Optional non-UTM query params (e.g. ref, fbclid).
-                    </p>
+                    <p className="utm-builder-hint">Non-UTM query keys (e.g. ref).</p>
                   )}
+                </div>
+
+                <div className="utm-builder-more-section">
+                  <span className="text-sm font-semibold">Content variants</span>
+                  {activePreset ? (
+                    <div className="utm-builder-chip-list">
+                      {activePreset.contentSuggestions.map((suggestion) => (
+                        <button
+                          key={suggestion}
+                          type="button"
+                          className="utm-builder-suggestion-btn"
+                          onClick={() => addContentVariant(suggestion)}
+                        >
+                          + {suggestion}
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
+                  <label className="field">
+                    <span>Variants (comma or line separated)</span>
+                    <textarea
+                      rows={2}
+                      placeholder="story-1, story-2"
+                      value={variantInput}
+                      onChange={(event) => setVariantInput(event.target.value)}
+                    />
+                  </label>
+                  <button type="button" className="secondary-btn w-fit" onClick={addVariantsFromInput}>
+                    Add variants
+                  </button>
+                  {form.contentVariants.length > 0 ? (
+                    <div className="utm-builder-chip-list">
+                      {form.contentVariants.map((variant) => (
+                        <span key={variant} className="utm-builder-variant-chip">
+                          {variant}
+                          <button
+                            type="button"
+                            aria-label={`Remove ${variant}`}
+                            onClick={() => removeContentVariant(variant)}
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
               </div>
             </details>
 
-            <div className="utm-builder-variants">
-              <span className="text-sm font-semibold">Content variants</span>
-              <p className="utm-builder-hint">
-                Generate multiple links with different utm_content values for carousels, A/B posts,
-                or email placements.
-              </p>
-
-              {activePreset ? (
-                <div className="utm-builder-chip-list">
-                  {activePreset.contentSuggestions.map((suggestion) => (
-                    <button
-                      key={suggestion}
-                      type="button"
-                      className="utm-builder-suggestion-btn"
-                      onClick={() => addContentVariant(suggestion)}
-                    >
-                      + {suggestion}
-                    </button>
-                  ))}
-                </div>
-              ) : null}
-
-              <label className="field">
-                <span>Add variants (comma or line separated)</span>
-                <textarea
-                  rows={2}
-                  placeholder="story-1, story-2, feed-post"
-                  value={variantInput}
-                  onChange={(event) => setVariantInput(event.target.value)}
-                />
-              </label>
-              <button type="button" className="secondary-btn w-fit" onClick={addVariantsFromInput}>
-                Add variants
-              </button>
-
-              {form.contentVariants.length > 0 ? (
-                <div className="utm-builder-chip-list">
-                  {form.contentVariants.map((variant) => (
-                    <span key={variant} className="utm-builder-variant-chip">
-                      {variant}
-                      <button
-                        type="button"
-                        aria-label={`Remove ${variant}`}
-                        onClick={() => removeContentVariant(variant)}
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              <button type="button" className="secondary-btn" onClick={handleReset}>
-                Reset
-              </button>
-              <button type="button" className="secondary-btn" onClick={() => void handleCopyShareLink()}>
-                Copy share link
+            <div className="utm-builder-form-footer">
+              <StatusLine message={status.message} variant={status.variant} />
+              <button type="button" className="utm-builder-reset-link" onClick={handleReset}>
+                Reset form
               </button>
             </div>
-
-            <StatusLine message={status.message} variant={status.variant} />
           </form>
         </section>
 
         <section className="panel utm-builder-output-panel">
           <div className="utm-builder-output-header">
             <h2>Tagged URL</h2>
-            <div className="utm-builder-output-actions">
-              <button
-                type="button"
-                className="primary-btn"
-                disabled={!builtUrl || !requiredComplete}
-                onClick={() => void handleCopy("full")}
-                title="⌘⇧C / Ctrl+Shift+C"
-              >
-                Copy URL
-              </button>
-              <button
-                type="button"
-                className="secondary-btn"
-                disabled={!builtUrl || !requiredComplete}
-                onClick={() => void handleCopy("query")}
-              >
-                Copy ?params
-              </button>
-              <button
-                type="button"
-                className="secondary-btn"
-                disabled={!builtUrl || !requiredComplete}
-                onClick={() => void handleCopy("path-query")}
-              >
-                Copy path
-              </button>
-              {builtUrl && requiredComplete ? (
-                <a
-                  href={builtUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="secondary-btn no-underline"
-                >
-                  Open
-                </a>
-              ) : null}
-            </div>
+            <button
+              type="button"
+              className="primary-btn"
+              disabled={!builtUrl || !requiredComplete}
+              onClick={() => void handleCopy("full")}
+              title="⌘⇧C / Ctrl+Shift+C"
+            >
+              Copy URL
+            </button>
           </div>
 
           <div className="utm-builder-url-box" aria-live="polite">
@@ -996,35 +1249,46 @@ export function UtmBuilderTool() {
               <UrlBreakdown url={builtUrl} />
             ) : (
               <span className="text-muted-foreground">
-                Fill destination URL, source, medium, and campaign to preview the tagged link.
+                Enter destination, source, medium, and campaign to preview.
               </span>
             )}
           </div>
 
-          {activeParams.length > 0 ? (
-            <div className="mt-5">
-              <h3 className="mb-3 text-sm font-semibold">Parameter summary</h3>
-              <ul className="utm-builder-param-list">
-                {activeParams.map((entry) => (
-                  <li key={entry.label} className="utm-builder-param-item">
-                    <span className="utm-builder-param-label">
-                      {entry.label}
-                      {entry.required ? " *" : ""}
-                    </span>
-                    <span className="utm-builder-param-value">{entry.value}</span>
-                  </li>
-                ))}
-                {form.customParams
-                  .filter((param) => param.key.trim() && param.value.trim())
-                  .map((param) => (
-                    <li key={`summary-${param.key}`} className="utm-builder-param-item">
-                      <span className="utm-builder-param-label">{param.key}</span>
-                      <span className="utm-builder-param-value">{param.value}</span>
-                    </li>
-                  ))}
-              </ul>
-            </div>
-          ) : null}
+          <div className="utm-builder-output-secondary">
+            <button
+              type="button"
+              className="secondary-btn"
+              disabled={!builtUrl || !requiredComplete}
+              onClick={() => void handleCopy("query")}
+            >
+              Copy params
+            </button>
+            <button
+              type="button"
+              className="secondary-btn"
+              disabled={!builtUrl || !requiredComplete}
+              onClick={() => void handleCopy("path-query")}
+            >
+              Copy path
+            </button>
+            {builtUrl && requiredComplete ? (
+              <a
+                href={builtUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="secondary-btn no-underline"
+              >
+                Open
+              </a>
+            ) : null}
+            <button
+              type="button"
+              className="secondary-btn"
+              onClick={() => void handleCopyShareLink()}
+            >
+              Share link
+            </button>
+          </div>
 
           {contentVariantLinks.length > 0 && requiredComplete ? (
             <div className="mt-5">

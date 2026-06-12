@@ -356,7 +356,7 @@ Live **Google Analytics 4** and **Search Console** overview for creativewaco.org
 
 **Data sources**
 
-- **GA4 Data API** — active users, sessions, engagement, bounce rate, daily trends (hover a day for top pages that day), traffic channels (hover a segment or legend row for top sources), **user demographics** (age, gender, interests — modeled by Google for a subset of visitors; shares are among known users only), top pages, referrers, **path exploration** (tree graph of landing → next-page flows; click a node to re-root)
+- **GA4 Data API** — active users, sessions, engagement, bounce rate, daily trends (hover a day for top pages that day — paths wrap in the tooltip; list comes from the full daily dataset), traffic channels (hover a segment or legend row for top sources), **user demographics** (age, gender, interests — modeled by Google for a subset of visitors; shares are among known users only), top pages, referrers, **path exploration** (session-start landing → next page in order; not link-click tracking)
 - **Search Console API** — organic search **queries** and **pages** (clicks, impressions, CTR, position), plus query–page pairs for cross-filtering in the UI. GA4 Organic Search shows volume only; keywords appear as `(not provided)` in GA4.
 
 **Program filters and shareable URLs**
@@ -442,10 +442,10 @@ Until Search Console is connected, the dashboard shows in-panel setup instructio
 
 Returns KPIs (with period-over-period change), daily series, channels, `userDemographics` (age, gender, interests with coverage %), top pages, referrers, `programInsights` (when `program` is set), and `searchConsole` (queries + totals or setup error).
 
-`GET /api/analytics-dashboard/path-exploration/?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&mode=landings|next&fromPath=/events&program=events`
+`GET /api/analytics-dashboard/path-exploration/?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&mode=landings|next&pathSteps=["/","/events/levitt/lineup"]&program=events`
 
 - `mode=landings` — all session-start landing pages (column 1)
-- `mode=next&fromPath=/…` — next pages after the selected path (subsequent columns)
+- `mode=next&pathSteps=["/","/events/…"]` — next pages after the full selected path (GA4 funnel; up to 5 options per step). Legacy `fromPath=/…` still accepted as a single-step path.
 
 Main dashboard query params:
 
@@ -468,22 +468,28 @@ Main dashboard query params:
 
 Build tagged destination URLs for Google Analytics and other reporting.
 
-1. Enter the **destination URL** (defaults to `https://creativewaco.org/`) or pick a **destination shortcut** (Home, Events, Spark, About)
-2. Pick a **channel preset** (Instagram, Facebook, newsletter, Google Ads, print/QR, partner) — active preset is highlighted; presets include suggested **content variants**
-3. Set **campaign name** manually or use the **campaign name helper** (event name + date → slug)
-4. Optionally expand **Advanced parameters** (term, content, ID, custom query keys)
-5. Add **content variants** to generate multiple `utm_content` links for carousels or A/B placements
-6. Copy the live preview (**full URL**, **query string only**, or **path + query** for HubSpot/email), open in a new tab, or copy a **shareable builder link**
+1. Enter the **destination URL** (defaults to `https://creativewaco.org/`) or use **Quick start** chips: **Pages**, **Channels** (source + medium combo), **Sources**, **Mediums**, and **Campaigns** (program names aligned with analytics)
+2. Set **source**, **medium**, and **campaign** (required)
+3. Expand **More options** when needed: campaign slug helper, term/content/ID, custom query keys, and **content variants** for multiple `utm_content` links
+4. Copy the live preview (**Copy URL**, **Copy params**, **Copy path**), open in a new tab, or **Share link** for a pre-filled builder URL
 
 **Auto-parse** — paste a full tagged URL into Destination URL; UTM parameters are detected and split into fields automatically.
 
 **Recent campaigns** — last copied campaigns are saved in the browser (up to 10) for quick reload.
+
+**From analytics** — when GA4 credentials are configured (same as Analytics Dashboard), the builder loads the last 90 days of tagged session combinations from GA4. Top combos appear in a **From analytics** panel (click **Load**); unique sources, mediums, and campaigns also append to Quick start chips.
 
 **Print / QR preset** — shows a downloadable QR code when the tagged URL is ready.
 
 **Keyboard shortcut** — **⌘⇧C** / **Ctrl+Shift+C** copies the full tagged URL (when focus is not in an input).
 
 **Shareable state** — form values sync to the browser URL via `history.replaceState` (no full page reload) so you can bookmark or Slack a pre-filled link (e.g. `/utm-builder/?url=…&utm_campaign=…`). Use **Copy share link** to send the current builder state.
+
+**API**
+
+`GET /api/utm-builder/history/?days=90&limit=100`
+
+Returns top UTM source/medium/campaign combinations from GA4 session-scoped dimensions (same credentials as Analytics Dashboard). Optional `days` (7–365, default 90) and `limit` (10–200, default 100). Response includes `configured`, `combinations`, and unique `sources` / `mediums` / `campaigns` for Quick start chips.
 
 **Notes**
 

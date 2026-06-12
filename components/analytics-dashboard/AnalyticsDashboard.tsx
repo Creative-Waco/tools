@@ -62,6 +62,7 @@ import { SearchQueriesPanel } from "./SearchQueriesPanel";
 import type {
   AnalyticsDashboardData,
   ChannelRow,
+  DailyPageRow,
   DailyRow,
 } from "./types";
 import { buildDashboardCacheKey, readCachedDashboard } from "./cache";
@@ -83,7 +84,7 @@ const pageViewsConfig = {
 } satisfies ChartConfig;
 
 const TREND_CHART_HEIGHT =
-  "!aspect-auto h-52 min-h-52 max-h-52 w-full overflow-hidden";
+  "!aspect-auto h-52 min-h-52 max-h-52 w-full overflow-visible";
 
 function trendChartYDomain([, dataMax]: readonly [number, number]): [number, number] {
   const max = Math.max(0, Number.isFinite(dataMax) ? dataMax : 0);
@@ -238,6 +239,7 @@ function TrendChartTooltip({
   payload,
   metricLabel,
   metricKey,
+  dailyPagesByKey,
 }: {
   active?: boolean;
   payload?: Array<{
@@ -247,6 +249,7 @@ function TrendChartTooltip({
   }>;
   metricLabel: string;
   metricKey: "sessions" | "pageViews";
+  dailyPagesByKey: Map<string, DailyPageRow[]>;
 }) {
   if (!active || !payload?.length) return null;
 
@@ -254,12 +257,16 @@ function TrendChartTooltip({
   if (!row) return null;
 
   const total = trendTooltipMetricValue(payload, metricKey);
-  const pages = (row.pages ?? [])
-    .filter((page) => !page.path.startsWith("/.wf_"))
+  const pages = (
+    dailyPagesByKey.get(row.dateKey) ??
+    row.pages ??
+    []
+  )
+    .filter((page) => page.path && !page.path.startsWith("/.wf_"))
     .slice(0, 5);
 
   return (
-    <div className="grid w-72 max-w-[min(18rem,calc(100vw-2rem))] gap-2 overflow-hidden rounded-lg border border-border/50 bg-background px-2.5 py-2 text-xs shadow-xl">
+    <div className="grid w-72 max-w-[min(18rem,calc(100vw-2rem))] gap-2 rounded-lg border border-border/50 bg-background px-2.5 py-2 text-xs shadow-xl">
       <div className="font-medium">
         {format(new Date(row.date), "EEEE, MMM d, yyyy")}
       </div>
@@ -269,26 +276,28 @@ function TrendChartTooltip({
           {total.toLocaleString()}
         </span>
       </div>
-      {pages.length > 0 ? (
-        <div className="space-y-1 border-t border-border/50 pt-2">
-          <p className="text-muted-foreground">Top pages that day</p>
-          <ul className="max-h-36 space-y-1 overflow-y-auto pr-1">
+      <div className="space-y-1 border-t border-border/50 pt-2">
+        <p className="text-muted-foreground">Top pages that day</p>
+        {pages.length > 0 ? (
+          <ul className="max-h-36 space-y-1.5 overflow-y-auto pr-1">
             {pages.map((page) => (
               <li
                 key={page.path}
-                className="flex min-w-0 items-start justify-between gap-3"
+                className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-3 gap-y-0.5"
               >
-                <span className="min-w-0 flex-1 truncate font-medium">
+                <span className="break-all font-medium leading-snug">
                   {page.path}
                 </span>
-                <span className="shrink-0 font-mono tabular-nums text-muted-foreground">
+                <span className="font-mono tabular-nums text-muted-foreground">
                   {page.views.toLocaleString()}
                 </span>
               </li>
             ))}
           </ul>
-        </div>
-      ) : null}
+        ) : (
+          <p className="text-muted-foreground">No page breakdown for this day.</p>
+        )}
+      </div>
     </div>
   );
 }
@@ -447,6 +456,17 @@ export function AnalyticsDashboard() {
   const trendConfig = isProgramScope ? pageViewsConfig : sessionsConfig;
   const trendLabel = isProgramScope ? "Page views trend" : "Sessions trend";
   const trendKey = isProgramScope ? "pageViews" : "sessions";
+
+  const dailyPagesByKey = useMemo(
+    () =>
+      new Map(
+        daily.map((row) => [row.dateKey, row.pages ?? []] satisfies [
+          string,
+          DailyPageRow[],
+        ]),
+      ),
+    [daily],
+  );
 
   return (
     <div className="min-w-0 max-w-full space-y-6 overflow-x-hidden">
@@ -631,13 +651,13 @@ export function AnalyticsDashboard() {
       />
 
       <div className="grid min-w-0 grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="md:col-span-2">
+        <Card className="md:col-span-2 overflow-visible">
           <CardHeader className="pb-2">
             <CardTitle className="text-base">
               <DataSourceTitle source="ga4">{trendLabel}</DataSourceTitle>
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="overflow-visible">
             {loading ? (
               <Skeleton className="h-52 w-full" />
             ) : (
@@ -686,7 +706,9 @@ export function AnalyticsDashboard() {
                     allowDecimals={false}
                   />
                   <ChartTooltip
-                    allowEscapeViewBox={{ x: true, y: true }}
+                    allowEscapeViewBox={{ x: true, y: false }}
+                    offset={12}
+                    wrapperStyle={{ overflow: "visible", zIndex: 50 }}
                     wrapperClassName="z-50 !pointer-events-none"
                     content={
                       <TrendChartTooltip
@@ -694,6 +716,7 @@ export function AnalyticsDashboard() {
                         metricLabel={
                           isProgramScope ? "Page views" : "Sessions"
                         }
+                        dailyPagesByKey={dailyPagesByKey}
                       />
                     }
                   />

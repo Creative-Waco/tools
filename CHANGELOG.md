@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **UTM URL Builder** — **From analytics** panel loads top UTM combinations from GA4 (last 90 days via `GET /api/utm-builder/history/`); **Load** fills the builder; GA4-only sources/mediums/campaigns append to Quick start chips when not in the static lists.
 - **Analytics Dashboard** — Search queries panel: sortable columns (click headers), **Keywords / Pages** toggle, click a keyword to filter landing pages (switches to Pages), click a page to filter keywords (switches to Keywords); filter chips with clear.
 - **Analytics Dashboard** — **User demographics** card in the overview grid: GA4 age brackets, gender, and interests (`brandingInterest`) with coverage % and a note that most visitors are not assigned demographics; interest labels truncate with hover for the full Google category path.
 - **Analytics Dashboard** — **Path exploration** redesigned as a single horizontal row: column 1 loads all session-start pages; each selection loads the next column from that path only; **Add step** extends up to 8 columns with horizontal scroll (`mode=landings|next` API).
@@ -33,6 +34,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **UTM URL Builder** — simplified layout: **Quick start** combines page and channel chips; optional slug helper, extra UTM fields, custom params, and content variants live under one **More options** panel (auto-expands when loaded from a shared link or recent campaign); output panel drops redundant parameter summary.
+- **UTM URL Builder** — **Quick start** page chips highlight the active destination when the URL matches a shortcut (same active style as channel presets).
+- **UTM URL Builder** — **Quick start** adds **Sources**, **Mediums**, and **Campaigns** chip rows with active highlighting; campaign suggestions match analytics program names.
 - **Analytics Dashboard** — path exploration uses GA4 **funnel reports** so each step counts sessions that followed the full selected path in order; counts narrow as you go deeper. API accepts `pathSteps` JSON array (up to 5 next-page options per step — GA4 limit).
 - **Analytics Dashboard** — Top cities overview card replaced by **User demographics**; per-city hover breakdowns removed. Program insights still show top cities in the “Who’s visiting” panel (lighter GA4 query).
 
@@ -43,10 +47,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **Event Card Graphics** — landscape slideshow and Instagram PNG downloads no longer export blank event images for off-screen carousel slides; card images are preloaded before `html-to-image` export and card templates use eager loading instead of lazy loading.
-- **Analytics Dashboard** — path exploration step counts no longer mix session-start totals with unrelated page-view/referrer totals (e.g. a later step showing 547 after 125 on the prior step).
+- **Analytics Dashboard** — sessions trend tooltip reads top pages from the full daily dataset (not Recharts payload alone) so “Top pages that day” lists paths and view counts; dashboard cache bumped to `v2` so stale sessionStorage without per-day pages is ignored.
 - **Analytics Dashboard** — path exploration no longer expands the page width; horizontal step columns scroll inside a contained area while the rest of the dashboard stays within the viewport. App shell and sidebar inset also clip horizontal overflow so cards below (e.g. Search queries) stay aligned.
 - **Analytics Dashboard** — Día de los Muertos program filter now matches the current `/dia-de-los-muertos` URL (and legacy `/diadelosmuertos` paths); the old filter only matched the no-hyphen slug, so recent date ranges showed zero sessions despite traffic in GA4.
-- **Analytics Dashboard** — sessions trend tooltip no longer clips session counts or page view numbers; reads the metric from row data when Recharts omits `value`, truncates long paths, and scrolls the top-pages list.
+- **Analytics Dashboard** — sessions trend tooltip no longer clips at the chart edge (card/chart use `overflow-visible`; tooltip flips above when near the bottom); long page paths wrap instead of overflowing horizontally.
+- **Analytics Dashboard** — sessions trend tooltip no longer clips session counts or page view numbers; reads the metric from row data when Recharts omits `value`, and scrolls the top-pages list.
 - **Analytics Dashboard** — program trend charts (e.g. Events) no longer look zoomed in: Y-axis always starts at 0 and chart height stays fixed like the all-site view.
 - **Analytics Dashboard** — Search queries table uses fixed column widths and truncates long keywords (hover for full text); filters spammy GSC rows (`-site:` chains, HTML entity noise, 100+ chars).
 - **Analytics Dashboard** — Search Console program filters no longer send unsupported `groupType: "or"`; multiple page paths are combined with a single `includingRegex` filter (GSC only supports `"and"` within a filter group).
