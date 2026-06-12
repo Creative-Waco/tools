@@ -55,7 +55,11 @@ function PathNode({
             </p>
           ) : null}
         </div>
-        <Badge variant="secondary" className="shrink-0 tabular-nums">
+        <Badge
+          variant="secondary"
+          className="shrink-0 tabular-nums"
+          title="Sessions in this path"
+        >
           {node.value.toLocaleString()}
         </Badge>
       </div>

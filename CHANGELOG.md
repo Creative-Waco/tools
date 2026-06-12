@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Analytics Dashboard** — path exploration uses GA4 **funnel reports** so each step counts sessions that followed the full selected path in order; counts narrow as you go deeper. API accepts `pathSteps` JSON array (up to 5 next-page options per step — GA4 limit).
 - **Analytics Dashboard** — Top cities overview card replaced by **User demographics**; per-city hover breakdowns removed. Program insights still show top cities in the “Who’s visiting” panel (lighter GA4 query).
 
 ### Removed
@@ -42,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **Event Card Graphics** — landscape slideshow and Instagram PNG downloads no longer export blank event images for off-screen carousel slides; card images are preloaded before `html-to-image` export and card templates use eager loading instead of lazy loading.
+- **Analytics Dashboard** — path exploration step counts no longer mix session-start totals with unrelated page-view/referrer totals (e.g. a later step showing 547 after 125 on the prior step).
 - **Analytics Dashboard** — path exploration no longer expands the page width; horizontal step columns scroll inside a contained area while the rest of the dashboard stays within the viewport. App shell and sidebar inset also clip horizontal overflow so cards below (e.g. Search queries) stay aligned.
 - **Analytics Dashboard** — Día de los Muertos program filter now matches the current `/dia-de-los-muertos` URL (and legacy `/diadelosmuertos` paths); the old filter only matched the no-hyphen slug, so recent date ranges showed zero sessions despite traffic in GA4.
 - **Analytics Dashboard** — sessions trend tooltip no longer clips session counts or page view numbers; reads the metric from row data when Recharts omits `value`, truncates long paths, and scrolls the top-pages list.

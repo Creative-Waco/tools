@@ -404,7 +404,7 @@ When a program is selected, four **program insight** panels answer:
 | What they're doing | Engagement time, scrolls, form starts/submits, clicks |
 | Where they go next | Next page after a program page (internal navigation) |
 
-**Path exploration** (below KPI cards) works like GA4: column 1 lists all session-start landing pages; selecting one loads the next column for that page only. Each later step depends on the previous selection. Columns scroll horizontally in a single row; use **Add step** to extend the path (up to 8 columns).
+**Path exploration** (below KPI cards) works like GA4: column 1 lists session-start landing pages; selecting one loads the next column for sessions that continued **in order** along your selections (GA4 funnel API — counts always decrease or stay flat as you go deeper). Each later step depends on the full path so far. Columns scroll horizontally in a single row; use **Add step** to extend the path (up to 8 columns). Up to 5 next-page options per step (GA4 API limit).
 
 A **Search queries** table (Search Console) lists the actual Google keywords driving traffic to those pages, with a **Pages** view for top landing URLs from Google Search. Click column headers to sort; click a keyword to see which pages received those clicks, or click a page to see its queries. Rows truncate in the table (hover for the full text); obvious spam strings (`-site:` chains, HTML entity noise, 100+ characters) are filtered out before display. GSC **clicks** count only when someone clicked a Google search result to a program URL; GA4 **organic sessions** also include visitors who landed elsewhere (e.g. homepage) and navigated to program pages, plus Google Discover/News.
 
