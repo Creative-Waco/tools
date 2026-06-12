@@ -440,7 +440,7 @@ Until Search Console is connected, the dashboard shows in-panel setup instructio
 
 `GET /api/analytics-dashboard/?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&program=creative-spark`
 
-Returns KPIs (with period-over-period change), daily series, channels, `userDemographics` (age, gender, interests with coverage %), top pages, referrers, `programInsights` (when `program` is set), and `searchConsole` (queries + totals or setup error).
+Returns KPIs (with period-over-period change), daily series, channels, `userDemographics` (age, gender, interests with coverage %, plus top cities with hover breakdowns), top pages, referrers, `programInsights` (when `program` is set), and `searchConsole` (queries + totals or setup error).
 
 `GET /api/analytics-dashboard/path-exploration/?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&mode=landings|next&pathSteps=["/","/events/levitt/lineup"]&program=events`
 
