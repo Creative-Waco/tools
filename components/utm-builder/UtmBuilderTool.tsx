@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { StatusLine } from "@/components/StatusLine";
-import { Ga4UtmHistoryPanel } from "@/components/utm-builder/Ga4UtmHistoryPanel";
 import { QrCodePreview } from "@/components/utm-builder/QrCodePreview";
 import { UrlBreakdown } from "@/components/utm-builder/UrlBreakdown";
 import { UtmField } from "@/components/utm-builder/UtmField";
@@ -33,6 +32,10 @@ import {
   saveRecentCampaign,
   type RecentCampaign,
 } from "@/lib/utm-builder/recent-campaigns";
+import {
+  formatGa4EntryLabel,
+  ga4EntryToFormState,
+} from "@/lib/utm-builder/apply-ga4-entry";
 import type {
   Ga4UtmHistoryEntry,
   Ga4UtmHistoryResult,
@@ -47,30 +50,21 @@ import {
 } from "@/lib/utm-builder/suggestions";
 import {
   builderPathFromForm,
-  DEFAULT_BASE_URL,
   DEFAULT_FORM,
   formStateToSearchParams,
   readShareableStateFromLocation,
   type BuilderFormState,
 } from "@/lib/utm-builder/url-state";
 
-function landingPageToUrl(landingPage: string): string {
-  if (!landingPage) return "";
+type LoadEntryRequest = {
+  entry: Ga4UtmHistoryEntry;
+  key: number;
+};
 
-  try {
-    const origin = new URL(DEFAULT_BASE_URL).origin;
-    const path = landingPage.startsWith("/") ? landingPage : `/${landingPage}`;
-    return `${origin}${path}`;
-  } catch {
-    return "";
-  }
-}
-
-function formatGa4EntryLabel(entry: Ga4UtmHistoryEntry): string {
-  return [entry.utm.utm_campaign, entry.utm.utm_source, entry.utm.utm_medium]
-    .filter(Boolean)
-    .join(" · ");
-}
+type UtmBuilderToolProps = {
+  ga4History?: Ga4UtmHistoryResult | null;
+  loadEntryRequest?: LoadEntryRequest | null;
+};
 
 function emptyCustomParam(): CustomParam {
   return { key: "", value: "" };
@@ -143,7 +137,10 @@ function QuickStartChips({
   );
 }
 
-export function UtmBuilderTool() {
+export function UtmBuilderTool({
+  ga4History = null,
+  loadEntryRequest = null,
+}: UtmBuilderToolProps = {}) {
   const skipUrlSync = useRef(true);
 
   const [form, setForm] = useState<BuilderFormState>(DEFAULT_FORM);
@@ -153,8 +150,6 @@ export function UtmBuilderTool() {
   const [slugDateLabel, setSlugDateLabel] = useState("");
   const [variantInput, setVariantInput] = useState("");
   const [moreOpen, setMoreOpen] = useState(false);
-  const [ga4History, setGa4History] = useState<Ga4UtmHistoryResult | null>(null);
-  const [ga4HistoryLoading, setGa4HistoryLoading] = useState(true);
 
   useEffect(() => {
     const shared = readShareableStateFromLocation();
@@ -171,32 +166,6 @@ export function UtmBuilderTool() {
     }, 300);
 
     return () => window.clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadGa4History() {
-      try {
-        const response = await fetch("/api/utm-builder/history?days=90");
-        const data = (await response.json()) as Ga4UtmHistoryResult;
-        if (!cancelled) setGa4History(data);
-      } catch {
-        if (!cancelled) {
-          setGa4History({
-            configured: false,
-            message: "Could not load GA4 campaign history.",
-          });
-        }
-      } finally {
-        if (!cancelled) setGa4HistoryLoading(false);
-      }
-    }
-
-    void loadGa4History();
-    return () => {
-      cancelled = true;
-    };
   }, []);
 
   useEffect(() => {
@@ -286,6 +255,18 @@ export function UtmBuilderTool() {
   const setStatusMessage = useCallback((message: string, variant: "" | "success" | "error" = "") => {
     setStatus({ message, variant });
   }, []);
+
+  useEffect(() => {
+    if (!loadEntryRequest) return;
+
+    setForm((current) => ga4EntryToFormState(loadEntryRequest.entry, current));
+    const previewForm = ga4EntryToFormState(loadEntryRequest.entry, DEFAULT_FORM);
+    if (formHasMoreOptions(previewForm)) setMoreOpen(true);
+    setStatusMessage(
+      `Loaded from tracker: ${formatGa4EntryLabel(loadEntryRequest.entry) || "campaign"}.`,
+      "success",
+    );
+  }, [loadEntryRequest, setStatusMessage]);
 
   function updateForm(updater: (current: BuilderFormState) => BuilderFormState) {
     setForm((current) => updater(current));
@@ -438,19 +419,6 @@ export function UtmBuilderTool() {
     setForm(nextForm);
     if (formHasMoreOptions(nextForm)) setMoreOpen(true);
     setStatusMessage(`Loaded recent campaign: ${campaign.label}.`, "success");
-  }
-
-  function applyGa4Entry(entry: Ga4UtmHistoryEntry) {
-    const nextForm: BuilderFormState = {
-      baseUrl: entry.landingPage ? landingPageToUrl(entry.landingPage) : form.baseUrl,
-      utm: { ...entry.utm },
-      customParams: form.customParams,
-      contentVariants: form.contentVariants,
-      activePresetId: detectPresetId(entry.utm.utm_source, entry.utm.utm_medium),
-    };
-    setForm(nextForm);
-    if (formHasMoreOptions(nextForm)) setMoreOpen(true);
-    setStatusMessage(`Loaded from GA4: ${formatGa4EntryLabel(entry) || "campaign"}.`, "success");
   }
 
   function addCustomParam() {
@@ -860,70 +828,6 @@ export function UtmBuilderTool() {
           font-size: 14px;
           background: #fff;
         }
-
-        .utm-builder-ga4-history summary {
-          cursor: pointer;
-          font-weight: 600;
-          font-size: 14px;
-        }
-
-        .utm-builder-ga4-history-body {
-          display: grid;
-          gap: 10px;
-          margin-top: 12px;
-        }
-
-        .utm-builder-ga4-history-list {
-          display: grid;
-          gap: 8px;
-          margin: 0;
-          padding: 0;
-          list-style: none;
-        }
-
-        .utm-builder-ga4-history-item {
-          display: flex;
-          justify-content: space-between;
-          gap: 12px;
-          align-items: flex-start;
-          border-bottom: 1px solid var(--border, #e5e5e5);
-          padding-bottom: 8px;
-        }
-
-        .utm-builder-ga4-history-item:last-child {
-          border-bottom: 0;
-          padding-bottom: 0;
-        }
-
-        .utm-builder-ga4-history-copy {
-          display: grid;
-          gap: 4px;
-          min-width: 0;
-        }
-
-        .utm-builder-ga4-history-label {
-          font-size: 13px;
-          font-weight: 600;
-        }
-
-        .utm-builder-ga4-history-meta {
-          font-size: 12px;
-          color: var(--muted-foreground, #666);
-          word-break: break-word;
-        }
-
-        .utm-builder-ga4-history-actions {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          flex-shrink: 0;
-        }
-
-        .utm-builder-ga4-history-sessions {
-          font-size: 12px;
-          color: var(--muted-foreground, #666);
-          white-space: nowrap;
-        }
       `}</style>
 
       <div className="tool-layout">
@@ -1016,12 +920,6 @@ export function UtmBuilderTool() {
                 />
               </div>
             </div>
-
-            <Ga4UtmHistoryPanel
-              data={ga4History}
-              loading={ga4HistoryLoading}
-              onLoad={applyGa4Entry}
-            />
 
             <div className="utm-builder-field-grid">
               <UtmField

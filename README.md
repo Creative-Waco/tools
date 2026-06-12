@@ -8,7 +8,7 @@ Internal tools for Creative Waco, hosted at **https://tools.creativewaco.org**.
 |------|-----|-------------|
 | RSS Email HTML Generator | [/rss-email/](https://tools.creativewaco.org/rss-email/) | RSS feed → HubSpot-ready event email HTML |
 | Event Card Graphics | [/event-cards/](https://tools.creativewaco.org/event-cards/) | Instagram carousel cards (1080×1350, 4:5) or landscape display slideshow cards (1920px wide) from the events RSS feed |
-| UTM URL Builder | [/utm-builder/](https://tools.creativewaco.org/utm-builder/) | Build campaign-tagged links with UTM parameters for analytics |
+| Campaign Tracker | [/utm-builder/](https://tools.creativewaco.org/utm-builder/) | Track GA4 tagged campaigns and build UTM links |
 
 ## Dashboards
 
@@ -308,7 +308,7 @@ Public-facing dashboard for [Creative Spark](https://creativewaco.org/spark) mem
 
 **Spark events table** — upcoming pipeline first (soonest dated events on top), then ideas; completed events are collapsed behind a toggle. Scrollable table body keeps the layout compact.
 
-**Loading** — skeleton placeholders animate while Givebutter and Asana data load (filter changes and **Refresh**). Toolbar filters: period, membership type, and refresh only (no JSON export).
+**Loading** — skeleton placeholders animate while Givebutter and Asana data load on the first visit or when switching to an uncached filter combination. Repeat visits in the same tab load instantly from `sessionStorage` (same pattern as Analytics Dashboard and Campaign Tracker); click **Refresh** to bypass cache and refetch from Givebutter and Asana. Toolbar filters: period, membership type, and refresh only (no JSON export).
 
 **Chart tooltips** — hover (or keyboard focus) on the growth chart, tier donut/legend, and goal progress bars for custom detail tooltips. Click a month in the growth chart to open a modal with new members and events held that month (names link to Givebutter).
 
@@ -464,32 +464,51 @@ Main dashboard query params:
 - First GA4 load can take several seconds; skeleton placeholders and “Loading GA4 data…” are normal. Repeat visits in the same tab load instantly from session cache until **Refresh**.
 - Search Console panel shows setup steps when the API is disabled or the service account lacks property access.
 
-## UTM URL Builder
+## Campaign Tracker
 
-Build tagged destination URLs for Google Analytics and other reporting.
+Track tagged campaigns from GA4 and build or edit UTM links at `/utm-builder/`.
 
-1. Enter the **destination URL** (defaults to `https://creativewaco.org/`) or use **Quick start** chips: **Pages**, **Channels** (source + medium combo), **Sources**, **Mediums**, and **Campaigns** (program names aligned with analytics)
+### Campaign tracker (top of page)
+
+When GA4 credentials are configured (same as Analytics Dashboard), the tracker loads tagged session data from GA4:
+
+- **Summary** — unique campaign count, sessions, and active users for the selected date range
+- **View** — **By campaign** (default) groups rows with expand/collapse: first by source/medium, then landing-page links; **All links** shows the flat list
+- **Table** — paginated (25 rows), scrollable with sticky headers; landing path instead of full tagged URL (full link on row hover)
+- **Sort** — click **Campaign**, **Sessions**, or **Users** column headers
+- **Source** and **Medium** — separate columns (campaign rows summarize when multiple values exist)
+- **Referrer** — referring site from GA4 (`pageReferrer`); hover for full URL; empty shows **Direct**
+- **Search** — filter by campaign, source, medium, referrer, or URL
+- **Date range** — last 90 days, 180 days, or 12 months
+- **Session cache** — campaign data is cached in the browser for the tab session; revisiting the page or switching back to a previously loaded range does not refetch GA4 until you click **Refresh**
+- **Click a row** — expand a campaign for source/medium breakdown (and link variants), or load a single-link campaign into the URL builder below
+
+Only sessions with a real manual `utm_campaign` are included (organic/direct traffic is excluded).
+
+### URL builder (bottom of page)
+
+1. Enter the **destination URL** (defaults to `https://creativewaco.org/`) or use **Quick start** chips: **Pages**, **Channels**, **Sources**, **Mediums**, and **Campaigns**
 2. Set **source**, **medium**, and **campaign** (required)
-3. Expand **More options** when needed: campaign slug helper, term/content/ID, custom query keys, and **content variants** for multiple `utm_content` links
-4. Copy the live preview (**Copy URL**, **Copy params**, **Copy path**), open in a new tab, or **Share link** for a pre-filled builder URL
+3. Expand **More options** when needed: campaign slug helper, term/content/ID, custom params, and **content variants**
+4. Copy the live preview (**Copy URL**, **Copy params**, **Copy path**), open in a new tab, or **Share link**
 
 **Auto-parse** — paste a full tagged URL into Destination URL; UTM parameters are detected and split into fields automatically.
 
 **Recent campaigns** — last copied campaigns are saved in the browser (up to 10) for quick reload.
 
-**From analytics** — when GA4 credentials are configured (same as Analytics Dashboard), the builder loads the last 90 days of tagged session combinations from GA4. Top combos appear in a **From analytics** panel (click **Load**); unique sources, mediums, and campaigns also append to Quick start chips.
+**GA4 suggestions** — unique sources, mediums, and campaigns from the tracker append to Quick start chips when not already in the static lists.
 
 **Print / QR preset** — shows a downloadable QR code when the tagged URL is ready.
 
 **Keyboard shortcut** — **⌘⇧C** / **Ctrl+Shift+C** copies the full tagged URL (when focus is not in an input).
 
-**Shareable state** — form values sync to the browser URL via `history.replaceState` (no full page reload) so you can bookmark or Slack a pre-filled link (e.g. `/utm-builder/?url=…&utm_campaign=…`). Use **Copy share link** to send the current builder state.
+**Shareable state** — form values sync to the browser URL via `history.replaceState` (no full page reload) so you can bookmark or Slack a pre-filled link (e.g. `/utm-builder/?url=…&utm_campaign=…`). Use **Share link** to send the current builder state.
 
 **API**
 
-`GET /api/utm-builder/history/?days=90&limit=100`
+`GET /api/utm-builder/history/?days=90&limit=500`
 
-Returns top UTM source/medium/campaign combinations from GA4 session-scoped dimensions (same credentials as Analytics Dashboard). Optional `days` (7–365, default 90) and `limit` (10–200, default 100). Response includes `configured`, `combinations`, and unique `sources` / `mediums` / `campaigns` for Quick start chips.
+Returns tagged campaign rows from GA4 (`sessionManualSource`, `sessionManualMedium`, `sessionManualCampaignName`, term, content, landing page, `pageReferrer`) with `sessions`, `activeUsers`, and a reconstructed `taggedUrl`. Optional `days` (7–365, default 90) and `limit` (10–1000, default 500).
 
 **Notes**
 
@@ -497,6 +516,7 @@ Returns top UTM source/medium/campaign combinations from GA4 session-scoped dime
 - Values are normalized on blur (lowercase, hyphens, special characters removed).
 - If the destination already has `utm_*` tags, the tool warns that they will be replaced.
 - Custom parameters are appended as non-`utm_` query keys (e.g. `ref=partner-name`).
+- Tagged URLs are reconstructed from landing page + UTM params; GA4 does not store every exact query string historically.
 
 ## Adding a new tool
 

@@ -7,11 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Campaign Tracker** — GA4 campaign table at the top of `/utm-builder/` with **By campaign** / **All links** views, expand/collapse by campaign and source/medium, **Source**, **Medium**, and **Referrer** columns, pagination, and row-click to load the URL builder.
+
+### Changed
+
+- **Creative Spark Dashboard** — dashboard data is cached in `sessionStorage` per period and membership-type filter (same pattern as Analytics Dashboard and Campaign Tracker); repeat visits in the same tab load instantly until **Refresh**.
+- **Campaign Tracker** — renamed from UTM URL Builder in sidebar and tools registry; tracker on top, URL builder below; GA4 history uses manual UTM dimensions plus `pageReferrer` (referrers no longer mixed into Source).
+- **Campaign Tracker** — GA4 campaign data cached in `sessionStorage` per date range; **Refresh** bypasses cache.
+
+### Fixed
+
+- **Campaign Tracker** — hydration mismatch when reading `sessionStorage` during initial render.
+- **Campaign Tracker** — duplicate GA4 rows with identical UTM/landing combos are merged so session counts sum correctly.
+
 ## [1.1.0] - 2026-06-12
 
 ### Added
 
-- **UTM URL Builder** — **From analytics** panel loads top UTM combinations from GA4 (last 90 days via `GET /api/utm-builder/history/`); **Load** fills the builder; GA4-only sources/mediums/campaigns append to Quick start chips when not in the static lists.
+- **Campaign Tracker** — `/utm-builder/` is now a GA4-backed campaign tracker (unique tagged URLs with sessions and active users) with the UTM URL builder moved to the bottom; **Edit** in the tracker loads a row into the builder.
+- **UTM URL Builder** — GA4 history API and Quick start chip enrichment from analytics data (same credentials as Analytics Dashboard).
 - **Analytics Dashboard** — Search queries panel: sortable columns (click headers), **Keywords / Pages** toggle, click a keyword to filter landing pages (switches to Pages), click a page to filter keywords (switches to Keywords); filter chips with clear.
 - **Analytics Dashboard** — **User demographics** card in the overview grid: GA4 age brackets, gender, interests (`brandingInterest`), and **top cities** with coverage % and a note that most visitors are not assigned demographics; interest labels truncate with hover for the full Google category path; city rows show region/country subtitles and hover for share, engagement, new vs returning, top sources, and top landing pages.
 - **Analytics Dashboard** — **Path exploration** redesigned as a single horizontal row: column 1 loads all session-start pages; each selection loads the next column from that path only; **Add step** extends up to 8 columns with horizontal scroll (`mode=landings|next` API).
@@ -36,6 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Campaign Tracker** (formerly UTM URL Builder sidebar label) — page hero, tools registry, and layout: tracker table on top, URL builder below; GA4 history API returns `taggedUrl`, `activeUsers`, and summary `totals`.
 - **UTM URL Builder** — simplified layout: **Quick start** combines page and channel chips; optional slug helper, extra UTM fields, custom params, and content variants live under one **More options** panel (auto-expands when loaded from a shared link or recent campaign); output panel drops redundant parameter summary.
 - **UTM URL Builder** — **Quick start** page chips highlight the active destination when the URL matches a shortcut (same active style as channel presets).
 - **UTM URL Builder** — **Quick start** adds **Sources**, **Mediums**, and **Campaigns** chip rows with active highlighting; campaign suggestions match analytics program names.
@@ -48,6 +65,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Campaign Tracker** — fixed hydration mismatch by loading `sessionStorage` cache after mount instead of during initial render (server and client now agree on first paint).
 - **UTM URL Builder** — GA4 history entries with identical UTM/landing combos (after placeholder cleanup) are merged so React keys stay unique and session counts are summed correctly.
 - **Analytics Dashboard** — Singapore is excluded from top-city lists (user demographics and program insights); common GA4 noise for this property.
 - **Event Card Graphics** — landscape slideshow and Instagram PNG downloads no longer export blank event images for off-screen carousel slides; card images are preloaded before `html-to-image` export and card templates use eager loading instead of lazy loading.

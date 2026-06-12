@@ -1,4 +1,10 @@
-import type { Tier } from "./types";
+import {
+  buildDashboardCacheKey,
+  clearCachedDashboard,
+  readCachedDashboard,
+  writeCachedDashboard,
+} from "./cache";
+import type { DashboardData, Tier } from "./types";
 
 export const TIERS: Tier[] = ["bronze", "silver", "gold"];
 
@@ -73,7 +79,16 @@ export async function fetchDashboard({
   period: string;
   membershipType: string;
   refresh?: boolean;
-}): Promise<unknown> {
+}): Promise<DashboardData> {
+  const cacheKey = buildDashboardCacheKey(period, membershipType);
+
+  if (!refresh) {
+    const cached = readCachedDashboard(cacheKey);
+    if (cached) return cached;
+  } else {
+    clearCachedDashboard(cacheKey);
+  }
+
   const params = new URLSearchParams({ period, membershipType });
   if (refresh) params.set("refresh", "1");
   const res = await fetch(`/api/sparks-dashboard/?${params}`, { cache: "no-store" });
@@ -81,5 +96,8 @@ export async function fetchDashboard({
     const body = await res.json().catch(() => ({}));
     throw new Error((body as { error?: string }).error ?? `Request failed (${res.status})`);
   }
-  return res.json();
+
+  const payload = (await res.json()) as DashboardData;
+  writeCachedDashboard(cacheKey, payload);
+  return payload;
 }

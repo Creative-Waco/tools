@@ -27,7 +27,7 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const days = parseDaysParam(searchParams.get("days"));
-    const limit = Math.min(200, Math.max(10, Number(searchParams.get("limit") ?? "100") || 100));
+    const limit = Math.min(1000, Math.max(10, Number(searchParams.get("limit") ?? "500") || 500));
     const endDate = new Date();
     const startDate = subDays(endDate, days - 1);
 

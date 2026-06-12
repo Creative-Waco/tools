@@ -1,15 +1,15 @@
 import { PageHero } from "@/components/PageHero";
-import { UtmBuilderTool } from "@/components/utm-builder/UtmBuilderTool";
+import { UtmCampaignPage } from "@/components/utm-builder/UtmCampaignPage";
 
 export default function UtmBuilderPage() {
   return (
     <main className="page">
       <PageHero
         eyebrow="Creative Waco tooling"
-        title="UTM URL Builder"
-        lede="Build campaign-tagged links for analytics. Set source, medium, and campaign, then copy a ready-to-share URL."
+        title="Campaign Tracker"
+        lede="See tagged campaigns from GA4 — sessions, users, and unique URLs. Build or edit links in the URL builder below."
       />
-      <UtmBuilderTool />
+      <UtmCampaignPage />
     </main>
   );
 }

@@ -11,6 +11,7 @@ import { MembersTables } from "./MembersTables";
 import { SyncBanner } from "./SyncBanner";
 import { TierPanel } from "./TierPanel";
 import { Toolbar } from "./Toolbar";
+import { buildDashboardCacheKey, readCachedDashboard } from "./cache";
 import type { DashboardData, MembershipTypeFilter, Period, TierMix } from "./types";
 import { fetchDashboard } from "./utils";
 import { useChartInteractions } from "./useChartInteractions";
@@ -29,18 +30,29 @@ export function SparksDashboard() {
 
   const { tooltip, tooltipRef, hideChartTooltip } = useChartInteractions(growthModalMonth !== null);
 
-  const loadDashboard = useCallback(async () => {
+  const loadDashboard = useCallback(async (force = false) => {
+    const cacheKey = buildDashboardCacheKey(period, membershipType);
+    const cached = !force ? readCachedDashboard(cacheKey) : null;
+
+    if (cached) {
+      setData(cached);
+      setLoading(false);
+      setStatusMessage(cached.warnings?.length ? cached.warnings.map((w) => w.message).join(" ") : "");
+      setStatusType("");
+      return;
+    }
+
     setRefreshDisabled(true);
     setLoading(true);
     setStatusMessage("");
     setStatusType("");
 
     try {
-      const result = (await fetchDashboard({
+      const result = await fetchDashboard({
         period,
         membershipType,
-        refresh: true,
-      })) as DashboardData;
+        refresh: force,
+      });
 
       setData(result);
 
@@ -59,7 +71,7 @@ export function SparksDashboard() {
   }, [period, membershipType]);
 
   useEffect(() => {
-    loadDashboard();
+    void loadDashboard(false);
   }, [loadDashboard]);
 
   function handleMonthClick(monthKey: string) {
@@ -88,7 +100,7 @@ export function SparksDashboard() {
           refreshDisabled={refreshDisabled}
           onPeriodChange={setPeriod}
           onMembershipTypeChange={setMembershipType}
-          onRefresh={loadDashboard}
+          onRefresh={() => void loadDashboard(true)}
         />
 
         <KpiGrid kpis={data?.kpis ?? []} loading={loading} />

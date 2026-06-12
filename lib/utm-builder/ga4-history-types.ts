@@ -9,13 +9,21 @@ export type Ga4UtmHistoryEntry = {
   id: string;
   utm: UtmParams;
   landingPage: string;
+  referrer: string;
+  taggedUrl: string;
   sessions: number;
+  activeUsers: number;
 };
 
 export type Ga4UtmHistoryResponse = {
   configured: true;
   startDate: string;
   endDate: string;
+  totals: {
+    campaigns: number;
+    sessions: number;
+    activeUsers: number;
+  };
   entries: Ga4UtmHistoryEntry[];
   suggestions: {
     sources: Ga4UtmSuggestion[];

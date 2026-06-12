@@ -250,3 +250,28 @@ export function breakdownUrl(builtUrl: string): UrlBreakdownPart[] {
     return [{ text: builtUrl, kind: "path" }];
   }
 }
+
+export function landingPageToUrl(
+  landingPage: string,
+  origin = "https://creativewaco.org/",
+): string {
+  if (!landingPage) return "";
+
+  try {
+    const siteOrigin = new URL(origin).origin;
+    const path = landingPage.startsWith("/") ? landingPage : `/${landingPage}`;
+    return `${siteOrigin}${path}`;
+  } catch {
+    return "";
+  }
+}
+
+export function reconstructTaggedUrl(
+  landingPage: string,
+  utm: UtmParams,
+  origin = "https://creativewaco.org/",
+): string {
+  const baseUrl = landingPage ? landingPageToUrl(landingPage, origin) : origin;
+  const result = buildUtmUrl(baseUrl, utm, [], { normalize: false });
+  return result.url;
+}

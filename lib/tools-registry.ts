@@ -46,10 +46,10 @@ export const TOOLS: Tool[] = [
   },
   {
     id: "utm-builder",
-    name: "UTM URL Builder",
+    name: "Campaign Tracker",
     path: "/utm-builder/",
     description:
-      "Build campaign-tagged links with UTM parameters for newsletters, social, and paid ads.",
+      "Track tagged campaigns from GA4 and build UTM links for newsletters, social, and paid ads.",
     tag: "Marketing",
     kind: "tool",
   },
