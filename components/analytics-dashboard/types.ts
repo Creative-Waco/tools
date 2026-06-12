@@ -94,28 +94,6 @@ export type ProgramSummary = {
   description: string;
 };
 
-export type JourneyStep = {
-  id: string;
-  label: string;
-  path?: string;
-  metric: number;
-  metricLabel: string;
-  share?: number;
-};
-
-export type JourneyStage = {
-  id: "arrival" | "landing" | "explore" | "continue" | "actions";
-  title: string;
-  description: string;
-  steps: JourneyStep[];
-  footnote?: string;
-};
-
-export type VisitorJourney = {
-  scope: "site" | "program";
-  stages: JourneyStage[];
-};
-
 export type ProgramInsights = {
   audience: {
     newUsers: number;
@@ -192,7 +170,6 @@ export type AnalyticsDashboardData = {
   topReferrers: TopReferrerRow[];
   topCities: TopCityRow[];
   programInsights: ProgramInsights | null;
-  visitorJourney: VisitorJourney | null;
   searchConsole: SearchConsoleData;
   fetchedAt: string;
 };

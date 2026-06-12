@@ -54,7 +54,6 @@ import { cn } from "@/lib/cn";
 import { StatusLine } from "@/components/StatusLine";
 import { DataSourceTitle } from "./DataSourceLogos";
 import { ProgramInsights } from "./ProgramInsights";
-import { VisitorJourneys } from "./VisitorJourneys";
 import { PROGRAM_SEASON_SLUG } from "./program-seasons";
 import { PROGRAM_OPTIONS } from "./programs";
 import { SearchQueriesPanel } from "./SearchQueriesPanel";
@@ -1022,13 +1021,6 @@ export function AnalyticsDashboard() {
           </CardContent>
         </Card>
       </div>
-
-      <VisitorJourneys
-        journey={data?.visitorJourney ?? null}
-        loading={loading}
-        programName={data?.program.name ?? selectedProgram?.name ?? "Site"}
-        isProgramScope={isProgramScope}
-      />
 
       <SearchQueriesPanel
         data={data?.searchConsole ?? null}

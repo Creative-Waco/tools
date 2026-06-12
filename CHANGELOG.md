@@ -11,12 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Analytics Dashboard** — **Sponsorship** program filter for all sponsor/sponsorship pages site-wide (`program=sponsorship`).
 - **Analytics Dashboard** — per-program **season date presets** in the date dropdown (e.g. Last Día de los Muertos season Oct 1–Nov 15, Last concert season May–Sep, Previous calendar year for year-round programs); shareable as `preset=last-season` with `program`.
-- **Analytics Dashboard** — **Visitor journeys** flow UI (arrival → landing → views → next steps → engagement events) for all-site and program scopes, built from GA4 aggregates with ranked steps, share bars, and path tooltips.
 - **Analytics Dashboard** — official Google product icons (`public/logos/ga4.png`, `public/logos/gsc.png` from Google gstatic) beside section titles for charts, tables, and program insights.
 - **Analytics Dashboard** — traffic channels pie chart and legend tooltips show session count, share, and top sources per channel (GA4 `sessionDefaultChannelGroup` + `sessionSource` breakdown).
 - **Analytics Dashboard** — sessions/page-views trend chart tooltip shows the full date, daily total, and top pages viewed that day (GA4 `date` + `pagePath` breakdown).
 - **Analytics Dashboard** at `/analytics-dashboard/` — GA4 site overview (Shadcnblocks **chart-group14**, `@google-analytics/data`, `recharts`) with date presets, KPI cards, sessions/page-views trend, traffic channels, top pages, and referrers; **Analytics** sidebar tag in `lib/tools-registry.ts`.
-- **Analytics Dashboard** — **program filters** (Creative Spark, Events, Levitt, Día de los Muertos, Artprenticeship, Waco Wonderland) with scoped KPIs and four GA4 insight panels (who visits, how they find it, what they do, where they go next); `program` query param on `GET /api/analytics-dashboard/`.
+- **Analytics Dashboard** — **program filters** (Creative Spark, Events, Levitt, Día de los Muertos, Artprenticeship, Waco Wonderland, Sponsorship) with scoped KPIs and four GA4 insight panels (who visits, how they find it, what they do, where they go next); `program` query param on `GET /api/analytics-dashboard/`.
 - **Analytics Dashboard** — **Google Search Console** integration for organic search queries (clicks, impressions, CTR, position), scoped to program page paths; in-dashboard setup instructions when API access is missing; `googleapis` dependency.
 - **Analytics Dashboard** — local credential auto-load from `~/.config/creativewaco/` (`ga4-service-account.json`, `ga4-property-id.txt`).
 - **Event Card Graphics** — selective PNG download with checkboxes; one selection downloads a single PNG, multiple selections download a ZIP (`jszip`).
@@ -28,6 +27,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Analytics Dashboard** — shareable URL params for program and date filters (`?program=creative-spark&preset=last-30-days` or `startDate`/`endDate`); session-scoped cache avoids refetching GA4/GSC on page refresh until **Refresh** is clicked.
 - **Analytics Dashboard** — **Top cities** card in the overview grid (GA4 `city` dimension with active users and sessions); site-wide and program-scoped.
 - **Analytics Dashboard** — city rows show region/country subtitles; hover for share, engagement rate, new vs returning, top sources, and top landing pages per city.
+
+### Removed
+
+- **Analytics Dashboard** — visitor journeys flow UI and related GA4 site-wide journey queries.
 
 ### Fixed
 
