@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Analytics Dashboard** — Día de los Muertos program filter now matches the current `/dia-de-los-muertos` URL (and legacy `/diadelosmuertos` paths); the old filter only matched the no-hyphen slug, so recent date ranges showed zero sessions despite traffic in GA4.
 - **Analytics Dashboard** — sessions trend tooltip no longer clips session counts or page view numbers; reads the metric from row data when Recharts omits `value`, truncates long paths, and scrolls the top-pages list.
 - **Analytics Dashboard** — program trend charts (e.g. Events) no longer look zoomed in: Y-axis always starts at 0 and chart height stays fixed like the all-site view.
 - **Analytics Dashboard** — Search queries table uses fixed column widths and truncates long keywords (hover for full text); filters spammy GSC rows (`-site:` chains, HTML entity noise, 100+ chars).

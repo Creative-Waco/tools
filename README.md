@@ -377,7 +377,7 @@ Scoped mode filters both GA4 and Search Console to that program’s page paths:
 |---------|----------------|
 | Creative Spark | `/programs/spark`, `/creative-spark`, `/sparks-only`, `/spark`, `/es/spark` |
 | Events | `/event/…` |
-| Día de los Muertos | `/diadelosmuertos` |
+| Día de los Muertos | `/dia-de-los-muertos`, `/diadelosmuertos`, `/events/dia-de-los-muertos`, `/es/dia-de-los-muertos` |
 | Levitt | `/levitt` |
 | Artprenticeship | `/artprenticeship` |
 | Waco Wonderland | `/waco-wonderland-parade` |
