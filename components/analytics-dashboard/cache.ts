@@ -1,9 +1,11 @@
 import { format } from "date-fns";
 import type { DateRange } from "react-day-picker";
 
+import { normalizeSearchInsights } from "./normalize-insights";
+import { normalizeTrafficInsights } from "./normalize-traffic-insights";
 import type { AnalyticsDashboardData } from "./types";
 
-const CACHE_PREFIX = "cw-analytics-dashboard:v4:";
+const CACHE_PREFIX = "cw-analytics-dashboard:v10:";
 
 type CacheEntry = {
   data: AnalyticsDashboardData;
@@ -28,7 +30,29 @@ export function readCachedDashboard(
     const raw = window.sessionStorage.getItem(cacheKey);
     if (!raw) return null;
     const entry = JSON.parse(raw) as CacheEntry;
-    return entry.data ?? null;
+    const data = entry.data;
+    if (!data) return null;
+
+    let normalized = data;
+
+    if (data.searchConsole?.available) {
+      normalized = {
+        ...normalized,
+        searchConsole: {
+          ...data.searchConsole,
+          insights: normalizeSearchInsights(data.searchConsole.insights),
+        },
+      };
+    }
+
+    if (data.trafficInsights) {
+      normalized = {
+        ...normalized,
+        trafficInsights: normalizeTrafficInsights(data.trafficInsights),
+      };
+    }
+
+    return normalized;
   } catch {
     return null;
   }

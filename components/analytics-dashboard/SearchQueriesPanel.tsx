@@ -5,9 +5,11 @@ import {
   ArrowUp,
   ArrowUpDown,
   FileText,
+  Lightbulb,
   Search,
   X,
 } from "lucide-react";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +36,7 @@ type SearchQueriesPanelProps = {
   loading?: boolean;
   programName: string;
   isProgramScope: boolean;
+  insightsHref?: string;
 };
 
 type ViewMode = "queries" | "pages";
@@ -235,6 +238,7 @@ export function SearchQueriesPanel({
   loading,
   programName,
   isProgramScope,
+  insightsHref,
 }: SearchQueriesPanelProps) {
   const [viewMode, setViewMode] = useState<ViewMode>("queries");
   const [sortColumn, setSortColumn] = useState<SortColumn>("clicks");
@@ -368,7 +372,7 @@ export function SearchQueriesPanel({
             </p>
           </div>
           {data.available && data.totals ? (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Badge variant="secondary">
                 {headerTotals.clicks.toLocaleString()} clicks
               </Badge>
@@ -376,6 +380,18 @@ export function SearchQueriesPanel({
                 {headerTotals.impressions.toLocaleString()} impressions
               </Badge>
               <Badge variant="secondary">{headerTotals.ctr}% CTR</Badge>
+              {insightsHref ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 gap-1.5"
+                  nativeButton={false}
+                  render={<Link href={insightsHref} />}
+                >
+                  <Lightbulb className="size-3.5" />
+                  Insights
+                </Button>
+              ) : null}
             </div>
           ) : null}
         </div>

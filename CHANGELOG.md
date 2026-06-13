@@ -9,17 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Insights** — unified hub at `/insights/` combining Search Console and GA4 opportunities with normalized impact scoring (0–100), source/type filters, and a row-click detail panel (period comparison, site benchmarks, GSC click trends, technical metadata).
+- **Insights — Traffic** — GA4 opportunity engine: high-bounce landings, low-engagement pages, form/retention/mobile flags, rising and declining channels/sources.
 - **Campaign Tracker** — GA4 campaign table at the top of `/utm-builder/` with **By campaign** / **All links** views, expand/collapse by campaign and source/medium, **Source**, **Medium**, and **Referrer** columns, pagination, and row-click to load the URL builder.
 
 ### Changed
 
+- **Insights** — actionable recommendations lead each row; subject (query, path, or source/medium) is secondary context; flat impact-sorted table with compact filters and 30-row default.
+- **Insights** — moved from Search queries tab to dedicated `/insights/` route; sidebar entry **Insights**; `/search-insights/` redirects; program and date URL params shared with Analytics Dashboard.
+- **Analytics Dashboard** — **Insights** link in toolbar and on Search queries card.
 - **Creative Spark Dashboard** — dashboard data is cached in `sessionStorage` per period and membership-type filter (same pattern as Analytics Dashboard and Campaign Tracker); repeat visits in the same tab load instantly until **Refresh**.
 - **Campaign Tracker** — renamed from UTM URL Builder in sidebar and tools registry; tracker on top, URL builder below; GA4 history uses manual UTM dimensions plus `pageReferrer` (referrers no longer mixed into Source).
 - **Campaign Tracker** — GA4 campaign data cached in `sessionStorage` per date range; **Refresh** bypasses cache.
 
 ### Fixed
 
-- **Campaign Tracker** — hydration mismatch when reading `sessionStorage` during initial render.
+- **Insights — Traffic** — fix GA4 comparison report parsing (one row per date range); corrects wrong engagement rates, prior-session counts, and inflated % change; impact scoring uses session delta; session cache `v10`.
+- **Insights** — normalize cached/partial search `insights` payloads so missing arrays or row fields no longer crash the page.
+- **Insights** — stale `.next` dev cache caused 500/blank page (`Cannot read properties of undefined (reading 'call')`); use `npm run dev:clean:3847` after route changes.
 - **Campaign Tracker** — duplicate GA4 rows with identical UTM/landing combos are merged so session counts sum correctly.
 
 ## [1.1.0] - 2026-06-12

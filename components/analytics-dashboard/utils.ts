@@ -59,3 +59,23 @@ export function formatChange(change: number) {
   const sign = rounded > 0 ? "+" : "";
   return `${sign}${rounded}%`;
 }
+
+/** Show absolute counts when % change is misleading (tiny prior baseline). */
+export function formatSessionComparison(
+  current: number,
+  previous: number | null | undefined,
+  change: number | null,
+): string | null {
+  if (change === null) return null;
+
+  if (
+    previous !== null &&
+    previous !== undefined &&
+    previous >= 0 &&
+    (previous < 10 || Math.abs(change) >= 500)
+  ) {
+    return `${previous.toLocaleString()} → ${current.toLocaleString()} sessions (${formatChange(change)})`;
+  }
+
+  return formatChange(change);
+}

@@ -62,6 +62,15 @@ export const TOOLS: Tool[] = [
     tag: "Analytics",
     kind: "dashboard",
   },
+  {
+    id: "insights",
+    name: "Insights",
+    path: "/insights/",
+    description:
+      "Search Console keyword opportunities and GA4 traffic patterns — quick wins, cannibalization, audience, and channels.",
+    tag: "Analytics",
+    kind: "dashboard",
+  },
 ];
 
 export const DASHBOARDS = TOOLS.filter((tool) => tool.kind === "dashboard");

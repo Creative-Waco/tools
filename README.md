@@ -16,6 +16,7 @@ Internal tools for Creative Waco, hosted at **https://tools.creativewaco.org**.
 |-----------|-----|-------------|
 | Creative Spark Dashboard | [/sparks-dashboard/](https://tools.creativewaco.org/sparks-dashboard/) | Live Spark membership + event pipeline from Givebutter and Asana |
 | Analytics Dashboard | [/analytics-dashboard/](https://tools.creativewaco.org/analytics-dashboard/) | GA4 + Search Console — site and program analytics, organic keywords, traffic channels |
+| Insights | [/insights/](https://tools.creativewaco.org/insights/) | Search Console keyword opportunities and GA4 traffic patterns |
 
 ## Architecture
 
@@ -406,9 +407,23 @@ When a program is selected, four **program insight** panels answer:
 
 **Path exploration** (below KPI cards) works like GA4: column 1 lists session-start landing pages; selecting one loads the next column for sessions that continued **in order** along your selections (GA4 funnel API — counts always decrease or stay flat as you go deeper). Each later step depends on the full path so far. Columns scroll horizontally in a single row; use **Add step** to extend the path (up to 8 columns). Up to 5 next-page options per step (GA4 API limit).
 
-A **Search queries** table (Search Console) lists the actual Google keywords driving traffic to those pages, with a **Pages** view for top landing URLs from Google Search. Click column headers to sort; click a keyword to see which pages received those clicks, or click a page to see its queries. Rows truncate in the table (hover for the full text); obvious spam strings (`-site:` chains, HTML entity noise, 100+ characters) are filtered out before display. GSC **clicks** count only when someone clicked a Google search result to a program URL; GA4 **organic sessions** also include visitors who landed elsewhere (e.g. homepage) and navigated to program pages, plus Google Discover/News.
+The **Search queries** table on the Analytics Dashboard lists organic Google keywords with **Keywords** and **Pages** views. Use **Insights** in the toolbar (or the link on the Search queries card) to open the dedicated insights dashboard.
 
 GA4 and Search Console report aggregated counts only — not individual identities. Search Console data is typically **2–3 days behind** GA4.
+
+## Insights
+
+Dedicated insights dashboard at [`/insights/`](https://tools.creativewaco.org/insights/). Shares program and date filters with the Analytics Dashboard (`?program=creative-spark&preset=last-30-days`).
+
+**Unified list** — Search Console and GA4 opportunities merged into one impact-sorted table (0–100). Each row shows the **actionable recommendation** first; query, path, or source/medium appears as context below.
+
+**Filters** — source (`all` | `search` | `traffic`), type (`quick_wins`, `cannibalization`, `conversion`, `rising`, `watchlist`), and **High priority only** (impact ≥ 25). Shows 30 rows by default with **Show all** for the full list.
+
+**Detail panel** — click any row to open source data: period comparison (this range vs prior), vs site average (bounce/engagement when relevant), summary metrics, GSC click-trend table, and collapsible technical metadata.
+
+**Categories:** Quick wins (GSC + GA4 landings), Cannibalization (GSC), Conversion & experience (GA4), Rising, Watchlist.
+
+[`/search-insights/`](https://tools.creativewaco.org/search-insights/) redirects to `/insights/?source=search`. Uses the same `GET /api/analytics-dashboard/` payload and session cache (`v10`) as the main dashboard.
 
 **Environment variables**
 
@@ -440,7 +455,7 @@ Until Search Console is connected, the dashboard shows in-panel setup instructio
 
 `GET /api/analytics-dashboard/?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&program=creative-spark`
 
-Returns KPIs (with period-over-period change), daily series, channels, `userDemographics` (age, gender, interests with coverage %, plus top cities with hover breakdowns), top pages, referrers, `programInsights` (when `program` is set), and `searchConsole` (queries + totals or setup error).
+Returns KPIs (with period-over-period change), daily series, channels, `userDemographics` (age, gender, interests with coverage %, plus top cities with hover breakdowns), top pages, referrers, `programInsights` (when `program` is set), `trafficInsights` (GA4 opportunities: bounce landings, engagement gaps, conversion flags, rising/declining acquisition), and `searchConsole` (queries, pages, pairs, totals, and `insights` with opportunities/rising keyword analysis, or setup error).
 
 `GET /api/analytics-dashboard/path-exploration/?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&mode=landings|next&pathSteps=["/","/events/levitt/lineup"]&program=events`
 

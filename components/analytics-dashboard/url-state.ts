@@ -12,6 +12,11 @@ import {
 import type { DateRange } from "react-day-picker";
 
 import {
+  DEFAULT_UNIFIED_FILTERS,
+  unifiedFiltersToSearchParams,
+  type UnifiedInsightsFilters,
+} from "./unified-insights";
+import {
   getProgramSeasonLabel,
   getProgramSeasonRange,
   hasProgramSeason,
@@ -217,9 +222,69 @@ export function buildDashboardPath(
   dateRange: DateRange | undefined,
   presetLabel: string,
 ) {
+  return buildFilteredDashboardPath(
+    "/analytics-dashboard/",
+    programId,
+    dateRange,
+    presetLabel,
+  );
+}
+
+export type InsightsSection = "search" | "traffic";
+
+/** @deprecated Use UnifiedInsightsFilters.source instead */
+export const INSIGHTS_SECTIONS = new Set<InsightsSection>(["search", "traffic"]);
+
+/** @deprecated Use readUnifiedInsightsFilters from unified-insights */
+export function readInsightsSection(
+  search = typeof window !== "undefined" ? window.location.search : "",
+): InsightsSection {
+  const value = new URLSearchParams(search).get("section")?.trim();
+  if (value === "traffic") return "traffic";
+  const source = new URLSearchParams(search).get("source")?.trim();
+  if (source === "traffic") return "traffic";
+  return "search";
+}
+
+export function buildInsightsPath(
+  programId: string,
+  dateRange: DateRange | undefined,
+  presetLabel: string,
+  filters?: UnifiedInsightsFilters,
+) {
+  const params = buildDashboardSearchParams(programId, dateRange, presetLabel);
+
+  if (filters) {
+    const filterParams = unifiedFiltersToSearchParams(filters);
+    filterParams.forEach((value, key) => {
+      params.set(key, value);
+    });
+  }
+
+  const query = params.toString();
+  return query ? `/insights/?${query}` : `/insights/`;
+}
+
+/** @deprecated Use buildInsightsPath with source filter */
+export function buildSearchInsightsPath(
+  programId: string,
+  dateRange: DateRange | undefined,
+  presetLabel: string,
+) {
+  return buildInsightsPath(programId, dateRange, presetLabel, {
+    ...DEFAULT_UNIFIED_FILTERS,
+    source: "search",
+  });
+}
+
+export function buildFilteredDashboardPath(
+  basePath: string,
+  programId: string,
+  dateRange: DateRange | undefined,
+  presetLabel: string,
+) {
   const params = buildDashboardSearchParams(programId, dateRange, presetLabel);
   const query = params.toString();
-  return query
-    ? `/analytics-dashboard/?${query}`
-    : "/analytics-dashboard/";
+  const normalizedBase = basePath.endsWith("/") ? basePath : `${basePath}/`;
+  return query ? `${normalizedBase}?${query}` : normalizedBase;
 }

@@ -97,6 +97,137 @@ export type SearchQueryRow = {
   position: number;
 };
 
+export type SearchQueryTrendPoint = {
+  date: string;
+  clicks: number;
+  impressions: number;
+  position: number;
+};
+
+export type SearchQueryInsightTag =
+  | "opportunity"
+  | "low_ctr"
+  | "striking_distance"
+  | "page_one"
+  | "page_two"
+  | "rising"
+  | "new"
+  | "accelerating"
+  | "declining"
+  | "impression_surge"
+  | "cannibalized"
+  | "question"
+  | "local";
+
+export type SearchQueryAction =
+  | "snippet"
+  | "content"
+  | "redirect"
+  | "merge"
+  | "differentiate"
+  | "refresh"
+  | "faq"
+  | "monitor"
+  | "review";
+
+export type SearchQueryCompetingPage = {
+  path: string;
+  clicks: number;
+  impressions: number;
+  position: number;
+  impressionShare: number;
+};
+
+export type SearchQueryInsight = SearchQueryRow & {
+  clicksChange: number | null;
+  impressionsChange: number | null;
+  positionChange: number | null;
+  isNew: boolean;
+  recentPositionGain: number | null;
+  trend: SearchQueryTrendPoint[];
+  tags: SearchQueryInsightTag[];
+  opportunityScore: number;
+  expectedCtr: number;
+  expectedClicks: number;
+  potentialClicksGain: number;
+  action: SearchQueryAction;
+  actionDetail: string;
+  topPage: string | null;
+  competingPages: SearchQueryCompetingPage[] | null;
+  recommendedAction: "redirect" | "merge" | "differentiate" | null;
+  previousClicks: number | null;
+  previousImpressions: number | null;
+  previousPosition: number | null;
+};
+
+export type SearchQueryInsightsSummary = {
+  opportunities: SearchQueryInsight[];
+  rising: SearchQueryInsight[];
+  cannibalization: SearchQueryInsight[];
+  declining: SearchQueryInsight[];
+  all: SearchQueryInsight[];
+};
+
+export type TrafficInsightTag =
+  | "opportunity"
+  | "high_bounce"
+  | "low_engagement"
+  | "conversion_leak"
+  | "rising_channel"
+  | "rising_source"
+  | "declining_channel"
+  | "declining_source"
+  | "retention_gap"
+  | "mobile_gap";
+
+export type TrafficInsightAction =
+  | "landing_page"
+  | "content"
+  | "cta"
+  | "form"
+  | "campaign"
+  | "mobile"
+  | "navigation"
+  | "monitor"
+  | "review";
+
+export type TrafficInsightKind =
+  | "landing"
+  | "page"
+  | "channel"
+  | "source"
+  | "program";
+
+export type TrafficInsight = {
+  id: string;
+  kind: TrafficInsightKind;
+  label: string;
+  path?: string;
+  source?: string;
+  medium?: string;
+  channel?: string;
+  sessions: number;
+  previousSessions?: number | null;
+  sessionsChange: number | null;
+  bounceRate?: number;
+  engagementRate?: number;
+  metricValue?: number;
+  formStarts?: number;
+  formSubmits?: number;
+  impactScore: number;
+  tags: TrafficInsightTag[];
+  action: TrafficInsightAction;
+  actionDetail: string;
+};
+
+export type TrafficInsightsSummary = {
+  opportunities: TrafficInsight[];
+  conversion: TrafficInsight[];
+  rising: TrafficInsight[];
+  watchlist: TrafficInsight[];
+  all: TrafficInsight[];
+};
+
 export type SearchPageRow = {
   page: string;
   path: string;
@@ -121,6 +252,7 @@ export type SearchConsoleData = {
     impressions: number;
     ctr: number;
   };
+  insights: SearchQueryInsightsSummary;
   error?: string;
   note?: string;
 };
@@ -207,6 +339,7 @@ export type AnalyticsDashboardData = {
   topReferrers: TopReferrerRow[];
   userDemographics: UserDemographics | null;
   programInsights: ProgramInsights | null;
+  trafficInsights: TrafficInsightsSummary;
   searchConsole: SearchConsoleData;
   fetchedAt: string;
 };

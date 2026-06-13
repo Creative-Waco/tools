@@ -1,10 +1,12 @@
 "use client";
 
 import { format } from "date-fns";
+import Link from "next/link";
 import {
   Activity,
   CalendarIcon,
   Globe,
+  Lightbulb,
   MousePointerClick,
   TrendingDown,
   TrendingUp,
@@ -68,6 +70,7 @@ import type {
 import { buildDashboardCacheKey, readCachedDashboard } from "./cache";
 import {
   buildDashboardPath,
+  buildSearchInsightsPath,
   DEFAULT_PRESET,
   getDatePresetsForProgram,
   presetLabelForRange,
@@ -468,6 +471,12 @@ export function AnalyticsDashboard() {
     [daily],
   );
 
+  const insightsHref = buildSearchInsightsPath(
+    programId,
+    dateRange,
+    selectedPreset,
+  );
+
   return (
     <div className="min-w-0 max-w-full space-y-6 overflow-x-hidden">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -534,6 +543,15 @@ export function AnalyticsDashboard() {
             disabled={loading}
           >
             Refresh
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            nativeButton={false}
+            render={<Link href={insightsHref} />}
+          >
+            <Lightbulb className="mr-1.5 size-4" />
+            Insights
           </Button>
         </div>
       </div>
@@ -907,6 +925,7 @@ export function AnalyticsDashboard() {
         loading={loading}
         programName={data?.program.name ?? selectedProgram?.name ?? "Site"}
         isProgramScope={isProgramScope}
+        insightsHref={insightsHref}
       />
 
       {isProgramScope ? (
