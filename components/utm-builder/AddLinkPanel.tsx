@@ -13,6 +13,11 @@ import {
 } from "@/lib/utm-builder/build-url";
 import { normalizeUtmField } from "@/lib/utm-builder/normalize";
 import { detectPresetId, findPresetById, UTM_PRESETS } from "@/lib/utm-builder/presets";
+import {
+  getUtmFieldExample,
+  getUtmFieldPlaceholder,
+} from "@/lib/utm-builder/field-hints";
+import { UtmField } from "@/components/utm-builder/UtmField";
 import type { CampaignRecord } from "@/lib/utm-builder/campaign-types";
 
 type AddLinkPanelProps = {
@@ -177,25 +182,32 @@ export function AddLinkPanel({ campaign, onLinkSaved }: AddLinkPanelProps) {
             }
           />
         </label>
-        <label className="field">
-          <span>utm_content</span>
-          <input
-            value={utm.utm_content}
-            onChange={(event) => updateUtmField("utm_content", event.target.value)}
-          />
-        </label>
-        <label className="field">
-          <span>utm_term</span>
-          <input
-            value={utm.utm_term}
-            onChange={(event) => updateUtmField("utm_term", event.target.value)}
-          />
-        </label>
+        <UtmField
+          fieldKey="utm_content"
+          label="utm_content"
+          placeholder={getUtmFieldPlaceholder("utm_content", activePresetId)}
+          example={getUtmFieldExample("utm_content", activePresetId)}
+          value={utm.utm_content}
+          onChange={(value) => updateUtmField("utm_content", value)}
+        />
+        <UtmField
+          fieldKey="utm_term"
+          label="utm_term"
+          placeholder={getUtmFieldPlaceholder("utm_term", activePresetId)}
+          example={getUtmFieldExample("utm_term", activePresetId)}
+          value={utm.utm_term}
+          onChange={(value) => updateUtmField("utm_term", value)}
+        />
       </div>
 
       <div className="campaign-add-link-variants">
         <label className="field">
           <span>Content variants (optional batch)</span>
+          <p className="utm-field-example">
+            Saves multiple links at once — each variant becomes the{" "}
+            <code>utm_content</code> value. Use instead of the field above when you
+            need several links from the same channel (e.g. story + feed + reel).
+          </p>
           <div className="campaign-add-link-variant-row">
             <input
               value={variantInput}

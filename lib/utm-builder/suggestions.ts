@@ -11,6 +11,7 @@ export const SOURCE_SUGGESTIONS: UtmSuggestion[] = [
   { id: "instagram", label: "Instagram", value: "instagram" },
   { id: "facebook", label: "Facebook", value: "facebook" },
   { id: "newsletter", label: "Newsletter", value: "newsletter" },
+  { id: "sparks-newsletter", label: "Sparks newsletter", value: "sparks-newsletter" },
   { id: "google", label: "Google", value: "google" },
   { id: "print", label: "Print", value: "print" },
   { id: "partner", label: "Partner", value: "partner" },

@@ -1,28 +1,5 @@
-:root {
-  --spark: #e85d04;
-  --spark-soft: #fff4ec;
-  --spark-muted: #c44d03;
-  --honorary: #6b5b95;
-  --honorary-soft: #f0ecf8;
-  --honorary-border: #d4cceb;
-  --honorary-muted: #574a78;
-  --success: #2d6a4f;
-  --success-soft: #eaf4ef;
-  --warning: #b08900;
-  --warning-soft: #faf6e8;
-  --info: #3d5a80;
-  --info-soft: #eef2f7;
-}
-
 .dashboard-page {
   max-width: 1320px;
-  /* Legacy tool tokens — override shadcn --muted (a bg color) for dashboard text/borders */
-  --ink: #1a1a1a;
-  --muted: #666666;
-  --line: #e4dfd4;
-  --bg: #f4f1ea;
-  --panel: #ffffff;
-  --accent: #1a1a1a;
 }
 
 .dashboard-page.is-loading .dashboard-grid,
@@ -184,12 +161,56 @@
   border: 1px solid #f5d4bc;
 }
 
-.panel {
-  background: var(--panel);
+.dashboard-page .field {
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.dashboard-page .field span {
+  font-weight: 600;
+}
+
+.dashboard-page .field--inline select {
+  min-width: 180px;
+}
+
+.dashboard-page .field select {
+  width: 100%;
   border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 20px;
-  box-shadow: 0 12px 30px rgba(26, 26, 26, 0.05);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font: inherit;
+  background: #fff;
+}
+
+.dashboard-page .primary,
+.dashboard-page .ghost {
+  border-radius: 8px;
+  padding: 10px 16px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.dashboard-page .primary {
+  background: var(--ink);
+  color: #fff;
+}
+
+.dashboard-page .primary:hover {
+  background: #333;
+}
+
+.dashboard-page .ghost {
+  background: #fff;
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+.dashboard-page .ghost:hover {
+  border-color: #c8c0b0;
 }
 
 .toolbar {
@@ -211,58 +232,6 @@
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-}
-
-.field {
-  display: grid;
-  gap: 6px;
-  font-size: 14px;
-}
-
-.field span {
-  font-weight: 600;
-}
-
-.field--inline select {
-  min-width: 180px;
-}
-
-.field select {
-  width: 100%;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 10px 12px;
-  font: inherit;
-  background: #fff;
-}
-
-.primary,
-.ghost {
-  border-radius: 8px;
-  padding: 10px 16px;
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-  border: 1px solid transparent;
-}
-
-.primary {
-  background: var(--ink);
-  color: #fff;
-}
-
-.primary:hover {
-  background: #333;
-}
-
-.ghost {
-  background: #fff;
-  border-color: var(--line);
-  color: var(--ink);
-}
-
-.ghost:hover {
-  border-color: #c8c0b0;
 }
 
 .sync-banner[hidden],
@@ -316,7 +285,7 @@
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .kpi-card__value {
@@ -332,7 +301,7 @@
 }
 
 .kpi-card--degraded .kpi-card__value {
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .tier-summary {
@@ -356,7 +325,7 @@
 .tier-summary__sep,
 .members-summary__sep {
   margin: 0 0.35em;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .members-summary__paid {
@@ -368,7 +337,7 @@
   margin: 8px 0 0;
   font-size: 12px;
   font-weight: 600;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .goal__honorary {
@@ -389,7 +358,7 @@
   padding: 2px 8px;
   border-radius: 999px;
   background: #efe9df;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .pipeline-month.is-met {
@@ -499,7 +468,7 @@
 .panel-sub {
   margin: 0;
   font-size: 13px;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .pill {
@@ -536,7 +505,7 @@
 }
 
 .goal__numbers {
-  color: var(--muted);
+  color: var(--text-muted);
   font-variant-numeric: tabular-nums;
 }
 
@@ -561,7 +530,7 @@
 .goal__note {
   margin: 0;
   font-size: 12px;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .tier-layout {
@@ -619,7 +588,7 @@
 }
 
 .tier-legend .muted {
-  color: var(--muted);
+  color: var(--text-muted);
   font-weight: 400;
 }
 
@@ -710,7 +679,7 @@
 
 .growth-month__label {
   font-size: 11px;
-  color: var(--muted);
+  color: var(--text-muted);
   text-align: center;
 }
 
@@ -719,7 +688,7 @@
   gap: 16px;
   margin-top: 12px;
   font-size: 13px;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .chart-legend__item {
@@ -793,7 +762,7 @@
 }
 
 .chart-tooltip__label {
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .chart-tooltip__value {
@@ -882,7 +851,7 @@
   border: 0;
   border-radius: 8px;
   background: transparent;
-  color: var(--muted);
+  color: var(--text-muted);
   font-size: 24px;
   line-height: 1;
   cursor: pointer;
@@ -902,7 +871,7 @@
   margin: 0 0 18px;
   font-size: 13px;
   font-weight: 600;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .growth-modal__sections {
@@ -916,7 +885,7 @@
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .growth-modal__section--honorary .growth-modal__section-title {
@@ -956,14 +925,14 @@
 
 .growth-modal__item-meta {
   font-size: 12px;
-  color: var(--muted);
+  color: var(--text-muted);
   white-space: nowrap;
 }
 
 .growth-modal__empty {
   padding: 12px;
   font-size: 13px;
-  color: var(--muted);
+  color: var(--text-muted);
   font-style: italic;
 }
 
@@ -1038,7 +1007,7 @@ body.growth-modal-open {
   font: inherit;
   font-size: 13px;
   font-weight: 600;
-  color: var(--muted);
+  color: var(--text-muted);
   cursor: pointer;
   text-decoration: underline;
   text-underline-offset: 2px;
@@ -1066,7 +1035,7 @@ body.growth-modal-open {
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .data-table th.num,
@@ -1178,7 +1147,7 @@ body.growth-modal-open {
 }
 
 .status-badge--idea {
-  color: var(--muted);
+  color: var(--text-muted);
   background: #f0ebe3;
 }
 
@@ -1205,7 +1174,7 @@ body.growth-modal-open {
 }
 
 .status-badge--canceled {
-  color: var(--muted);
+  color: var(--text-muted);
   background: #ececec;
   text-decoration: line-through;
 }
@@ -1228,7 +1197,7 @@ body.growth-modal-open {
   margin: 16px 0 0;
   min-height: 1.25em;
   font-size: 14px;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .status.is-success {

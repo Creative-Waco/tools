@@ -34,6 +34,12 @@ Navigation is provided by the Application Shell 2 layout (inset sidebar with ico
 
 Favicon and Apple touch icon match [creativewaco.org](https://creativewaco.org/) (`app/icon.png`, `app/apple-icon.png`).
 
+## Design system
+
+Suite-wide brand inspired by the Creative Spark Dashboard: cream paper surfaces (`--paper`), ink primary buttons (`--ink`), Spark orange accents (`--spark`), and warm borders. Tokens live in `app/brand-tokens.css`; shadcn variables in `app/globals.css` map to those tokens. Shared layout components are in `components/cw/` (`ToolPage`, `ToolPanel`, `ToolLayout`, `MetricCard`, etc.).
+
+**Before adding new UI**, read [docs/BRAND-GUIDE.md](docs/BRAND-GUIDE.md). A Cursor project rule (`.cursor/rules/brand-guide.mdc`) reminds agents to follow it.
+
 ## Run locally
 
 ```bash
@@ -509,7 +515,7 @@ Create marketing campaigns, add channel-specific UTM links, and compare GA4 perf
 - **Campaign list** — sidebar with search, link count, session rollup, and status (on track / below target / no traffic)
 - **New campaign** — name, `utm_campaign` slug, destination URL, optional benchmark targets (sessions, engagement %, bounce %)
 - **Campaign workspace** — performance rollup, tagged links table with per-link GA4 metrics, **Edit** (destination URL, slug, benchmarks), **Add link** panel
-- **Add link** — channel presets (Instagram, newsletter, print/QR, etc.); `utm_campaign` locked to the parent campaign; optional content variants save multiple links at once
+- **Add link** — channel presets (Instagram, newsletter, **Sparks newsletter**, print/QR, etc.); `utm_campaign` locked to the parent campaign; optional content variants save multiple links at once; `utm_content` / `utm_term` include tooltips and preset-aware examples
 - **Benchmarks** — manual targets from Airtable when set; engagement and bounce fall back to site-wide GA4 averages for the selected period
 
 ### Performance

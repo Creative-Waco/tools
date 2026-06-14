@@ -1,0 +1,38 @@
+/* Creative Waco Tools — brand palette (Spark dashboard inspired) */
+
+:root {
+  /* Spark brand */
+  --spark: #e85d04;
+  --spark-soft: #fff4ec;
+  --spark-muted: #c44d03;
+
+  /* Honorary tier (plum) */
+  --honorary: #6b5b95;
+  --honorary-soft: #f0ecf8;
+  --honorary-border: #d4cceb;
+  --honorary-muted: #574a78;
+
+  /* Semantic */
+  --success: #2d6a4f;
+  --success-soft: #eaf4ef;
+  --warning: #b08900;
+  --warning-soft: #faf6e8;
+  --info: #3d5a80;
+  --info-soft: #eef2f7;
+  --error: #b42318;
+  --error-soft: #fce8e6;
+
+  /* Neutrals */
+  --ink: #1a1a1a;
+  --line: #e4dfd4;
+  --paper: #f4f1ea;
+  --panel: #ffffff;
+  --surface-muted: #f6f1e8;
+  --surface-hover: #faf8f4;
+  --surface-hover-strong: #f3efe8;
+  --text-muted: #666666;
+
+  /* Elevation & radii */
+  --shadow-panel: 0 12px 30px rgba(26, 26, 26, 0.05);
+  --radius-panel: 14px;
+}

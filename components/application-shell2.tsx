@@ -349,7 +349,7 @@ export function ApplicationShell2({
           </div>
         </header>
         <div className="flex min-w-0 flex-1 flex-col gap-4 p-4 md:p-6">
-          <div className="min-h-0 min-w-0 flex-1 overflow-x-hidden rounded-xl bg-muted/50 md:min-h-min">
+          <div className="min-h-0 min-w-0 flex-1 overflow-x-hidden rounded-panel bg-background md:min-h-min">
             {children}
           </div>
         </div>

@@ -7,7 +7,7 @@ type PageHeroProps = {
 export function PageHero({ eyebrow, title, lede }: PageHeroProps) {
   return (
     <header className="mb-8">
-      <p className="mb-2 text-xs font-medium uppercase tracking-widest text-muted-foreground">
+      <p className="mb-2 text-xs font-medium uppercase tracking-widest text-spark-muted">
         {eyebrow}
       </p>
       <h1 className="mb-2 text-3xl font-semibold tracking-tight">{title}</h1>

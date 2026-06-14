@@ -1,0 +1,13 @@
+---
+description: Check BRAND-GUIDE.md before adding or styling UI components
+alwaysApply: true
+---
+
+# Brand consistency
+
+Before adding a **new component**, **new page section**, or **significant styling**, read [docs/BRAND-GUIDE.md](docs/BRAND-GUIDE.md).
+
+- Prefer [components/cw/](components/cw/) and shadcn [components/ui/](components/ui/) with brand variants over bespoke markup.
+- Use brand tokens from [app/brand-tokens.css](app/brand-tokens.css) — no ad-hoc hex colors in JSX or CSS.
+- Primary actions use ink (`--primary` / `--ink`); Spark orange (`--spark`) is for accents and data emphasis.
+- If you introduce a reusable UI pattern, add it to `components/cw/` and update `docs/BRAND-GUIDE.md` in the same change.

@@ -2,6 +2,8 @@
 
 import { FormEvent, useState } from "react";
 import { StatusLine } from "@/components/StatusLine";
+import { ToolLayout } from "@/components/cw/ToolLayout";
+import { ToolPanel } from "@/components/cw/ToolPanel";
 
 const COLOR_SWATCHES = [
   { color: "#1a1a1a", label: "Black" },
@@ -252,8 +254,8 @@ export function RssEmailTool() {
         }
       `}</style>
 
-      <div className="tool-layout">
-        <section className="panel">
+      <ToolLayout>
+        <ToolPanel>
           <form className="rss-email-form" onSubmit={handleSubmit}>
             <label className="field">
               <span>RSS feed URL</span>
@@ -405,9 +407,9 @@ export function RssEmailTool() {
           {status.message ? (
             <StatusLine message={status.message} variant={status.variant} />
           ) : null}
-        </section>
+        </ToolPanel>
 
-        <section className="panel">
+        <ToolPanel>
           <div className="rss-email-output-header">
             <h2>Preview</h2>
             <button
@@ -443,8 +445,8 @@ export function RssEmailTool() {
               value={htmlOutput}
             />
           </label>
-        </section>
-      </div>
+        </ToolPanel>
+      </ToolLayout>
     </>
   );
 }

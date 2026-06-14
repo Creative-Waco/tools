@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CardDownloadPicker } from "@/components/event-cards/CardDownloadPicker";
+import { ToolLayout } from "@/components/cw/ToolLayout";
+import { ToolPanel } from "@/components/cw/ToolPanel";
 import {
   InstagramCarouselPreview,
 } from "@/components/event-cards/InstagramCarouselPreview";
@@ -613,8 +615,8 @@ export function EventCardsTool() {
 
       `}</style>
 
-      <div className="tool-layout">
-        <section className="panel">
+      <ToolLayout>
+        <ToolPanel>
           <form className="grid gap-3.5" onSubmit={handleSubmit}>
             <label className="field">
               <span>RSS feed URL</span>
@@ -751,9 +753,9 @@ export function EventCardsTool() {
           </form>
 
           <StatusLine message={status} variant={statusVariant} />
-        </section>
+        </ToolPanel>
 
-        <section className="panel">
+        <ToolPanel>
           <div className="output-header">
             <h2>{activeConfig.previewTitle}</h2>
             <div className="output-actions">
@@ -802,8 +804,8 @@ export function EventCardsTool() {
               onDone={() => void downloadSelectedCards()}
             />
           ) : null}
-        </section>
-      </div>
+        </ToolPanel>
+      </ToolLayout>
     </>
   );
 }

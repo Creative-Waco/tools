@@ -1,3 +1,4 @@
+@import "./brand-tokens.css";
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -8,39 +9,39 @@
 @layer base {
   :root {
     color-scheme: light;
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --destructive-foreground: oklch(0.985 0 0);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
+    --background: var(--paper);
+    --foreground: var(--ink);
+    --card: var(--panel);
+    --card-foreground: var(--ink);
+    --popover: var(--panel);
+    --popover-foreground: var(--ink);
+    --primary: var(--ink);
+    --primary-foreground: #ffffff;
+    --secondary: var(--surface-muted);
+    --secondary-foreground: var(--ink);
+    --muted: var(--surface-muted);
+    --muted-foreground: var(--text-muted);
+    --accent: var(--spark-soft);
+    --accent-foreground: var(--ink);
+    --destructive: #b42318;
+    --destructive-foreground: #ffffff;
+    --border: var(--line);
+    --input: var(--line);
+    --ring: var(--spark-muted);
+    --chart-1: var(--spark);
+    --chart-2: var(--info);
+    --chart-3: var(--honorary);
+    --chart-4: var(--success);
+    --chart-5: var(--warning);
+    --radius: 0.5rem;
+    --sidebar: var(--panel);
+    --sidebar-foreground: var(--ink);
+    --sidebar-primary: var(--ink);
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: var(--spark-soft);
+    --sidebar-accent-foreground: var(--ink);
+    --sidebar-border: var(--line);
+    --sidebar-ring: var(--spark-muted);
   }
 
   * {
@@ -63,7 +64,9 @@
   }
 
   .panel {
-    @apply rounded-xl border bg-card p-5 shadow-sm;
+    border-radius: var(--radius-panel);
+    box-shadow: var(--shadow-panel);
+    @apply border border-line bg-card p-5;
   }
 
   .field {
@@ -98,11 +101,11 @@
   }
 
   .status-line--success {
-    @apply text-emerald-700;
+    color: var(--success);
   }
 
   .status-line--error {
-    @apply text-red-700;
+    color: var(--error);
   }
 
   .tool-layout {
@@ -184,7 +187,7 @@
   }
 
   .campaign-list-item--active {
-    @apply border-primary bg-primary/5;
+    @apply border-spark bg-spark-soft;
   }
 
   .campaign-list-item-title {
@@ -200,11 +203,11 @@
   }
 
   .campaign-status--ok {
-    @apply bg-emerald-100 text-emerald-800;
+    @apply bg-success-soft text-success;
   }
 
   .campaign-status--warn {
-    @apply bg-amber-100 text-amber-900;
+    @apply bg-warning-soft text-warning;
   }
 
   .campaign-status--muted {
@@ -233,6 +236,22 @@
 
   .campaign-edit-form {
     @apply mt-1;
+  }
+
+  .utm-field-label {
+    @apply inline-flex items-center gap-1.5;
+  }
+
+  .utm-field-help-trigger {
+    @apply inline-flex cursor-help items-center justify-center border-0 bg-transparent p-0 text-muted-foreground;
+  }
+
+  .utm-field-example {
+    @apply text-xs leading-snug text-muted-foreground;
+  }
+
+  .utm-field-warning {
+    @apply text-xs text-amber-800;
   }
 
   .campaign-performance-grid {
@@ -313,11 +332,11 @@
   }
 
   .campaign-dialog-error {
-    @apply text-sm text-red-700;
+    @apply text-sm text-[var(--error)];
   }
 
   .campaign-dialog-success {
-    @apply text-sm text-emerald-700;
+    @apply text-sm text-success;
   }
 
   .campaign-builder-empty {

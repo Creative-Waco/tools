@@ -27,6 +27,7 @@ import {
   normalizeUtmField,
 } from "@/lib/utm-builder/normalize";
 import { detectPresetId, findPresetById, UTM_PRESETS } from "@/lib/utm-builder/presets";
+import { getUtmFieldExample, getUtmFieldPlaceholder } from "@/lib/utm-builder/field-hints";
 import {
   loadRecentCampaigns,
   saveRecentCampaign,
@@ -994,7 +995,8 @@ export function UtmBuilderTool({
                     <UtmField
                       fieldKey="utm_term"
                       label="Term"
-                      placeholder="keyword"
+                      placeholder={getUtmFieldPlaceholder("utm_term", form.activePresetId)}
+                      example={getUtmFieldExample("utm_term", form.activePresetId)}
                       value={form.utm.utm_term}
                       warning={warningByField.get("utm_term")}
                       onChange={(value) => updateUtmField("utm_term", value)}
@@ -1003,7 +1005,8 @@ export function UtmBuilderTool({
                     <UtmField
                       fieldKey="utm_content"
                       label="Content"
-                      placeholder="story-slide-1"
+                      placeholder={getUtmFieldPlaceholder("utm_content", form.activePresetId)}
+                      example={getUtmFieldExample("utm_content", form.activePresetId)}
                       value={form.utm.utm_content}
                       warning={warningByField.get("utm_content")}
                       onChange={(value) => updateUtmField("utm_content", value)}

@@ -33,6 +33,14 @@ export const UTM_PRESETS: UtmPreset[] = [
     contentSuggestions: ["hero-cta", "event-card", "footer-link"],
   },
   {
+    id: "sparks-newsletter",
+    label: "Sparks newsletter",
+    description: "Creative Spark member newsletter (separate from general HubSpot blast)",
+    utm_source: "sparks-newsletter",
+    utm_medium: "email",
+    contentSuggestions: ["member-update", "event-spotlight", "hero-cta"],
+  },
+  {
     id: "google-ads",
     label: "Google Ads",
     description: "Search or display campaigns",

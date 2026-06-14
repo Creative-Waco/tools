@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Design system** — suite-wide Creative Waco brand tokens (`app/brand-tokens.css`) mapped to shadcn theme: cream paper background, ink primary actions, Spark orange accents, warm chart palette.
+- **Design system** — shared toolkit `components/cw/` (`ToolPage`, `ToolLayout`, `ToolPanel`, `ToolSection`, `MetricCard`, `StatusPill`); brand variants on shadcn `Badge` and `Button`.
+- **Design system** — [docs/BRAND-GUIDE.md](docs/BRAND-GUIDE.md) and Cursor rule `.cursor/rules/brand-guide.mdc` for consistent UI additions.
+- **Campaign Builder** — **Sparks newsletter** channel preset (`utm_source=sparks-newsletter`, `utm_medium=email`) distinct from general Newsletter.
 - **Campaign Builder** — edit campaign details from the workspace header (name, `utm_campaign`, destination URL, benchmarks, notes); changing the destination or slug rebuilds all tagged links in Airtable.
 - **Campaign Builder** — `/utm-builder/` rebuilt as Airtable-backed campaign workspace: create campaigns, add multiple UTM links per campaign (channel presets + content variants), GA4 performance rollup with engagement/bounce benchmarks (Airtable targets or site averages).
 - **Campaign Builder** — Airtable integration (`lib/airtable/`) with additive schema bootstrap (`CW Tools — Campaigns`, `CW Tools — Campaign Links`, `CW Tools — KPIs`); `GET /api/airtable/health/`; campaign CRUD APIs.
@@ -27,6 +31,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Design system** — warm Spark-inspired theme applied across hub, utility tools, analytics dashboards, and app shell; Creative Spark `dashboard.css` consumes global tokens (scoped toolbar/field/button rules).
+- **Campaign Builder** — `utm_content` and `utm_term` fields in Add link show help tooltips and preset-aware examples (e.g. Sparks newsletter → `member-update`, `event-spotlight`).
 - **Campaign Builder** — campaign workspace (header, performance, links, add-link) now lives in a single panel with internal section dividers.
 - **Insights** — unified list adds sources: combined (GSC+GA4), audience, GSC pages, navigation, UTM; detail panel shows GSC+GA4 side-by-side and coverage/lag caveats.
 - **Insights — GSC** — page_one positions 1–3, tighter striking_distance, declining+low_ctr → review, local+question → faq, cannibalization 3+ pages, volume-relative click thresholds.

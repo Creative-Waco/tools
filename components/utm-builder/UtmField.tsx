@@ -14,6 +14,7 @@ type UtmFieldProps = {
   placeholder: string;
   value: string;
   warning?: string;
+  example?: string;
   onChange: (value: string) => void;
   onBlur?: () => void;
 };
@@ -25,6 +26,7 @@ export function UtmField({
   placeholder,
   value,
   warning,
+  example,
   onChange,
   onBlur,
 }: UtmFieldProps) {
@@ -55,6 +57,7 @@ export function UtmField({
         onChange={(event) => onChange(event.target.value)}
         onBlur={onBlur}
       />
+      {example ? <span className="utm-field-example">{example}</span> : null}
       {warning ? <span className="utm-field-warning">{warning}</span> : null}
     </label>
   );

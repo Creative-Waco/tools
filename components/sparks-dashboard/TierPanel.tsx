@@ -1,5 +1,9 @@
 import type { TierMix } from "./types";
 import { TIERS, formatNumber } from "./utils";
+import {
+  HONORARY_TIER_COLORS,
+  PAID_TIER_COLORS,
+} from "@/lib/cw-design-tokens";
 
 type TierPanelProps = {
   tierMixPaid: TierMix;
@@ -10,8 +14,8 @@ type TierPanelProps = {
   loading?: boolean;
 };
 
-const PAID_COLORS = { bronze: "#a47148", silver: "#8d99ae", gold: "#e9c46a" };
-const HONORARY_COLORS = { bronze: "#9a86b8", silver: "#7f6fa3", gold: "#b09ad0" };
+const PAID_COLORS = PAID_TIER_COLORS;
+const HONORARY_COLORS = HONORARY_TIER_COLORS;
 
 function buildDonutGradient(tierMixPaid: TierMix, tierMixHonorary: TierMix): string {
   const slices: { count: number; color: string }[] = [];

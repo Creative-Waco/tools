@@ -6,6 +6,7 @@ import { CampaignList } from "@/components/utm-builder/CampaignList";
 import { CampaignWorkspace } from "@/components/utm-builder/CampaignWorkspace";
 import { CampaignTracker } from "@/components/utm-builder/CampaignTracker";
 import { NewCampaignDialog } from "@/components/utm-builder/NewCampaignDialog";
+import { ToolPanel } from "@/components/cw/ToolPanel";
 import {
   readCachedCampaignHistory,
   writeCachedCampaignHistory,
@@ -99,10 +100,10 @@ export function CampaignBuilderPage() {
       </div>
 
       {configMessage && tab === "campaigns" ? (
-        <div className="campaign-builder-banner panel" role="status">
+        <ToolPanel className="campaign-builder-banner" role="status">
           {configMessage} Add <code>AIRTABLE_API_KEY</code> and <code>AIRTABLE_BASE_ID</code> to
           use the Campaign Builder.
-        </div>
+        </ToolPanel>
       ) : null}
 
       {tab === "campaigns" ? (
@@ -124,7 +125,7 @@ export function CampaignBuilderPage() {
                 refreshing={refreshing}
               />
             ) : (
-              <div className="campaign-builder-empty panel">
+              <ToolPanel className="campaign-builder-empty grid gap-3">
                 <h2 className="text-lg font-semibold">Select a campaign</h2>
                 <p className="text-sm text-muted-foreground">
                   Pick a campaign from the list or create a new one to start adding tagged links.
@@ -136,7 +137,7 @@ export function CampaignBuilderPage() {
                 >
                   New campaign
                 </button>
-              </div>
+              </ToolPanel>
             )}
           </div>
         </div>
