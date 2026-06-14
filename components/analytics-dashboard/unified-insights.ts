@@ -1,16 +1,24 @@
+import { normalizeDerivedInsights } from "./normalize-derived-insights";
 import { normalizeSearchInsights } from "./normalize-insights";
 import { normalizeTrafficInsights } from "./normalize-traffic-insights";
 import type {
   AnalyticsDashboardData,
-  SearchQueryAction,
+  DerivedInsight,
+  DerivedInsightCategory,
   SearchQueryInsight,
   SearchQueryInsightsSummary,
   TrafficInsight,
-  TrafficInsightAction,
   TrafficInsightsSummary,
 } from "./types";
 
-export type UnifiedInsightSource = "search" | "traffic";
+export type UnifiedInsightSource =
+  | "search"
+  | "traffic"
+  | "combined"
+  | "audience"
+  | "gsc_page"
+  | "navigation"
+  | "utm";
 
 export type UnifiedInsightCategory =
   | "quick_wins"
@@ -42,6 +50,8 @@ export type UnifiedInsight = {
   tags: string[];
   search?: SearchQueryInsight;
   traffic?: TrafficInsight;
+  combined?: DerivedInsight;
+  derived?: DerivedInsight;
 };
 
 export type UnifiedInsightsFilters = {
@@ -66,7 +76,7 @@ export const CATEGORY_LABELS: Record<UnifiedInsightCategory, string> = {
   watchlist: "Watchlist",
 };
 
-const SEARCH_ACTION_LABELS: Record<SearchQueryAction, string> = {
+const SEARCH_ACTION_LABELS: Record<string, string> = {
   snippet: "Fix snippet",
   content: "Expand content",
   redirect: "Redirect",
@@ -78,7 +88,7 @@ const SEARCH_ACTION_LABELS: Record<SearchQueryAction, string> = {
   review: "Review",
 };
 
-const TRAFFIC_ACTION_LABELS: Record<TrafficInsightAction, string> = {
+const TRAFFIC_ACTION_LABELS: Record<string, string> = {
   landing_page: "Fix landing",
   content: "Expand content",
   cta: "Improve CTA",
@@ -90,12 +100,29 @@ const TRAFFIC_ACTION_LABELS: Record<TrafficInsightAction, string> = {
   review: "Review",
 };
 
-function searchActionLabel(action: SearchQueryAction | string) {
-  return SEARCH_ACTION_LABELS[action as SearchQueryAction] ?? "Review";
+const SOURCE_LABELS: Record<UnifiedInsightSource, string> = {
+  search: "Search (GSC)",
+  traffic: "Traffic (GA4)",
+  combined: "GSC + GA4",
+  audience: "Audience (GA4)",
+  gsc_page: "GSC pages",
+  navigation: "Navigation (GA4)",
+  utm: "UTM campaigns",
+};
+
+function normalizePath(path: string | undefined | null) {
+  if (!path || path === "(not set)") return "";
+  const trimmed = path.trim();
+  if (!trimmed || trimmed === "/") return "/";
+  return trimmed.replace(/\/+$/, "") || "/";
 }
 
-function trafficActionLabel(action: TrafficInsightAction | string) {
-  return TRAFFIC_ACTION_LABELS[action as TrafficInsightAction] ?? "Review";
+function searchActionLabel(action: string) {
+  return SEARCH_ACTION_LABELS[action] ?? "Review";
+}
+
+function trafficActionLabel(action: string) {
+  return TRAFFIC_ACTION_LABELS[action] ?? "Review";
 }
 
 function searchSubject(row: SearchQueryInsight): string {
@@ -179,6 +206,61 @@ function fromTrafficRow(
   };
 }
 
+function fromCombinedRow(
+  row: DerivedInsight,
+  category: UnifiedInsightCategory,
+): Omit<UnifiedInsight, "impactScore"> {
+  const ga4 = row.ga4 as { sessionsChange?: number | null } | undefined;
+  const gsc = row.gsc as { potentialClicksGain?: number } | undefined;
+  const rawImpact =
+    row.impactScore > 0
+      ? row.impactScore
+      : gsc?.potentialClicksGain ?? row.impactScore;
+
+  return {
+    id: `combined:${row.id}`,
+    source: "combined",
+    category,
+    label: row.actionDetail,
+    subject: row.subject ?? row.query ?? row.path,
+    action: row.action,
+    actionDetail: row.actionDetail,
+    rawImpact,
+    impactLabel:
+      gsc?.potentialClicksGain && gsc.potentialClicksGain > 0
+        ? `+${gsc.potentialClicksGain} clicks`
+        : `${rawImpact}`,
+    change: ga4?.sessionsChange ?? null,
+    secondaryMetricLabel: row.path ? "Path" : undefined,
+    secondaryMetric: row.path,
+    tags: row.tags,
+    combined: row,
+  };
+}
+
+function fromDerivedRow(
+  row: DerivedInsight,
+  source: Exclude<UnifiedInsightSource, "search" | "traffic" | "combined">,
+  category: UnifiedInsightCategory,
+): Omit<UnifiedInsight, "impactScore"> {
+  return {
+    id: `${source}:${row.id}`,
+    source,
+    category,
+    label: row.actionDetail,
+    subject: row.subject ?? row.path ?? row.label,
+    action: row.action,
+    actionDetail: row.actionDetail,
+    rawImpact: row.impactScore,
+    impactLabel: `${row.impactScore}`,
+    change: null,
+    secondaryMetricLabel: row.path ? "Path" : undefined,
+    secondaryMetric: row.path,
+    tags: row.tags,
+    derived: row,
+  };
+}
+
 function appendSearchSection(
   items: Omit<UnifiedInsight, "impactScore">[],
   rows: SearchQueryInsight[],
@@ -199,6 +281,27 @@ function appendTrafficSection(
   }
 }
 
+function appendDerivedSection(
+  items: Omit<UnifiedInsight, "impactScore">[],
+  rows: DerivedInsight[],
+  source: Exclude<UnifiedInsightSource, "search" | "traffic" | "combined">,
+  category: UnifiedInsightCategory,
+) {
+  for (const row of rows) {
+    items.push(fromDerivedRow(row, source, category));
+  }
+}
+
+function appendCombinedSection(
+  items: Omit<UnifiedInsight, "impactScore">[],
+  rows: DerivedInsight[],
+  category: UnifiedInsightCategory,
+) {
+  for (const row of rows) {
+    items.push(fromCombinedRow(row, category));
+  }
+}
+
 function normalizeImpactScores(
   items: Omit<UnifiedInsight, "impactScore">[],
 ): UnifiedInsight[] {
@@ -207,15 +310,63 @@ function normalizeImpactScores(
   return items.map((row) => ({
     ...row,
     impactScore:
-      maxRaw > 0
-        ? Math.round((row.rawImpact / maxRaw) * 1000) / 10
-        : 0,
+      maxRaw > 0 ? Math.round((row.rawImpact / maxRaw) * 1000) / 10 : 0,
   }));
+}
+
+function replaceSingleSourceRows(
+  items: Omit<UnifiedInsight, "impactScore">[],
+): Omit<UnifiedInsight, "impactScore">[] {
+  const combined = items.filter((row) => row.source === "combined");
+  if (combined.length === 0) return items;
+
+  const suppressSearchQueries = new Set<string>();
+  const suppressTrafficPaths = new Set<string>();
+
+  for (const row of combined) {
+    const c = row.combined;
+    if (!c) continue;
+    if (c.query) suppressSearchQueries.add(c.query);
+    if (c.path) suppressTrafficPaths.add(normalizePath(c.path));
+  }
+
+  return items.filter((row) => {
+    if (row.source === "combined") return true;
+
+    if (row.source === "search" && row.search) {
+      if (!suppressSearchQueries.has(row.search.query)) return true;
+      const combinedForQuery = combined.find(
+        (c) => c.combined?.query === row.search?.query,
+      );
+      const combinedPath = normalizePath(combinedForQuery?.combined?.path ?? "");
+      const searchPath = normalizePath(row.search.topPage ?? "");
+      if (!combinedPath || !searchPath) return false;
+      return combinedPath !== searchPath;
+    }
+
+    if (row.source === "traffic" && row.traffic?.path) {
+      const path = normalizePath(row.traffic.path);
+      if (!suppressTrafficPaths.has(path)) return true;
+      if (row.traffic.kind !== "landing" && row.traffic.kind !== "page") {
+        return true;
+      }
+      return false;
+    }
+
+    return true;
+  });
 }
 
 export function buildUnifiedInsights(
   search: SearchQueryInsightsSummary,
   traffic: TrafficInsightsSummary,
+  options: {
+    cross?: ReturnType<typeof normalizeDerivedInsights>;
+    audience?: ReturnType<typeof normalizeDerivedInsights>;
+    gscPage?: ReturnType<typeof normalizeDerivedInsights>;
+    navigation?: ReturnType<typeof normalizeDerivedInsights>;
+    utm?: ReturnType<typeof normalizeDerivedInsights>;
+  } = {},
 ): UnifiedInsight[] {
   const items: Omit<UnifiedInsight, "impactScore">[] = [];
 
@@ -236,8 +387,41 @@ export function buildUnifiedInsights(
   appendTrafficSection(items, traffic.rising, "rising");
   appendTrafficSection(items, traffic.watchlist, "watchlist");
 
+  const cross = options.cross ?? normalizeDerivedInsights(null);
+  appendCombinedSection(items, cross.quick_wins, "quick_wins");
+  appendCombinedSection(items, cross.cannibalization, "cannibalization");
+  appendCombinedSection(items, cross.conversion, "conversion");
+  appendCombinedSection(items, cross.rising, "rising");
+  appendCombinedSection(items, cross.watchlist, "watchlist");
+
+  const audience = options.audience ?? normalizeDerivedInsights(null);
+  appendDerivedSection(items, audience.quick_wins, "audience", "quick_wins");
+  appendDerivedSection(items, audience.conversion, "audience", "conversion");
+  appendDerivedSection(items, audience.rising, "audience", "rising");
+  appendDerivedSection(items, audience.watchlist, "audience", "watchlist");
+
+  const gscPage = options.gscPage ?? normalizeDerivedInsights(null);
+  appendDerivedSection(items, gscPage.quick_wins, "gsc_page", "quick_wins");
+  appendDerivedSection(items, gscPage.watchlist, "gsc_page", "watchlist");
+
+  const navigation = options.navigation ?? normalizeDerivedInsights(null);
+  appendDerivedSection(items, navigation.quick_wins, "navigation", "quick_wins");
+  appendDerivedSection(
+    items,
+    navigation.conversion,
+    "navigation",
+    "conversion",
+  );
+  appendDerivedSection(items, navigation.watchlist, "navigation", "watchlist");
+
+  const utm = options.utm ?? normalizeDerivedInsights(null);
+  appendDerivedSection(items, utm.quick_wins, "utm", "quick_wins");
+  appendDerivedSection(items, utm.watchlist, "utm", "watchlist");
+
+  const deduped = replaceSingleSourceRows(items);
+
   const byId = new Map<string, Omit<UnifiedInsight, "impactScore">>();
-  for (const row of items) {
+  for (const row of deduped) {
     if (!byId.has(row.id)) {
       byId.set(row.id, row);
     }
@@ -257,7 +441,17 @@ export function buildUnifiedInsightsFromDashboard(
     : normalizeSearchInsights(null);
   const traffic = normalizeTrafficInsights(data.trafficInsights);
 
-  return buildUnifiedInsights(search, traffic);
+  return buildUnifiedInsights(search, traffic, {
+    cross: normalizeDerivedInsights(data.crossInsights),
+    audience: normalizeDerivedInsights(data.audienceInsights),
+    gscPage: normalizeDerivedInsights(data.gscPageInsights),
+    navigation: normalizeDerivedInsights(data.programInsightsRules),
+    utm: normalizeDerivedInsights(data.utmInsights),
+  });
+}
+
+export function getSourceLabel(source: UnifiedInsightSource) {
+  return SOURCE_LABELS[source];
 }
 
 export function filterUnifiedInsights(
@@ -306,7 +500,7 @@ export function groupUnifiedInsights(
       label = row.action;
     } else {
       key = row.source;
-      label = row.source === "search" ? "Search (GSC)" : "Traffic (GA4)";
+      label = getSourceLabel(row.source);
     }
 
     const list = groups.get(key) ?? [];
@@ -331,17 +525,13 @@ export function groupUnifiedInsights(
       groupBy === "category"
         ? CATEGORY_LABELS[key as UnifiedInsightCategory]
         : groupBy === "source"
-          ? key === "search"
-            ? "Search (GSC)"
-            : "Traffic (GA4)"
+          ? getSourceLabel(key as UnifiedInsightSource)
           : key,
     rows: rows.sort((a, b) => b.impactScore - a.impactScore),
   }));
 
   if (order) {
-    entries.sort(
-      (a, b) => order.indexOf(a.key) - order.indexOf(b.key),
-    );
+    entries.sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key));
   } else {
     entries.sort((a, b) => b.rows[0].impactScore - a.rows[0].impactScore);
   }
@@ -357,18 +547,28 @@ export function readUnifiedInsightsFilters(
 
   let source: UnifiedInsightSourceFilter = "all";
   const sourceParam = params.get("source")?.trim();
-  if (sourceParam === "search" || sourceParam === "traffic") {
-    source = sourceParam;
+  const validSources: UnifiedInsightSourceFilter[] = [
+    "all",
+    "search",
+    "traffic",
+    "combined",
+    "audience",
+    "gsc_page",
+    "navigation",
+    "utm",
+  ];
+  if (
+    sourceParam &&
+    validSources.includes(sourceParam as UnifiedInsightSourceFilter)
+  ) {
+    source = sourceParam as UnifiedInsightSourceFilter;
   } else if (legacySection === "search" || legacySection === "traffic") {
     source = legacySection;
   }
 
   let category: UnifiedInsightsFilters["category"] = "all";
   const categoryParam = params.get("category")?.trim();
-  if (
-    categoryParam &&
-    categoryParam in CATEGORY_LABELS
-  ) {
+  if (categoryParam && categoryParam in CATEGORY_LABELS) {
     category = categoryParam as UnifiedInsightCategory;
   }
 

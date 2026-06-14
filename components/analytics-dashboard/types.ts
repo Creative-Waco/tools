@@ -229,6 +229,60 @@ export type TrafficInsightsSummary = {
   all: TrafficInsight[];
 };
 
+export type DerivedInsightCategory =
+  | "quick_wins"
+  | "cannibalization"
+  | "conversion"
+  | "rising"
+  | "watchlist";
+
+export type DerivedInsight = {
+  id: string;
+  kind?: string;
+  tags: string[];
+  category: DerivedInsightCategory;
+  label: string;
+  subject?: string;
+  action: string;
+  actionDetail: string;
+  impactScore: number;
+  query?: string;
+  path?: string;
+  gscNote?: string;
+  coverageNote?: string;
+  gsc?: Record<string, unknown>;
+  ga4?: Record<string, unknown>;
+  metrics?: Record<string, unknown>;
+  [key: string]: unknown;
+};
+
+export type DerivedInsightsSummary = {
+  quick_wins: DerivedInsight[];
+  cannibalization: DerivedInsight[];
+  conversion: DerivedInsight[];
+  rising: DerivedInsight[];
+  watchlist: DerivedInsight[];
+  all: DerivedInsight[];
+};
+
+export type CombinedInsight = DerivedInsight & {
+  gscNote: string;
+  gsc?: Record<string, unknown>;
+  ga4?: Record<string, unknown>;
+};
+
+export type AudienceInsight = DerivedInsight & {
+  kind: "audience" | "demographic" | string;
+  coverageNote?: string;
+};
+
+export type AnalyticsDashboardMeta = {
+  apiCalls: {
+    ga4: number;
+    gsc: number;
+  };
+};
+
 export type SearchPageRow = {
   page: string;
   path: string;
@@ -247,6 +301,7 @@ export type SearchConsoleData = {
   programId: string;
   queries: SearchQueryRow[];
   pages: SearchPageRow[];
+  previousPages?: SearchPageRow[];
   pairs: SearchQueryPageRow[];
   totals: {
     clicks: number;
@@ -256,6 +311,7 @@ export type SearchConsoleData = {
   insights: SearchQueryInsightsSummary;
   error?: string;
   note?: string;
+  gscApiCalls?: number;
 };
 
 export type ProgramSummary = {
@@ -342,6 +398,12 @@ export type AnalyticsDashboardData = {
   programInsights: ProgramInsights | null;
   trafficInsights: TrafficInsightsSummary;
   searchConsole: SearchConsoleData;
+  crossInsights?: DerivedInsightsSummary;
+  audienceInsights?: DerivedInsightsSummary;
+  gscPageInsights?: DerivedInsightsSummary;
+  programInsightsRules?: DerivedInsightsSummary;
+  utmInsights?: DerivedInsightsSummary;
+  _meta?: AnalyticsDashboardMeta;
   fetchedAt: string;
 };
 

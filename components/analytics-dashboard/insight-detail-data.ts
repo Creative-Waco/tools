@@ -1,6 +1,6 @@
 import type { SearchQueryCompetingPage } from "./types";
 import type { UnifiedInsight } from "./unified-insights";
-import { CATEGORY_LABELS } from "./unified-insights";
+import { CATEGORY_LABELS, getSourceLabel } from "./unified-insights";
 import {
   buildSearchEvidenceSections,
   buildTrafficEvidenceSections,
@@ -34,11 +34,13 @@ export type InsightDetailTrendPoint = {
 export type InsightDetailModel = {
   title: string;
   subtitle?: string;
-  source: "search" | "traffic";
+  source: UnifiedInsight["source"];
+  sourceLabel: string;
   recommendation: string;
   sections: InsightDetailSection[];
   trend?: InsightDetailTrendPoint[];
   meta: InsightDetailRow[];
+  caveat?: string;
 };
 
 function fmtNum(value: number | null | undefined) {
@@ -157,6 +159,7 @@ function buildSearchDetail(row: UnifiedInsight): InsightDetailModel {
     title: search.query,
     subtitle: row.subject,
     source: "search",
+    sourceLabel: getSourceLabel("search"),
     recommendation: row.label,
     sections,
     trend: trend.length > 0 ? trend : undefined,
@@ -286,8 +289,120 @@ function buildTrafficDetail(
     title: row.subject ?? traffic.label,
     subtitle: CATEGORY_LABELS[row.category],
     source: "traffic",
+    sourceLabel: getSourceLabel("traffic"),
     recommendation: row.label,
     sections,
+    meta: buildMetaRows(row),
+  };
+}
+
+function buildCombinedDetail(row: UnifiedInsight): InsightDetailModel {
+  const combined = row.combined!;
+  const gsc = combined.gsc ?? {};
+  const ga4 = combined.ga4 ?? {};
+  const sections: InsightDetailSection[] = [
+    {
+      title: "Search Console",
+      layout: "list",
+      rows: [
+        {
+          label: "Query",
+          value: combined.query ?? "—",
+        },
+        {
+          label: "Clicks",
+          value: fmtNum(gsc.clicks as number | undefined),
+        },
+        {
+          label: "Impressions",
+          value: fmtNum(gsc.impressions as number | undefined),
+        },
+        {
+          label: "Potential gain",
+          value:
+            gsc.potentialClicksGain && (gsc.potentialClicksGain as number) > 0
+              ? `+${gsc.potentialClicksGain}`
+              : "—",
+        },
+      ],
+    },
+    {
+      title: "GA4 landing",
+      layout: "list",
+      rows: [
+        {
+          label: "Path",
+          value: combined.path ?? "—",
+        },
+        {
+          label: "Sessions",
+          value: fmtNum(ga4.sessions as number | undefined),
+        },
+        {
+          label: "Bounce rate",
+          value: fmtPct(ga4.bounceRate as number | undefined),
+        },
+        {
+          label: "Engagement",
+          value: fmtPct(ga4.engagementRate as number | undefined),
+        },
+      ],
+    },
+  ];
+
+  return {
+    title: combined.query ?? combined.path ?? row.label,
+    subtitle: row.subject,
+    source: "combined",
+    sourceLabel: getSourceLabel("combined"),
+    recommendation: row.label,
+    sections,
+    caveat: combined.gscNote,
+    meta: buildMetaRows(row),
+  };
+}
+
+function buildDerivedDetail(row: UnifiedInsight): InsightDetailModel {
+  const derived = row.derived!;
+  const sections: InsightDetailSection[] = [
+    {
+      title: "Signal",
+      layout: "list",
+      rows: [
+        { label: "Tags", value: derived.tags.join(", ") || "—" },
+        {
+          label: "Impact score",
+          value: `${derived.impactScore}`,
+        },
+        ...(derived.path
+          ? [{ label: "Path", value: derived.path }]
+          : []),
+        ...(derived.query
+          ? [{ label: "Query", value: derived.query }]
+          : []),
+      ],
+    },
+  ];
+
+  if (derived.metrics && Object.keys(derived.metrics).length > 0) {
+    sections.push({
+      title: "Metrics",
+      layout: "list",
+      rows: Object.entries(derived.metrics).map(([key, value]) => ({
+        label: key,
+        value: String(value),
+      })),
+    });
+  }
+
+  return {
+    title: derived.subject ?? derived.label,
+    subtitle: CATEGORY_LABELS[row.category],
+    source: row.source,
+    sourceLabel: getSourceLabel(row.source),
+    recommendation: row.label,
+    sections,
+    caveat: derived.coverageNote ?? derived.gscNote,
     meta: buildMetaRows(row),
   };
 }
@@ -316,9 +431,18 @@ export function buildInsightDetailModel(
     return buildTrafficDetail(row, context);
   }
 
+  if (row.source === "combined" && row.combined) {
+    return buildCombinedDetail(row);
+  }
+
+  if (row.derived) {
+    return buildDerivedDetail(row);
+  }
+
   return {
     title: row.subject ?? "Insight",
     source: row.source,
+    sourceLabel: getSourceLabel(row.source),
     recommendation: row.label,
     sections: [],
     meta: buildMetaRows(row),

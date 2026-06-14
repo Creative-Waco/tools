@@ -126,9 +126,15 @@ export function InsightDetailModal({
             <SheetHeader className="shrink-0 space-y-3 border-b px-6 py-6 pr-14">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge
-                  variant={detail.source === "search" ? "secondary" : "outline"}
+                  variant={
+                    detail.source === "search" || detail.source === "gsc_page"
+                      ? "secondary"
+                      : detail.source === "combined"
+                        ? "default"
+                        : "outline"
+                  }
                 >
-                  {detail.source === "search" ? "Search Console" : "GA4"}
+                  {detail.sourceLabel}
                 </Badge>
                 {detail.subtitle ? (
                   <Badge variant="outline">{detail.subtitle}</Badge>
@@ -144,6 +150,11 @@ export function InsightDetailModal({
               {rationale?.periodLabel ? (
                 <p className="text-xs text-muted-foreground">
                   {rationale.periodLabel}
+                </p>
+              ) : null}
+              {detail.caveat ? (
+                <p className="text-xs italic text-muted-foreground">
+                  {detail.caveat}
                 </p>
               ) : null}
             </SheetHeader>

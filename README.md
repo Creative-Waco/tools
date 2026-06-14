@@ -16,7 +16,7 @@ Internal tools for Creative Waco, hosted at **https://tools.creativewaco.org**.
 |-----------|-----|-------------|
 | Creative Spark Dashboard | [/sparks-dashboard/](https://tools.creativewaco.org/sparks-dashboard/) | Live Spark membership + event pipeline from Givebutter and Asana |
 | Analytics Dashboard | [/analytics-dashboard/](https://tools.creativewaco.org/analytics-dashboard/) | GA4 + Search Console — site and program analytics, organic keywords, traffic channels |
-| Insights | [/insights/](https://tools.creativewaco.org/insights/) | Search Console keyword opportunities and GA4 traffic patterns |
+| Insights | [/insights/](https://tools.creativewaco.org/insights/) | Cross-dataset opportunities (GSC + GA4 + audience + UTM) ranked by impact |
 
 ## Architecture
 
@@ -415,15 +415,31 @@ GA4 and Search Console report aggregated counts only — not individual identiti
 
 Dedicated insights dashboard at [`/insights/`](https://tools.creativewaco.org/insights/). Shares program and date filters with the Analytics Dashboard (`?program=creative-spark&preset=last-30-days`).
 
-**Unified list** — Search Console and GA4 opportunities merged into one impact-sorted table (0–100). Each row shows the **actionable recommendation** first; query, path, or source/medium appears as context below.
+**Unified list** — Search Console, GA4, and **cross-dataset** insights merged into one impact-sorted table (0–100). Each row shows the **actionable recommendation** first; query, path, or source/medium appears as context below. When GSC and GA4 agree on the same query/path, a **GSC+GA4** combined row replaces the separate single-source rows.
 
-**Filters** — source (`all` | `search` | `traffic`), type (`quick_wins`, `cannibalization`, `conversion`, `rising`, `watchlist`), and **High priority only** (impact ≥ 25). Shows 30 rows by default with **Show all** for the full list.
+**Insight sources**
 
-**Detail panel** — click any row to open underlying source data: **Source data** (GSC keyword or GA4 dimension + raw metrics), **Trigger rules** (exact threshold), period comparison, channel **Top sources** (for Email and other channel groups — UTM source tags / referrers with this vs prior period), vs site average, program breakdowns (audience, forms, devices when relevant), GSC click-trend table, and collapsible technical metadata.
+| Source | Badge | What it covers |
+|--------|-------|----------------|
+| Search (GSC) | GSC | Keyword opportunities, cannibalization, rising/declining queries |
+| Traffic (GA4) | GA4 | Landing bounce, engagement, channels, conversion flags |
+| Combined | GSC+GA4 | Cross-rules joining search clicks with landing engagement (C1–C10) |
+| Audience (GA4) | Audience | Demographics shifts, device mix, referrers, city concentration (A1–A8) |
+| GSC pages | GSC page | Page-level CTR gaps, declining search clicks, query hubs (GP1–GP3) |
+| Navigation (GA4) | Nav | Program dead-ends, weak next steps, scroll/click gaps (N1–N2, E1–E2, PA1) |
+| UTM campaigns | UTM | Tagged campaign drops and landing mismatches (U1–U2) |
 
-**Categories:** Quick wins (GSC + GA4 landings), Cannibalization (GSC), Conversion & experience (GA4), Rising, Watchlist.
+**Filters** — source (`all` | `combined` | `search` | `traffic` | `audience` | `gsc_page` | `navigation` | `utm`), type (`quick_wins`, `cannibalization`, `conversion`, `rising`, `watchlist`), and **High priority only** (impact ≥ 25). Shows 30 rows by default with **Show all** for the full list.
 
-**Impact (0–100)** — each insight gets a raw score from its source engine, then normalized against the highest raw score in the current list so search and traffic are comparable. **Search:** raw impact is potential extra clicks at benchmark CTR for rank (`expected clicks − actual clicks`), plus small impression bonuses for cannibalization, page-1 low CTR, and page-2 queries. **Traffic:** formulas vary by type (e.g. rising channel = `sessions × min(|% change|, 200) / 100`; high-bounce landing = `sessions × bounce gap / 100`). The detail panel **Technical details** section shows **Raw impact** before normalization. **High priority only** filters to impact ≥ 25.
+**Detail panel** — click any row to open underlying source data: **Source data** (GSC keyword, GA4 dimension, or GSC+GA4 side-by-side), **Trigger rules** (exact threshold), period comparison, channel **Top sources** (for Email and other channel groups — UTM source tags / referrers with this vs prior period), vs site average, program breakdowns (audience, forms, devices when relevant), GSC click-trend table, GSC/GA4 lag caveat on combined rows, and collapsible technical metadata.
+
+**Categories:** Quick wins, Cannibalization, Conversion & experience, Rising, Watchlist.
+
+**Impact (0–100)** — each insight gets a raw score from its source engine, then normalized against the highest raw score in the current list so all sources are comparable. Combined rows use cross-engine formulas (e.g. potential clicks × bounce gap). **High priority only** filters to impact ≥ 25.
+
+**Architecture** — fetch once, compute many: `ga4.mjs` and `gsc.mjs` build a shared raw context; `insight-pipeline.mjs` runs pure compute engines (no extra API calls). API budget: ≤ **30 GA4** + **7 GSC** calls per dashboard load. Dev verification: `_meta.apiCalls` on the API response.
+
+**Development** — run insight engine unit tests with `npm run test:analytics` (Node test runner over `lib/analytics-dashboard/*.test.mjs`).
 
 [`/search-insights/`](https://tools.creativewaco.org/search-insights/) redirects to `/insights/?source=search`. Uses the same `GET /api/analytics-dashboard/` payload and session cache (`v11`) as the main dashboard.
 
@@ -457,7 +473,7 @@ Until Search Console is connected, the dashboard shows in-panel setup instructio
 
 `GET /api/analytics-dashboard/?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&program=creative-spark`
 
-Returns KPIs (with period-over-period change), daily series, channels, `userDemographics` (age, gender, interests with coverage %, plus top cities with hover breakdowns), top pages, referrers, `programInsights` (when `program` is set), `trafficInsights` (GA4 opportunities: bounce landings, engagement gaps, conversion flags, rising/declining acquisition), and `searchConsole` (queries, pages, pairs, totals, and `insights` with opportunities/rising keyword analysis, or setup error).
+Returns KPIs (with period-over-period change), daily series, channels, `userDemographics` (age, gender, interests with coverage %, plus top cities with hover breakdowns), top pages, referrers, `programInsights` (when `program` is set), `trafficInsights` (GA4 opportunities), `searchConsole` (queries, pages, `previousPages`, pairs, totals, and query `insights`), plus derived insight buckets: `crossInsights`, `audienceInsights`, `gscPageInsights`, `programInsightsRules`, `utmInsights`, and `_meta.apiCalls` (GA4/GSC call counts for dev verification).
 
 `GET /api/analytics-dashboard/path-exploration/?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&mode=landings|next&pathSteps=["/","/events/levitt/lineup"]&program=events`
 
@@ -480,6 +496,7 @@ Main dashboard query params:
 - **Unstyled page** (black background, blue default links, no sidebar chrome) — CSS failed to compile, often because the disk is full (`ENOSPC` in the terminal). Free space, delete `.next` (`rm -rf .next`), then run `npm run dev:clean:3847`.
 - First GA4 load can take several seconds; skeleton placeholders and “Loading GA4 data…” are normal. Repeat visits in the same tab load instantly from session cache until **Refresh**.
 - Search Console panel shows setup steps when the API is disabled or the service account lacks property access.
+- **`/insights/` shows “Could not load insights”** — usually a server-side GA4/GSC fetch error; check the error text above the empty state, run `npm run dev:clean:3847`, and verify credentials. Run `npm run test:analytics` to validate insight engines without the API.
 
 ## Campaign Tracker
 

@@ -116,6 +116,54 @@ function buildSearchRationale(
   };
 }
 
+function buildCombinedRationale(
+  row: UnifiedInsight,
+  context: InsightRationaleContext,
+): InsightRationale {
+  const combined = row.combined;
+  if (!combined) {
+    return { highlights: [row.impactLabel], why: row.label };
+  }
+
+  const highlights: string[] = [];
+  if (row.subject) highlights.push(row.subject);
+  highlights.push(`Priority ${row.impactScore}/100`);
+
+  const ga4 = combined.ga4 as { bounceRate?: number; sessions?: number } | undefined;
+  if (ga4?.bounceRate !== undefined && context.siteBounceRate !== undefined) {
+    highlights.push(
+      `${ga4.bounceRate}% bounce on landing (site avg ${context.siteBounceRate}%)`,
+    );
+  }
+  if (ga4?.sessions !== undefined) {
+    highlights.push(`${ga4.sessions.toLocaleString()} landing sessions`);
+  }
+
+  return {
+    periodLabel: compactPeriodLabel(context),
+    highlights,
+    why: row.label,
+    caveat: combined.gscNote,
+  };
+}
+
+function buildDerivedRationale(row: UnifiedInsight): InsightRationale {
+  const derived = row.derived;
+  if (!derived) {
+    return { highlights: [row.impactLabel], why: row.label };
+  }
+
+  const highlights: string[] = [];
+  if (row.subject) highlights.push(row.subject);
+  highlights.push(`Priority ${row.impactScore}/100`);
+
+  return {
+    highlights,
+    why: row.label,
+    caveat: derived.coverageNote ?? derived.gscNote,
+  };
+}
+
 function buildTrafficRationale(
   row: UnifiedInsight,
   context: InsightRationaleContext,
@@ -254,7 +302,14 @@ export function buildInsightRationale(
   row: UnifiedInsight,
   context: InsightRationaleContext = {},
 ): InsightRationale {
-  return row.source === "search"
-    ? buildSearchRationale(row, context)
-    : buildTrafficRationale(row, context);
+  if (row.source === "search") {
+    return buildSearchRationale(row, context);
+  }
+  if (row.source === "combined") {
+    return buildCombinedRationale(row, context);
+  }
+  if (row.derived) {
+    return buildDerivedRationale(row);
+  }
+  return buildTrafficRationale(row, context);
 }

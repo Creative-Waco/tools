@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Insights — cross-dataset** — `crossInsights` (C1–C10) join GSC queries with GA4 landing/page metrics; combined rows replace duplicate single-source rows in the unified list.
+- **Insights — audience** — `audienceInsights` (A1–A8) from demographics, devices, referrers, and cities with period comparison.
+- **Insights — GSC pages** — `gscPageInsights` (GP1–GP3) for page CTR gaps, declining search clicks, and query hubs; +1 GSC query for prior-period pages.
+- **Insights — program/navigation** — `programInsightsRules` (N1–N2, E1–E2, PA1) from program scope navigation, scroll/click, and acquisition data.
+- **Insights — UTM** — `utmInsights` (U1–U2) from tagged campaign summary with landing bounce cross-check.
+- **Insights — pipeline** — `insight-pipeline.mjs` orchestrates all compute engines over shared raw context; `path-utils.mjs` and `insight-thresholds.mjs` shared utilities.
+- **Insights — tests** — `npm run test:analytics` runs unit tests for cross, audience, GSC page, program, and pipeline insight engines.
 - **Insights** — unified hub at `/insights/` combining Search Console and GA4 opportunities with normalized impact scoring (0–100), source/type filters, and a row-click detail panel.
 - **Insights** — detail panel **Source data** on every row (GSC keyword or GA4 dimension + raw metrics), **Trigger rules** (exact threshold), channel **Top sources** with period comparison (`sessionSource` within each default channel group), and program breakdowns (audience, forms, devices) when relevant.
 - **Insights — Traffic** — GA4 opportunity engine: high-bounce landings, low-engagement pages, form/retention/mobile flags, rising and declining channels/sources.
@@ -16,7 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Insights** — actionable recommendations lead each row; subject (query, path, or source/medium) is secondary context; flat impact-sorted table with compact filters and 30-row default.
+- **Insights** — unified list adds sources: combined (GSC+GA4), audience, GSC pages, navigation, UTM; detail panel shows GSC+GA4 side-by-side and coverage/lag caveats.
+- **Insights — GSC** — page_one positions 1–3, tighter striking_distance, declining+low_ctr → review, local+question → faq, cannibalization 3+ pages, volume-relative click thresholds.
+- **Insights — GA4** — page period comparison, unified bounce thresholds (+10/65), declining_landing watchlist, site-wide device/referrer/city audience fetch.
+- **Analytics Dashboard API** — `_meta.apiCalls` exposes GA4/GSC call counts; internal `_insightContext` stripped from response.
 - **Insights** — moved from Search queries tab to dedicated `/insights/` route; sidebar entry **Insights**; `/search-insights/` redirects; program and date URL params shared with Analytics Dashboard.
 - **Analytics Dashboard** — **Insights** link in toolbar and on Search queries card.
 - **Creative Spark Dashboard** — dashboard data is cached in `sessionStorage` per period and membership-type filter (same pattern as Analytics Dashboard and Campaign Tracker); repeat visits in the same tab load instantly until **Refresh**.
@@ -25,7 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **Insights** — detail panel trigger rules no longer duplicate React keys when an insight matches multiple tags.
+- **Insights** — fix `countingClient is not defined` in GA4 helper functions (`fetchUserDemographics`, `fetchTrafficInsightsRaw`, etc.) that broke `/insights/` after pipeline refactor.
+- **Insights** — restore missing `getProgram` import in `ga4.mjs` that caused "getProgram is not defined" on `/insights/`.
 - **Insights — Traffic** — fix GA4 comparison report parsing (one row per date range); corrects wrong engagement rates, prior-session counts, and inflated % change; impact scoring uses session delta; session cache `v10`.
 - **Insights — Traffic** — channel source breakdown now includes prior-period sessions for comparison; session cache `v11`.
 - **Insights** — normalize cached/partial search `insights` payloads so missing arrays or row fields no longer crash the page.

@@ -50,12 +50,33 @@ type UnifiedInsightsViewProps = {
 };
 
 function SourceBadge({ source }: { source: UnifiedInsight["source"] }) {
+  const label =
+    source === "search"
+      ? "GSC"
+      : source === "combined"
+        ? "GSC+GA4"
+        : source === "traffic"
+          ? "GA4"
+          : source === "audience"
+            ? "Audience"
+            : source === "gsc_page"
+              ? "GSC page"
+              : source === "navigation"
+                ? "Nav"
+                : source === "utm"
+                  ? "UTM"
+                  : "GA4";
+
+  const variant =
+    source === "search" || source === "gsc_page"
+      ? "secondary"
+      : source === "combined"
+        ? "default"
+        : "outline";
+
   return (
-    <Badge
-      variant={source === "search" ? "secondary" : "outline"}
-      className="shrink-0 text-[10px]"
-    >
-      {source === "search" ? "GSC" : "GA4"}
+    <Badge variant={variant} className="shrink-0 text-[10px]">
+      {label}
     </Badge>
   );
 }
@@ -211,8 +232,13 @@ function FilterBar({
 }) {
   const sources: { id: UnifiedInsightSourceFilter; label: string }[] = [
     { id: "all", label: "All" },
+    { id: "combined", label: "Combined" },
     { id: "search", label: "Search" },
     { id: "traffic", label: "Traffic" },
+    { id: "audience", label: "Audience" },
+    { id: "gsc_page", label: "GSC pages" },
+    { id: "navigation", label: "Navigation" },
+    { id: "utm", label: "UTM" },
   ];
 
   return (
