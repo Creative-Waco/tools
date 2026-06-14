@@ -32,6 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **Design system** — warm Spark-inspired theme applied across hub, utility tools, analytics dashboards, and app shell; Creative Spark `dashboard.css` consumes global tokens (scoped toolbar/field/button rules).
+- **Design system** — app shell content well is a white card panel; outline/secondary buttons, badges, and analytics filters use white surfaces with spark-soft hovers instead of grey-muted fills.
+- **Sidebar** — Insights uses a lightbulb icon so it is distinct from Analytics Dashboard (line chart).
 - **Campaign Builder** — `utm_content` and `utm_term` fields in Add link show help tooltips and preset-aware examples (e.g. Sparks newsletter → `member-update`, `event-spotlight`).
 - **Campaign Builder** — campaign workspace (header, performance, links, add-link) now lives in a single panel with internal section dividers.
 - **Insights** — unified list adds sources: combined (GSC+GA4), audience, GSC pages, navigation, UTM; detail panel shows GSC+GA4 side-by-side and coverage/lag caveats.
@@ -46,6 +48,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Design system** — Insights and Analytics use white card surfaces for the main content well, filter controls, and tables; secondary/muted tokens lightened so grey fills no longer read darker than panels.
+- **Design system** — form inputs, selects, textareas, and shadcn `Input`/`Select` use white card fill (`bg-card`) instead of cream paper on panels.
+- **Campaign Builder** — performance metric tiles use white card background instead of cream paper.
 - **Creative Spark Dashboard** — fixed React hydration mismatch (client-only dashboard render, removed redundant `escapeHtml()` in JSX, stable event keys, defer sessionStorage cache until mount); `formatDate()` now uses deterministic parsing instead of `toLocaleDateString`.
 - **Airtable** — `getBaseSchema()` now calls `GET /meta/bases/{baseId}/tables` so existing CW Tools tables are detected instead of triggering duplicate-table creation errors; field checks use the tables list (single-table Meta endpoint returns 404); KPI checkbox field uses required Airtable options.
 - **Campaign Builder** — restored `lib/utm-builder/build-url.mjs` as a re-export shim to `build-url.ts` so Webpack no longer fails when a stale cache resolves `build-url` to the deleted partial `.mjs` file.

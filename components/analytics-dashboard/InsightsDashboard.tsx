@@ -101,7 +101,7 @@ export function InsightsDashboard() {
         trailing={
           <Link
             href={analyticsHref}
-            className="inline-flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-sm font-medium hover:bg-muted"
+            className="inline-flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-sm font-medium hover:bg-accent/60"
           >
             <BarChart3 className="size-4" />
             Analytics
@@ -128,7 +128,7 @@ export function InsightsDashboard() {
       <div className="pt-2">
         <Link
           href={analyticsHref}
-          className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 text-sm font-medium hover:bg-muted"
+          className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-line bg-card px-2.5 text-sm font-medium hover:bg-accent/60"
         >
           <ArrowLeft className="size-4" />
           Back to Analytics Dashboard

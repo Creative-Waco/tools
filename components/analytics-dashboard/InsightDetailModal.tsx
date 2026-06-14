@@ -32,7 +32,7 @@ type InsightDetailModalProps = {
 
 function ListTable({ rows }: { rows: InsightDetailRow[] }) {
   return (
-    <dl className="divide-y rounded-xl border bg-background text-sm">
+    <dl className="divide-y rounded-xl border border-line bg-card text-sm">
       {rows.map((row, index) => (
         <div
           key={`${row.label}-${index}`}
@@ -54,10 +54,10 @@ function ComparisonTable({
   previousLabel?: string;
 }) {
   return (
-    <div className="overflow-x-auto rounded-xl border bg-background">
+    <div className="overflow-x-auto rounded-xl border border-line bg-card">
       <table className="w-full min-w-[18rem] text-sm">
         <thead>
-          <tr className="border-b bg-muted/30 text-left text-xs text-muted-foreground">
+          <tr className="border-b bg-surface-hover text-left text-xs text-muted-foreground">
             <th className="px-4 py-3 font-medium">Metric</th>
             <th className="px-4 py-3 text-right font-medium">This period</th>
             <th className="px-4 py-3 text-right font-medium">{previousLabel}</th>
@@ -161,7 +161,7 @@ export function InsightDetailModal({
 
             <div className="flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto px-6 py-6">
               {rationale ? (
-                <div className="rounded-xl border bg-muted/30 px-4 py-4 text-sm leading-relaxed">
+                <div className="rounded-xl border border-line bg-surface-hover px-4 py-4 text-sm leading-relaxed">
                   <p className="font-medium text-foreground">Why this fired</p>
                   <p className="mt-2 text-muted-foreground">{rationale.why}</p>
                   {rationale.caveat ? (
@@ -181,7 +181,7 @@ export function InsightDetailModal({
                   <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     Click trend
                   </h3>
-                  <div className="rounded-xl border bg-background px-4 py-4">
+                  <div className="rounded-xl border border-line bg-card px-4 py-4">
                     <QueryTrendSparkline
                       trend={detail.trend}
                       width={320}
@@ -190,7 +190,7 @@ export function InsightDetailModal({
                     <div className="mt-4 max-h-48 overflow-y-auto rounded-lg border">
                       <table className="w-full text-sm">
                         <thead>
-                          <tr className="border-b bg-muted/30 text-muted-foreground">
+                          <tr className="border-b bg-surface-hover text-muted-foreground">
                             <th className="px-3 py-2 text-left font-medium">Date</th>
                             <th className="px-3 py-2 text-right font-medium">Clicks</th>
                             <th className="px-3 py-2 text-right font-medium">Imp</th>

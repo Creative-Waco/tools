@@ -67,6 +67,10 @@ const config: Config = {
         paper: "var(--paper)",
         ink: "var(--ink)",
         line: "var(--line)",
+        surface: {
+          hover: "var(--surface-hover)",
+          muted: "var(--surface-muted)",
+        },
         sidebar: {
           DEFAULT: "var(--sidebar)",
           foreground: "var(--sidebar-foreground)",

@@ -17,9 +17,9 @@
     --popover-foreground: var(--ink);
     --primary: var(--ink);
     --primary-foreground: #ffffff;
-    --secondary: var(--surface-muted);
+    --secondary: var(--panel);
     --secondary-foreground: var(--ink);
-    --muted: var(--surface-muted);
+    --muted: var(--surface-hover);
     --muted-foreground: var(--text-muted);
     --accent: var(--spark-soft);
     --accent-foreground: var(--ink);
@@ -80,7 +80,7 @@
   .field input:not([type="color"]),
   .field select,
   .field textarea {
-    @apply w-full rounded-lg border border-input bg-background px-3 py-2.5 font-sans;
+    @apply w-full rounded-lg border border-line bg-card px-3 py-2.5 font-sans;
   }
 
   .field.checkbox {
@@ -93,7 +93,7 @@
   }
 
   .secondary-btn {
-    @apply cursor-pointer rounded-lg border border-input bg-background px-3.5 py-2.5 font-sans font-bold text-foreground disabled:cursor-not-allowed disabled:opacity-60;
+    @apply cursor-pointer rounded-lg border border-line bg-card px-3.5 py-2.5 font-sans font-bold text-foreground disabled:cursor-not-allowed disabled:opacity-60;
   }
 
   .status-line {
@@ -128,7 +128,7 @@
   }
 
   .btn-secondary {
-    @apply border border-input bg-background text-foreground;
+    @apply border border-line bg-card text-foreground;
   }
 
   .btn-sm {
@@ -144,7 +144,7 @@
   }
 
   .campaign-builder-tab {
-    @apply rounded-lg border border-input bg-background px-3 py-2 text-sm font-semibold;
+    @apply rounded-lg border border-line bg-card px-3 py-2 text-sm font-semibold;
   }
 
   .campaign-builder-tab--active {
@@ -171,7 +171,7 @@
   }
 
   .campaign-list-search {
-    @apply w-full rounded-lg border border-input bg-background px-3 py-2 text-sm;
+    @apply w-full rounded-lg border border-line bg-card px-3 py-2 text-sm;
   }
 
   .campaign-list-empty {
@@ -183,7 +183,7 @@
   }
 
   .campaign-list-item {
-    @apply grid w-full gap-1 rounded-lg border border-input bg-background p-3 text-left transition hover:border-primary/40;
+    @apply grid w-full gap-1 rounded-lg border border-line bg-card p-3 text-left transition hover:border-spark/40;
   }
 
   .campaign-list-item--active {
@@ -259,7 +259,7 @@
   }
 
   .campaign-metric {
-    @apply grid gap-1 rounded-lg border border-input bg-background p-3;
+    @apply grid gap-1 rounded-lg border border-line bg-card p-3;
   }
 
   .campaign-metric-label {
@@ -348,7 +348,7 @@
   }
 
   .utm-builder-chip {
-    @apply rounded-full border border-input bg-background px-3 py-1 text-xs font-semibold;
+    @apply rounded-full border border-line bg-card px-3 py-1 text-xs font-semibold;
   }
 
   .utm-builder-chip--active {

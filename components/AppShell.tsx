@@ -5,6 +5,7 @@ import {
   BarChart3,
   ImageIcon,
   LayoutDashboard,
+  Lightbulb,
   LineChart,
   Link2,
   Mail,
@@ -39,6 +40,14 @@ const TAG_ICONS = {
   Marketing: Link2,
   Analytics: LineChart,
 } as const;
+
+const TOOL_ICON_OVERRIDES: Partial<Record<string, (typeof TAG_ICONS)[keyof typeof TAG_ICONS]>> = {
+  insights: Lightbulb,
+};
+
+function toolIcon(toolId: string, tag: keyof typeof TAG_ICONS) {
+  return TOOL_ICON_OVERRIDES[toolId] ?? TAG_ICONS[tag];
+}
 
 function normalizePath(path: string) {
   if (path === "/") return "/";
@@ -87,7 +96,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             },
             ...UTILITY_TOOLS.map((tool) => ({
               label: tool.name,
-              icon: TAG_ICONS[tool.tag],
+              icon: toolIcon(tool.id, tool.tag),
               href: tool.path,
               isActive: isActivePath(pathname, tool.path),
             })),
@@ -98,7 +107,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           defaultOpen: true,
           items: DASHBOARDS.map((tool) => ({
             label: tool.name,
-            icon: TAG_ICONS[tool.tag],
+            icon: toolIcon(tool.id, tool.tag),
             href: tool.path,
             isActive: isActivePath(pathname, tool.path),
           })),

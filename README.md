@@ -30,13 +30,15 @@ Next.js 15 App Router app deployed on Vercel at **https://tools.creativewaco.org
 | UI components | `components/` — shadcn/ui primitives, shared layout, per-tool React clients |
 | Backend logic | `lib/` — RSS generation, event cards, Campaign Builder (Airtable + GA4), Givebutter/Asana dashboard, GA4/Search Console analytics |
 
-Navigation is provided by the Application Shell 2 layout (inset sidebar with icon collapse). The sidebar has a **Tools** group (**All tools** plus utilities) and a **Dashboards** group (Creative Spark, Analytics); the current page is highlighted with a dark active state (visible in both expanded and collapsed icon mode). The Creative Waco branding block at the top is display-only (use **All tools** or **⌘B** / **Ctrl+B** to collapse the sidebar). Collapsed vs expanded state is remembered for 7 days in a browser cookie. The hub at `/` and each tool page render inside the shell's main content area.
+Navigation is provided by the Application Shell 2 layout (inset sidebar with icon collapse). The sidebar has a **Tools** group (**All tools** plus utilities) and a **Dashboards** group (Creative Spark, Analytics, Insights); the current page is highlighted with a dark active state (visible in both expanded and collapsed icon mode). The Creative Waco branding block at the top is display-only (use **All tools** or **⌘B** / **Ctrl+B** to collapse the sidebar). Collapsed vs expanded state is remembered for 7 days in a browser cookie. The hub at `/` and each tool page render inside the shell's main content area.
 
 Favicon and Apple touch icon match [creativewaco.org](https://creativewaco.org/) (`app/icon.png`, `app/apple-icon.png`).
 
 ## Design system
 
-Suite-wide brand inspired by the Creative Spark Dashboard: cream paper surfaces (`--paper`), ink primary buttons (`--ink`), Spark orange accents (`--spark`), and warm borders. Tokens live in `app/brand-tokens.css`; shadcn variables in `app/globals.css` map to those tokens. Shared layout components are in `components/cw/` (`ToolPage`, `ToolPanel`, `ToolLayout`, `MetricCard`, etc.).
+Suite-wide brand inspired by the Creative Spark Dashboard: cream paper outer shell (`--paper`), white card panels (`--panel` / `bg-card`), ink primary buttons (`--ink`), Spark orange accents (`--spark`), and warm borders. The app shell renders each page inside a white card well on the paper background. Form controls, metric tiles, and analytics filter bars use white fills—not cream or grey—so they match panels.
+
+Tokens live in `app/brand-tokens.css`; shadcn variables in `app/globals.css` map to those tokens. Shared layout components are in `components/cw/` (`ToolPage`, `ToolPanel`, `ToolLayout`, `MetricCard`, etc.). Insights uses a **lightbulb** sidebar icon (Analytics Dashboard keeps the line chart).
 
 **Before adding new UI**, read [docs/BRAND-GUIDE.md](docs/BRAND-GUIDE.md). A Cursor project rule (`.cursor/rules/brand-guide.mdc`) reminds agents to follow it.
 

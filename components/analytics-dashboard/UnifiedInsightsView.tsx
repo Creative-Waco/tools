@@ -157,7 +157,7 @@ function UnifiedInsightRow({
 
   return (
     <tr
-      className="cursor-pointer border-b align-top transition-colors last:border-0 hover:bg-muted/40"
+      className="cursor-pointer border-b align-top transition-colors last:border-0 hover:bg-accent/60"
       onClick={() => onSelect(row)}
       onKeyDown={(event) => {
         if (event.key === "Enter" || event.key === " ") {
@@ -243,7 +243,7 @@ function FilterBar({
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <div className="inline-flex rounded-full border p-0.5">
+      <div className="inline-flex rounded-full border border-line bg-card p-0.5">
         {sources.map((item) => (
           <button
             key={item.id}
@@ -252,7 +252,7 @@ function FilterBar({
               "h-8 rounded-full px-3 text-sm font-medium transition-colors",
               filters.source === item.id
                 ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground",
+                : "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
             )}
             onClick={() => onFiltersChange({ ...filters, source: item.id })}
           >
@@ -283,7 +283,7 @@ function FilterBar({
         </SelectContent>
       </Select>
 
-      <label className="inline-flex h-8 cursor-pointer items-center gap-2 rounded-full border px-3 text-sm">
+      <label className="inline-flex h-8 cursor-pointer items-center gap-2 rounded-full border border-line bg-card px-3 text-sm">
         <input
           type="checkbox"
           className="size-3.5 rounded border-input"
@@ -378,10 +378,10 @@ export function UnifiedInsightsView({
           range or turn off High priority only.
         </p>
       ) : (
-        <div className="max-w-full overflow-x-auto rounded-lg border">
+        <div className="max-w-full overflow-x-auto rounded-lg border border-line bg-card">
           <table className="w-full min-w-[28rem] text-sm">
             <thead>
-              <tr className="border-b text-left text-xs font-medium text-muted-foreground">
+              <tr className="border-b bg-card text-left text-xs font-medium text-muted-foreground">
                 <th className="pb-2 pr-3 pl-3 pt-2">Insight</th>
                 <th className="w-16 pb-2 pr-3 pt-2 text-right">Impact</th>
                 <th className="w-20 pb-2 pr-3 pt-2 text-right">Change</th>

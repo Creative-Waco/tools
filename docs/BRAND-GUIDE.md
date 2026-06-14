@@ -20,8 +20,9 @@ Defined in [`app/brand-tokens.css`](app/brand-tokens.css) and mapped to shadcn i
 | `--spark-soft` | `#fff4ec` | Hover highlights, accent KPI backgrounds |
 | `--spark-muted` | `#c44d03` | Accent text, eyebrows |
 | `--ink` | `#1a1a1a` | Body text, primary buttons |
-| `--paper` | `#f4f1ea` | Page background |
+| `--paper` | `#f4f1ea` | Page / outer shell background |
 | `--panel` | `#ffffff` | Card/panel background |
+| `--surface-hover` | `#faf8f4` | Light hover wash (not grey fills on white) |
 | `--line` | `#e4dfd4` | Borders |
 | `--text-muted` | `#666666` | Labels, subtitles |
 | `--honorary` | `#6b5b95` | Honorary tier emphasis |
