@@ -1,5 +1,4 @@
 import type { Kpi } from "./types";
-import { escapeHtml } from "./utils";
 
 type KpiGridProps = {
   kpis: Kpi[];
@@ -41,13 +40,13 @@ export function KpiGrid({ kpis, loading }: KpiGridProps) {
             className={`kpi-card${kpi.accent ? " kpi-card--accent" : ""}${kpi.degraded ? " kpi-card--degraded" : ""}`}
             title={kpi.degraded ? "Data unavailable or mapping issue" : undefined}
           >
-            <p className="kpi-card__label">{escapeHtml(kpi.label)}</p>
-            <p className="kpi-card__value">{escapeHtml(kpi.value)}</p>
+            <p className="kpi-card__label">{kpi.label}</p>
+            <p className="kpi-card__value">{kpi.value}</p>
             {kpi.footnote ? (
               <p
                 className={`kpi-card__footnote${kpi.footnote.includes("honorary") ? " is-honorary" : ""}`}
               >
-                {escapeHtml(kpi.footnote)}
+                {kpi.footnote}
               </p>
             ) : null}
           </article>

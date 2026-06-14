@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+
 import { PageHero } from "@/components/PageHero";
-import { SparksDashboard } from "@/components/sparks-dashboard/SparksDashboard";
+import { SparksDashboardClient } from "@/components/sparks-dashboard/SparksDashboardClient";
+
 import "./dashboard.css";
 
 export const metadata: Metadata = {
@@ -17,7 +19,7 @@ export default function SparksDashboardPage() {
         title="Creative Spark Dashboard"
         lede="Track Creative Spark membership growth, tier mix, and member event momentum."
       />
-      <SparksDashboard />
+      <SparksDashboardClient />
     </main>
   );
 }

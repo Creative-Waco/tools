@@ -8,7 +8,7 @@ Internal tools for Creative Waco, hosted at **https://tools.creativewaco.org**.
 |------|-----|-------------|
 | RSS Email HTML Generator | [/rss-email/](https://tools.creativewaco.org/rss-email/) | RSS feed → HubSpot-ready event email HTML |
 | Event Card Graphics | [/event-cards/](https://tools.creativewaco.org/event-cards/) | Instagram carousel cards (1080×1350, 4:5) or landscape display slideshow cards (1920px wide) from the events RSS feed |
-| Campaign Tracker | [/utm-builder/](https://tools.creativewaco.org/utm-builder/) | Track GA4 tagged campaigns and build UTM links |
+| Campaign Builder | [/utm-builder/](https://tools.creativewaco.org/utm-builder/) | Build campaigns with multiple UTM links; track GA4 performance vs Airtable benchmarks |
 
 ## Dashboards
 
@@ -28,7 +28,7 @@ Next.js 15 App Router app deployed on Vercel at **https://tools.creativewaco.org
 | API | `app/api/` — Route Handlers wrapping `lib/` |
 | App shell | `components/AppShell.tsx` + `@shadcnblocks/application-shell2` — inset collapsible sidebar; **Tools** and **Dashboards** groups from `lib/tools-registry.ts` (`kind: "tool"` \| `"dashboard"`) |
 | UI components | `components/` — shadcn/ui primitives, shared layout, per-tool React clients |
-| Backend logic | `lib/` — RSS generation, event cards, UTM URL builder, Givebutter/Asana dashboard, GA4/Search Console analytics |
+| Backend logic | `lib/` — RSS generation, event cards, Campaign Builder (Airtable + GA4), Givebutter/Asana dashboard, GA4/Search Console analytics |
 
 Navigation is provided by the Application Shell 2 layout (inset sidebar with icon collapse). The sidebar has a **Tools** group (**All tools** plus utilities) and a **Dashboards** group (Creative Spark, Analytics); the current page is highlighted with a dark active state (visible in both expanded and collapsed icon mode). The Creative Waco branding block at the top is display-only (use **All tools** or **⌘B** / **Ctrl+B** to collapse the sidebar). Collapsed vs expanded state is remembered for 7 days in a browser cookie. The hub at `/` and each tool page render inside the shell's main content area.
 
@@ -237,6 +237,8 @@ Local file auto-load does **not** run on Vercel. Set at minimum:
 | `GA4_PROPERTY_ID` | Numeric GA4 property ID (`306499072` for creativewaco.org) |
 | `GA4_SERVICE_ACCOUNT_JSON` | Service account JSON with GA4 **Viewer** (same account as Search Console reader) |
 | `GSC_SITE_URL` | Optional Search Console property URL (defaults to `sc-domain:creativewaco.org`) |
+| `AIRTABLE_API_KEY` | Campaign Builder | Personal access token with schema + data scopes |
+| `AIRTABLE_BASE_ID` | Campaign Builder | Airtable base where CW Tools tables are bootstrapped |
 
 Optional overrides match the Spark Dashboard table above (`ASANA_SPARKS_PROJECT_GID`, campaign/tier aliases, etc.).
 
@@ -309,7 +311,7 @@ Public-facing dashboard for [Creative Spark](https://creativewaco.org/spark) mem
 
 **Spark events table** — upcoming pipeline first (soonest dated events on top), then ideas; completed events are collapsed behind a toggle. Scrollable table body keeps the layout compact.
 
-**Loading** — skeleton placeholders animate while Givebutter and Asana data load on the first visit or when switching to an uncached filter combination. Repeat visits in the same tab load instantly from `sessionStorage` (same pattern as Analytics Dashboard and Campaign Tracker); click **Refresh** to bypass cache and refetch from Givebutter and Asana. Toolbar filters: period, membership type, and refresh only (no JSON export).
+**Loading** — skeleton placeholders animate while Givebutter and Asana data load on the first visit or when switching to an uncached filter combination. Repeat visits in the same tab load instantly from `sessionStorage` (same pattern as Analytics Dashboard and Campaign Builder); click **Refresh** to bypass cache and refetch from Givebutter and Asana. The dashboard body renders client-only after mount to avoid hydration mismatches. Toolbar filters: period, membership type, and refresh only (no JSON export).
 
 **Chart tooltips** — hover (or keyboard focus) on the growth chart, tier donut/legend, and goal progress bars for custom detail tooltips. Click a month in the growth chart to open a modal with new members and events held that month (names link to Givebutter).
 
@@ -493,64 +495,58 @@ Main dashboard query params:
 
 - **`ERR_CONNECTION_REFUSED` on `localhost:3847`** — dev server is not running. Start with `npm run dev:3847` (or `npm run dev:clean:3847` if the port is stuck).
 - Blank page or **500** on `/analytics-dashboard/` during local dev — stale `.next` cache. Run `npm run dev:clean:3847` and hard-refresh.
-- **Unstyled page** (black background, blue default links, no sidebar chrome) — CSS failed to compile, often because the disk is full (`ENOSPC` in the terminal). Free space, delete `.next` (`rm -rf .next`), then run `npm run dev:clean:3847`.
+- **Unstyled page** (black background, blue default links, oversized avatar, no sidebar chrome) — CSS failed to load, usually from a corrupted `.next` cache (look for missing `routes-manifest.json` or 500s in the terminal). Run `npm run dev:clean:3847` and hard-refresh. Also check disk space (`ENOSPC` in the terminal).
 - First GA4 load can take several seconds; skeleton placeholders and “Loading GA4 data…” are normal. Repeat visits in the same tab load instantly from session cache until **Refresh**.
 - Search Console panel shows setup steps when the API is disabled or the service account lacks property access.
 - **`/insights/` shows “Could not load insights”** — usually a server-side GA4/GSC fetch error; check the error text above the empty state, run `npm run dev:clean:3847`, and verify credentials. Run `npm run test:analytics` to validate insight engines without the API.
 
-## Campaign Tracker
+## Campaign Builder
 
-Track tagged campaigns from GA4 and build or edit UTM links at `/utm-builder/`.
+Create marketing campaigns, add channel-specific UTM links, and compare GA4 performance to benchmarks at `/utm-builder/`. Campaigns and links are stored in Airtable (`CW Tools — Campaigns`, `CW Tools — Campaign Links`); see [docs/AIRTABLE-SCHEMA.md](docs/AIRTABLE-SCHEMA.md).
 
-### Campaign tracker (top of page)
+### My campaigns (default tab)
 
-When GA4 credentials are configured (same as Analytics Dashboard), the tracker loads tagged session data from GA4:
+- **Campaign list** — sidebar with search, link count, session rollup, and status (on track / below target / no traffic)
+- **New campaign** — name, `utm_campaign` slug, destination URL, optional benchmark targets (sessions, engagement %, bounce %)
+- **Campaign workspace** — performance rollup, tagged links table with per-link GA4 metrics, **Edit** (destination URL, slug, benchmarks), **Add link** panel
+- **Add link** — channel presets (Instagram, newsletter, print/QR, etc.); `utm_campaign` locked to the parent campaign; optional content variants save multiple links at once
+- **Benchmarks** — manual targets from Airtable when set; engagement and bounce fall back to site-wide GA4 averages for the selected period
 
-- **Summary** — unique campaign count, sessions, and active users for the selected date range
-- **View** — **By campaign** (default) groups rows with expand/collapse: first by source/medium, then landing-page links; **All links** shows the flat list
-- **Table** — paginated (25 rows), scrollable with sticky headers; landing path instead of full tagged URL (full link on row hover)
-- **Sort** — click **Campaign**, **Sessions**, or **Users** column headers
-- **Source** and **Medium** — separate columns (campaign rows summarize when multiple values exist)
-- **Referrer** — referring site from GA4 (`pageReferrer`); hover for full URL; empty shows **Direct**
-- **Search** — filter by campaign, source, medium, referrer, or URL
-- **Date range** — last 90 days, 180 days, or 12 months
-- **Session cache** — campaign data is cached in the browser for the tab session; revisiting the page or switching back to a previously loaded range does not refetch GA4 until you click **Refresh**
-- **Click a row** — expand a campaign for source/medium breakdown (and link variants), or load a single-link campaign into the URL builder below
+### Performance
 
-Only sessions with a real manual `utm_campaign` are included (organic/direct traffic is excluded).
+Creating a campaign only saves metadata in Airtable — it does not register tracking with GA4. On each load or **Refresh**, `GET /api/utm-builder/campaigns/` joins Airtable campaigns with GA4 manual UTM data for the selected period (default 90 days). Sessions roll up by `utm_campaign` slug; per-link rows match source, medium, content, and term. New campaigns show **No traffic yet** until tagged links are shared and GA4 records sessions (typically 24–48h lag). Engagement and bounce rates appear only after ≥ 10 sessions.
 
-### URL builder (bottom of page)
+### All GA4 tab
 
-1. Enter the **destination URL** (defaults to `https://creativewaco.org/`) or use **Quick start** chips: **Pages**, **Channels**, **Sources**, **Mediums**, and **Campaigns**
-2. Set **source**, **medium**, and **campaign** (required)
-3. Expand **More options** when needed: campaign slug helper, term/content/ID, custom params, and **content variants**
-4. Copy the live preview (**Copy URL**, **Copy params**, **Copy path**), open in a new tab, or **Share link**
+Legacy GA4-only campaign table (grouped/flat views, search, sort, pagination) for all tagged traffic — including campaigns not created in the tool.
 
-**Auto-parse** — paste a full tagged URL into Destination URL; UTM parameters are detected and split into fields automatically.
+### Environment variables
 
-**Recent campaigns** — last copied campaigns are saved in the browser (up to 10) for quick reload.
+| Variable | Required | Purpose |
+|----------|----------|---------|
+| `AIRTABLE_API_KEY` | Yes (Campaign Builder) | Personal access token (`pat…`) with `data.records:read/write` and `schema.bases:read/write` |
+| `AIRTABLE_BASE_ID` | Yes (Campaign Builder) | Base ID (`app…`) where CW Tools tables are created additively |
+| `GA4_PROPERTY_ID` | For performance | Same as Analytics Dashboard |
+| `GA4_SERVICE_ACCOUNT_JSON` or `GA4_SERVICE_ACCOUNT_PATH` | For performance | GA4 reader credentials |
 
-**GA4 suggestions** — unique sources, mediums, and campaigns from the tracker append to Quick start chips when not already in the static lists.
+Local dev auto-load: `~/.config/creativewaco/airtable-api-key.txt`, `airtable-base-id.txt`, and GA4 files (same as Analytics Dashboard).
 
-**Print / QR preset** — shows a downloadable QR code when the tagged URL is ready.
+### API routes
 
-**Keyboard shortcut** — **⌘⇧C** / **Ctrl+Shift+C** copies the full tagged URL (when focus is not in an input).
-
-**Shareable state** — form values sync to the browser URL via `history.replaceState` (no full page reload) so you can bookmark or Slack a pre-filled link (e.g. `/utm-builder/?url=…&utm_campaign=…`). Use **Share link** to send the current builder state.
-
-**API**
-
-`GET /api/utm-builder/history/?days=90&limit=500`
-
-Returns tagged campaign rows from GA4 (`sessionManualSource`, `sessionManualMedium`, `sessionManualCampaignName`, term, content, landing page, `pageReferrer`) with `sessions`, `activeUsers`, and a reconstructed `taggedUrl`. Optional `days` (7–365, default 90) and `limit` (10–1000, default 500).
+| Method | Path | Purpose |
+|--------|------|---------|
+| `GET` | `/api/airtable/health/` | Airtable config + schema bootstrap status |
+| `GET` | `/api/utm-builder/campaigns/` | List campaigns with links + GA4 performance (`days`, default 90) |
+| `POST` | `/api/utm-builder/campaigns/` | Create campaign |
+| `PATCH` | `/api/utm-builder/campaigns/[id]/` | Update campaign metadata / benchmarks; rebuilds tagged links when destination or `utm_campaign` changes |
+| `POST` | `/api/utm-builder/campaigns/[id]/links/` | Add or update UTM link(s) on a campaign |
+| `GET` | `/api/utm-builder/history/` | GA4 UTM history for All GA4 tab (`days`, `limit`) |
 
 **Notes**
 
-- Source, medium, and campaign are required before copy/open is enabled.
-- Values are normalized on blur (lowercase, hyphens, special characters removed).
-- If the destination already has `utm_*` tags, the tool warns that they will be replaced.
-- Custom parameters are appended as non-`utm_` query keys (e.g. `ref=partner-name`).
-- Tagged URLs are reconstructed from landing page + UTM params; GA4 does not store every exact query string historically.
+- CW Tools never deletes existing Airtable tables — only adds `CW Tools — *` tables and missing fields.
+- Engagement/bounce comparisons are suppressed when sessions &lt; 10 (noisy at low volume).
+- `GET /api/airtable/health/` verifies PAT access and lists base tables after bootstrap.
 
 ## Adding a new tool
 

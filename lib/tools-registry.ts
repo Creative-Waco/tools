@@ -46,10 +46,10 @@ export const TOOLS: Tool[] = [
   },
   {
     id: "utm-builder",
-    name: "Campaign Tracker",
+    name: "Campaign Builder",
     path: "/utm-builder/",
     description:
-      "Track tagged campaigns from GA4 and build UTM links for newsletters, social, and paid ads.",
+      "Build campaigns with multiple UTM links, track performance in GA4, and compare against benchmarks in Airtable.",
     tag: "Marketing",
     kind: "tool",
   },

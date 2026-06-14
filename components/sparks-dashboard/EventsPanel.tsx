@@ -109,7 +109,12 @@ export function EventsPanel({ events, undatedPipelineCount, loading }: EventsPan
           <tbody id="events-body">
             {loading
               ? skeletonTableRows(6, "", 3)
-              : active.map((event) => <EventRow key={`${event.title}-${event.date}`} event={event} />)}
+              : active.map((event, index) => (
+                  <EventRow
+                    key={event.asanaUrl ?? `${event.title}-${event.date ?? "undated"}-${index}`}
+                    event={event}
+                  />
+                ))}
           </tbody>
         </table>
       </div>
@@ -127,11 +132,16 @@ export function EventsPanel({ events, undatedPipelineCount, loading }: EventsPan
           </button>
           <div className="table-wrap table-wrap--scroll table-wrap--compact">
             <table className="data-table data-table--muted">
-              <tbody id="events-done-body" hidden={!doneExpanded}>
-                {done.map((event) => (
-                  <EventRow key={`done-${event.title}-${event.date}`} event={event} />
-                ))}
-              </tbody>
+              {doneExpanded ? (
+                <tbody id="events-done-body">
+                  {done.map((event, index) => (
+                    <EventRow
+                      key={event.asanaUrl ?? `done-${event.title}-${event.date ?? "undated"}-${index}`}
+                      event={event}
+                    />
+                  ))}
+                </tbody>
+              ) : null}
             </table>
           </div>
         </div>

@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Campaign Builder** — edit campaign details from the workspace header (name, `utm_campaign`, destination URL, benchmarks, notes); changing the destination or slug rebuilds all tagged links in Airtable.
+- **Campaign Builder** — `/utm-builder/` rebuilt as Airtable-backed campaign workspace: create campaigns, add multiple UTM links per campaign (channel presets + content variants), GA4 performance rollup with engagement/bounce benchmarks (Airtable targets or site averages).
+- **Campaign Builder** — Airtable integration (`lib/airtable/`) with additive schema bootstrap (`CW Tools — Campaigns`, `CW Tools — Campaign Links`, `CW Tools — KPIs`); `GET /api/airtable/health/`; campaign CRUD APIs.
+- **Campaign Builder** — GA4 history extended with `engagementRate`, `bounceRate`, and `engagedSessions` per UTM row.
 - **Insights — cross-dataset** — `crossInsights` (C1–C10) join GSC queries with GA4 landing/page metrics; combined rows replace duplicate single-source rows in the unified list.
 - **Insights — audience** — `audienceInsights` (A1–A8) from demographics, devices, referrers, and cities with period comparison.
 - **Insights — GSC pages** — `gscPageInsights` (GP1–GP3) for page CTR gaps, declining search clicks, and query hubs; +1 GSC query for prior-period pages.
@@ -23,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Campaign Builder** — campaign workspace (header, performance, links, add-link) now lives in a single panel with internal section dividers.
 - **Insights** — unified list adds sources: combined (GSC+GA4), audience, GSC pages, navigation, UTM; detail panel shows GSC+GA4 side-by-side and coverage/lag caveats.
 - **Insights — GSC** — page_one positions 1–3, tighter striking_distance, declining+low_ctr → review, local+question → faq, cannibalization 3+ pages, volume-relative click thresholds.
 - **Insights — GA4** — page period comparison, unified bounce thresholds (+10/65), declining_landing watchlist, site-wide device/referrer/city audience fetch.
@@ -35,6 +40,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Creative Spark Dashboard** — fixed React hydration mismatch (client-only dashboard render, removed redundant `escapeHtml()` in JSX, stable event keys, defer sessionStorage cache until mount); `formatDate()` now uses deterministic parsing instead of `toLocaleDateString`.
+- **Airtable** — `getBaseSchema()` now calls `GET /meta/bases/{baseId}/tables` so existing CW Tools tables are detected instead of triggering duplicate-table creation errors; field checks use the tables list (single-table Meta endpoint returns 404); KPI checkbox field uses required Airtable options.
+- **Campaign Builder** — restored `lib/utm-builder/build-url.mjs` as a re-export shim to `build-url.ts` so Webpack no longer fails when a stale cache resolves `build-url` to the deleted partial `.mjs` file.
 - **Insights** — fix `countingClient is not defined` in GA4 helper functions (`fetchUserDemographics`, `fetchTrafficInsightsRaw`, etc.) that broke `/insights/` after pipeline refactor.
 - **Insights** — restore missing `getProgram` import in `ga4.mjs` that caused "getProgram is not defined" on `/insights/`.
 - **Insights — Traffic** — fix GA4 comparison report parsing (one row per date range); corrects wrong engagement rates, prior-session counts, and inflated % change; impact scoring uses session delta; session cache `v10`.

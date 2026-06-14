@@ -1,6 +1,6 @@
 import type { Ga4UtmHistoryResult } from "@/lib/utm-builder/ga4-history-types";
 
-const CACHE_PREFIX = "cw-utm-campaign-tracker:v2:";
+const CACHE_PREFIX = "cw-utm-campaign-tracker:v3:";
 
 type CacheEntry = {
   data: Ga4UtmHistoryResult;

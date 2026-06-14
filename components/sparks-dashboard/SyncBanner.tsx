@@ -1,5 +1,4 @@
 import type { SchemaIssue } from "./types";
-import { escapeHtml } from "./utils";
 
 type SyncBannerProps = {
   schemaIssues: SchemaIssue[];
@@ -22,7 +21,7 @@ export function SyncBanner({ schemaIssues }: SyncBannerProps) {
         <strong>{title}</strong>
         <ul className="sync-banner__list">
           {schemaIssues.map((issue, index) => (
-            <li key={`${issue.source}-${index}`}>{escapeHtml(issue.message)}</li>
+            <li key={`${issue.source}-${index}`}>{issue.message}</li>
           ))}
         </ul>
         <p className="sync-banner__hint">

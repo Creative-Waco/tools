@@ -115,4 +115,224 @@
       grid-template-columns: 1fr;
     }
   }
+
+  .btn {
+    @apply cursor-pointer rounded-lg border-0 px-3.5 py-2.5 font-sans text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-primary-foreground;
+  }
+
+  .btn-secondary {
+    @apply border border-input bg-background text-foreground;
+  }
+
+  .btn-sm {
+    @apply px-2.5 py-1.5 text-xs;
+  }
+
+  .campaign-builder {
+    @apply grid gap-4;
+  }
+
+  .campaign-builder-tabs {
+    @apply flex gap-2;
+  }
+
+  .campaign-builder-tab {
+    @apply rounded-lg border border-input bg-background px-3 py-2 text-sm font-semibold;
+  }
+
+  .campaign-builder-tab--active {
+    @apply border-primary bg-primary text-primary-foreground;
+  }
+
+  .campaign-builder-layout {
+    @apply grid items-start gap-4;
+    grid-template-columns: 300px 1fr;
+  }
+
+  @media (max-width: 960px) {
+    .campaign-builder-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .campaign-list {
+    @apply grid gap-3;
+  }
+
+  .campaign-list-header {
+    @apply flex items-center justify-between gap-2;
+  }
+
+  .campaign-list-search {
+    @apply w-full rounded-lg border border-input bg-background px-3 py-2 text-sm;
+  }
+
+  .campaign-list-empty {
+    @apply text-sm text-muted-foreground;
+  }
+
+  .campaign-list-items {
+    @apply m-0 grid list-none gap-2 p-0;
+  }
+
+  .campaign-list-item {
+    @apply grid w-full gap-1 rounded-lg border border-input bg-background p-3 text-left transition hover:border-primary/40;
+  }
+
+  .campaign-list-item--active {
+    @apply border-primary bg-primary/5;
+  }
+
+  .campaign-list-item-title {
+    @apply text-sm font-semibold;
+  }
+
+  .campaign-list-item-meta {
+    @apply text-xs text-muted-foreground;
+  }
+
+  .campaign-status {
+    @apply inline-flex w-fit rounded-full px-2 py-0.5 text-xs font-semibold;
+  }
+
+  .campaign-status--ok {
+    @apply bg-emerald-100 text-emerald-800;
+  }
+
+  .campaign-status--warn {
+    @apply bg-amber-100 text-amber-900;
+  }
+
+  .campaign-status--muted {
+    @apply bg-muted text-muted-foreground;
+  }
+
+  .campaign-workspace {
+    @apply grid gap-0;
+  }
+
+  .campaign-workspace-section {
+    @apply grid gap-3 border-t border-input pt-5 mt-5;
+  }
+
+  .campaign-workspace-header {
+    @apply flex flex-wrap items-start justify-between gap-3;
+  }
+
+  .campaign-workspace-actions {
+    @apply flex items-center gap-2;
+  }
+
+  .campaign-workspace-edit {
+    @apply grid w-full gap-3;
+  }
+
+  .campaign-edit-form {
+    @apply mt-1;
+  }
+
+  .campaign-performance-grid {
+    @apply grid gap-3 sm:grid-cols-2 lg:grid-cols-4;
+  }
+
+  .campaign-metric {
+    @apply grid gap-1 rounded-lg border border-input bg-background p-3;
+  }
+
+  .campaign-metric-label {
+    @apply text-xs font-semibold uppercase tracking-wide text-muted-foreground;
+  }
+
+  .campaign-metric-value {
+    @apply text-xl font-bold;
+  }
+
+  .campaign-metric-target {
+    @apply text-xs text-muted-foreground;
+  }
+
+  .campaign-links-table-wrap {
+    @apply overflow-x-auto;
+  }
+
+  .campaign-links-table {
+    @apply w-full border-collapse text-sm;
+  }
+
+  .campaign-links-table th,
+  .campaign-links-table td {
+    @apply border-b border-input px-2 py-2 text-left align-top;
+  }
+
+  .campaign-link-url {
+    @apply break-all text-xs text-muted-foreground;
+  }
+
+  .campaign-add-link {
+    @apply grid gap-3;
+  }
+
+  .campaign-add-link-channels {
+    @apply flex flex-wrap gap-2;
+  }
+
+  .campaign-add-link-grid {
+    @apply grid gap-3 sm:grid-cols-2;
+  }
+
+  .campaign-add-link-variant-row {
+    @apply flex gap-2;
+  }
+
+  .campaign-add-link-variant-list {
+    @apply flex flex-wrap gap-2;
+  }
+
+  .campaign-dialog-backdrop {
+    @apply fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4;
+  }
+
+  .campaign-dialog {
+    @apply max-h-[90vh] w-full max-w-lg overflow-y-auto;
+  }
+
+  .campaign-dialog-form {
+    @apply mt-4 grid gap-3;
+  }
+
+  .campaign-dialog-benchmark-grid {
+    @apply grid gap-3 sm:grid-cols-3;
+  }
+
+  .campaign-dialog-actions {
+    @apply flex justify-end gap-2;
+  }
+
+  .campaign-dialog-error {
+    @apply text-sm text-red-700;
+  }
+
+  .campaign-dialog-success {
+    @apply text-sm text-emerald-700;
+  }
+
+  .campaign-builder-empty {
+    @apply grid gap-3;
+  }
+
+  .campaign-builder-banner {
+    @apply text-sm text-muted-foreground;
+  }
+
+  .utm-builder-chip {
+    @apply rounded-full border border-input bg-background px-3 py-1 text-xs font-semibold;
+  }
+
+  .utm-builder-chip--active {
+    @apply border-primary bg-primary text-primary-foreground;
+  }
 }

@@ -1,5 +1,5 @@
 import type { TierMix } from "./types";
-import { TIERS, escapeHtml, formatNumber } from "./utils";
+import { TIERS, formatNumber } from "./utils";
 
 type TierPanelProps = {
   tierMixPaid: TierMix;

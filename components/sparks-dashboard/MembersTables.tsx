@@ -1,6 +1,5 @@
 import type { DashboardMember } from "./types";
 import {
-  escapeHtml,
   formatDate,
   formatNumber,
   memberTierLabel,
@@ -13,7 +12,7 @@ type MembersTablesProps = {
 };
 
 function MemberNameCell({ member }: { member: DashboardMember }) {
-  const name = escapeHtml(member.displayName ?? "Member");
+  const name = member.displayName ?? "Member";
   if (!member.profileUrl) return <>{name}</>;
   return (
     <a
@@ -94,7 +93,7 @@ export function MembersTables({ members, loading }: MembersTablesProps) {
                       </td>
                       <td>
                         <span className={`tier-badge tier-badge--${member.tier}`}>
-                          {escapeHtml(memberTierLabel(member.tier))}
+                          {memberTierLabel(member.tier)}
                         </span>
                       </td>
                       <td>{membershipTypeLabel(member.type)}</td>
@@ -147,7 +146,7 @@ export function MembersTables({ members, loading }: MembersTablesProps) {
                         <span
                           className={`tier-badge tier-badge--honorary tier-badge--honorary-${member.tier}`}
                         >
-                          {escapeHtml(memberTierLabel(member.tier))}
+                          {memberTierLabel(member.tier)}
                         </span>
                       </td>
                       <td>{formatDate(member.honorarySince)}</td>

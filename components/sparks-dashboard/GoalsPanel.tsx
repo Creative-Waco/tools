@@ -1,5 +1,5 @@
 import type { Goal } from "./types";
-import { escapeHtml, formatNumber } from "./utils";
+import { formatNumber } from "./utils";
 
 type GoalsPanelProps = {
   goals: Goal[];
@@ -64,10 +64,9 @@ export function GoalsPanel({ goals, loading }: GoalsPanelProps) {
             return (
               <div key={goal.label} className={`goal${index === 0 ? " goal--paid" : ""}`}>
                 <div className="goal__head">
-                  <span className="goal__label">{escapeHtml(goal.label)}</span>
+                  <span className="goal__label">{goal.label}</span>
                   <span className="goal__numbers">
-                    {formatNumber(goal.current)} / {formatNumber(goal.target)}{" "}
-                    {escapeHtml(goal.unit)}
+                    {formatNumber(goal.current)} / {formatNumber(goal.target)} {goal.unit}
                   </span>
                 </div>
                 <div
@@ -85,7 +84,7 @@ export function GoalsPanel({ goals, loading }: GoalsPanelProps) {
                     style={{ width: `${pct}%` }}
                   />
                 </div>
-                <p className="goal__note">{escapeHtml(goal.note)}</p>
+                <p className="goal__note">{goal.note}</p>
                 {index === 0 && (goal.honoraryCount ?? 0) > 0 ? (
                   <p className="goal__honorary">
                     {formatNumber(goal.honoraryCount ?? 0)} honorary members tracked separately
@@ -98,7 +97,7 @@ export function GoalsPanel({ goals, loading }: GoalsPanelProps) {
                         key={m.label}
                         className={`pipeline-month${m.count >= m.target ? " is-met" : ""}`}
                       >
-                        {escapeHtml(m.label)}: {m.count}/{m.target}
+                        {m.label}: {m.count}/{m.target}
                       </span>
                     ))}
                   </div>

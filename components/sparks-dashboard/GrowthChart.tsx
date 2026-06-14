@@ -1,5 +1,5 @@
 import type { MonthlyRow } from "./types";
-import { escapeHtml, formatMonthHeading } from "./utils";
+import { formatMonthHeading } from "./utils";
 
 type GrowthChartProps = {
   monthly: MonthlyRow[];
@@ -84,7 +84,7 @@ export function GrowthChart({ monthly, loading, onMonthClick }: GrowthChartProps
                   </div>
                   <div className="growth-bar growth-bar--events" style={{ height: `${eventH}%` }} />
                 </div>
-                <span className="growth-month__label">{escapeHtml(row.month)}</span>
+                <span className="growth-month__label">{row.month}</span>
               </div>
             );
           })

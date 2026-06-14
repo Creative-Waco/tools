@@ -21,6 +21,7 @@ const EMPTY_TIER_MIX: TierMix = { bronze: 0, silver: 0, gold: 0 };
 export function SparksDashboard() {
   const [period, setPeriod] = useState<Period>("fy");
   const [membershipType, setMembershipType] = useState<MembershipTypeFilter>("all");
+  const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshDisabled, setRefreshDisabled] = useState(false);
   const [data, setData] = useState<DashboardData | null>(null);
@@ -71,8 +72,13 @@ export function SparksDashboard() {
   }, [period, membershipType]);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
     void loadDashboard(false);
-  }, [loadDashboard]);
+  }, [loadDashboard, mounted]);
 
   function handleMonthClick(monthKey: string) {
     hideChartTooltip();
@@ -80,18 +86,19 @@ export function SparksDashboard() {
   }
 
   const schemaIssues = data?.syncHealth?.schemaIssues ?? [];
+  const showLoading = !mounted || loading;
 
   return (
     <>
       <div
-        className={`dashboard-page${loading ? " is-loading" : ""}`}
+        className={`dashboard-page${showLoading ? " is-loading" : ""}`}
         id="dashboard-page"
-        aria-busy={loading}
+        aria-busy={showLoading}
       >
-        {!loading && schemaIssues.length > 0 ? (
+        {!showLoading && schemaIssues.length > 0 ? (
           <SyncBanner schemaIssues={schemaIssues} />
         ) : (
-          <div id="sync-banner" className="sync-banner" hidden />
+          <div id="sync-banner" className="sync-banner is-collapsed" aria-hidden="true" />
         )}
 
         <Toolbar
@@ -103,10 +110,10 @@ export function SparksDashboard() {
           onRefresh={() => void loadDashboard(true)}
         />
 
-        <KpiGrid kpis={data?.kpis ?? []} loading={loading} />
+        <KpiGrid kpis={data?.kpis ?? []} loading={showLoading} />
 
         <div className="dashboard-grid">
-          <GoalsPanel goals={data?.goals ?? []} loading={loading} />
+          <GoalsPanel goals={data?.goals ?? []} loading={showLoading} />
 
           <TierPanel
             tierMixPaid={data?.tierMixPaid ?? EMPTY_TIER_MIX}
@@ -114,22 +121,22 @@ export function SparksDashboard() {
             total={data?.totalMemberCount ?? 0}
             honoraryCount={data?.honoraryCount ?? 0}
             paidCount={data?.paidCount ?? 0}
-            loading={loading}
+            loading={showLoading}
           />
 
           <GrowthChart
             monthly={data?.monthly ?? []}
-            loading={loading}
+            loading={showLoading}
             onMonthClick={handleMonthClick}
           />
 
           <EventsPanel
             events={data?.events ?? []}
             undatedPipelineCount={data?.undatedPipelineCount ?? 0}
-            loading={loading}
+            loading={showLoading}
           />
 
-          <MembersTables members={data?.members ?? []} loading={loading} />
+          <MembersTables members={data?.members ?? []} loading={showLoading} />
         </div>
 
         <p

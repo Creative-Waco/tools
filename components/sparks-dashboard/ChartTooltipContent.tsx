@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { escapeHtml, formatNumber } from "./utils";
+import { formatNumber } from "./utils";
 
 export function ChartTooltipRow({
   swatchClass,
@@ -13,8 +13,8 @@ export function ChartTooltipRow({
   return (
     <div className="chart-tooltip__row">
       <i className={`swatch ${swatchClass}`} aria-hidden="true" />
-      <span className="chart-tooltip__label">{escapeHtml(label)}</span>
-      <strong className="chart-tooltip__value">{escapeHtml(value)}</strong>
+      <span className="chart-tooltip__label">{label}</span>
+      <strong className="chart-tooltip__value">{value}</strong>
     </div>
   );
 }
@@ -28,7 +28,7 @@ export function ChartTooltipBody({
 }) {
   return (
     <>
-      <p className="chart-tooltip__title">{escapeHtml(title)}</p>
+      <p className="chart-tooltip__title">{title}</p>
       <div className="chart-tooltip__rows">{rows}</div>
     </>
   );

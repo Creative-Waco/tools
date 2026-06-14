@@ -20,13 +20,16 @@ export function formatNumber(value: number): string {
   return new Intl.NumberFormat("en-US").format(value);
 }
 
+const SHORT_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
 export function formatDate(iso?: string | null): string {
   if (!iso) return "—";
-  return new Date(`${iso}T12:00:00`).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  if (!match) return "—";
+  const [, year, month, day] = match;
+  const monthIndex = Number(month) - 1;
+  if (monthIndex < 0 || monthIndex > 11) return "—";
+  return `${SHORT_MONTHS[monthIndex]} ${Number(day)}, ${year}`;
 }
 
 export function statusSlugToClass(slug: string): string {

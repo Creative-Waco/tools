@@ -265,7 +265,8 @@
   border-color: #c8c0b0;
 }
 
-.sync-banner[hidden] {
+.sync-banner[hidden],
+.sync-banner.is-collapsed {
   display: none !important;
 }
 

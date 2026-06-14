@@ -3,7 +3,6 @@
 import { useEffect, useRef } from "react";
 import type { DashboardEvent, DashboardMember } from "./types";
 import {
-  escapeHtml,
   formatDate,
   formatMonthHeading,
   formatNumber,
@@ -20,7 +19,7 @@ type GrowthMonthModalProps = {
 };
 
 function MemberNameCell({ member }: { member: DashboardMember }) {
-  const name = escapeHtml(member.displayName ?? "Member");
+  const name = member.displayName ?? "Member";
   if (!member.profileUrl) return <>{name}</>;
   return (
     <a
@@ -43,7 +42,7 @@ function GrowthModalMemberItem({ member }: { member: DashboardMember }) {
         <MemberNameCell member={member} />
       </span>
       <span className="growth-modal__item-meta">
-        {escapeHtml(memberTierLabel(member.tier))} · {escapeHtml(membershipTypeLabel(member.type))}
+        {memberTierLabel(member.tier)} · {membershipTypeLabel(member.type)}
       </span>
     </li>
   );
@@ -55,10 +54,10 @@ function GrowthModalEventItem({ event }: { event: DashboardEvent }) {
       <span className="growth-modal__item-main">
         {event.asanaUrl ? (
           <a href={event.asanaUrl} target="_blank" rel="noopener noreferrer">
-            {escapeHtml(event.title)}
+            {event.title}
           </a>
         ) : (
-          escapeHtml(event.title)
+          event.title
         )}
       </span>
       <span className="growth-modal__item-meta">{formatDate(event.date)}</span>
@@ -67,7 +66,7 @@ function GrowthModalEventItem({ event }: { event: DashboardEvent }) {
 }
 
 function GrowthModalEmpty({ text }: { text: string }) {
-  return <li className="growth-modal__empty">{escapeHtml(text)}</li>;
+  return <li className="growth-modal__empty">{text}</li>;
 }
 
 export function GrowthMonthModal({ monthKey, members, events, onClose }: GrowthMonthModalProps) {

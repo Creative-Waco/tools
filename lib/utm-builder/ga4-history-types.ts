@@ -13,6 +13,9 @@ export type Ga4UtmHistoryEntry = {
   taggedUrl: string;
   sessions: number;
   activeUsers: number;
+  engagementRate?: number;
+  bounceRate?: number;
+  engagedSessions?: number;
 };
 
 export type Ga4UtmHistoryResponse = {
