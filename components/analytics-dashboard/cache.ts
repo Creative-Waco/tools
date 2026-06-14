@@ -5,7 +5,7 @@ import { normalizeSearchInsights } from "./normalize-insights";
 import { normalizeTrafficInsights } from "./normalize-traffic-insights";
 import type { AnalyticsDashboardData } from "./types";
 
-const CACHE_PREFIX = "cw-analytics-dashboard:v10:";
+const CACHE_PREFIX = "cw-analytics-dashboard:v11:";
 
 type CacheEntry = {
   data: AnalyticsDashboardData;

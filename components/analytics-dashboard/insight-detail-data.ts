@@ -1,6 +1,10 @@
 import type { SearchQueryCompetingPage } from "./types";
 import type { UnifiedInsight } from "./unified-insights";
 import { CATEGORY_LABELS } from "./unified-insights";
+import {
+  buildSearchEvidenceSections,
+  buildTrafficEvidenceSections,
+} from "./insight-evidence";
 import type { InsightRationaleContext } from "./insight-rationale";
 import { formatChange, formatSessionComparison } from "./utils";
 
@@ -13,6 +17,7 @@ export type InsightDetailRow = {
 
 export type InsightDetailSection = {
   title: string;
+  description?: string;
   rows: InsightDetailRow[];
   /** comparison = 3-col table; list = label / value rows */
   layout?: "comparison" | "list";
@@ -51,11 +56,10 @@ function fmtDelta(value: number | null | undefined) {
   return formatChange(value);
 }
 
-function buildSearchDetail(
-  row: UnifiedInsight,
-): InsightDetailModel {
+function buildSearchDetail(row: UnifiedInsight): InsightDetailModel {
   const search = row.search!;
   const sections: InsightDetailSection[] = [
+    ...buildSearchEvidenceSections(row),
     {
       title: "Period comparison",
       layout: "comparison",
@@ -165,7 +169,9 @@ function buildTrafficDetail(
   context: InsightRationaleContext,
 ): InsightDetailModel {
   const traffic = row.traffic!;
-  const sections: InsightDetailSection[] = [];
+  const sections: InsightDetailSection[] = [
+    ...buildTrafficEvidenceSections(row, context),
+  ];
 
   const comparisonRows: InsightDetailRow[] = [
     {

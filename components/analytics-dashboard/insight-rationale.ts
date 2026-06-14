@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 
-import type { AnalyticsDashboardData } from "./types";
+import type { AnalyticsDashboardData, ChannelRow, ProgramInsights } from "./types";
 import type { UnifiedInsight } from "./unified-insights";
 import { formatChange, formatSessionComparison } from "./utils";
 
@@ -13,6 +13,8 @@ export type InsightRationaleContext = {
     current: string;
     comparison: string;
   };
+  channels?: ChannelRow[];
+  programInsights?: ProgramInsights | null;
 };
 
 export type InsightRationale = {
@@ -241,6 +243,9 @@ export function buildInsightRationaleContext(
       ),
     };
   }
+
+  context.channels = data.channels;
+  context.programInsights = data.programInsights;
 
   return context;
 }

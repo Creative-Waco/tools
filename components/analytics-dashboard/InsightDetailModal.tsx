@@ -33,9 +33,9 @@ type InsightDetailModalProps = {
 function ListTable({ rows }: { rows: InsightDetailRow[] }) {
   return (
     <dl className="divide-y rounded-xl border bg-background text-sm">
-      {rows.map((row) => (
+      {rows.map((row, index) => (
         <div
-          key={row.label}
+          key={`${row.label}-${index}`}
           className="flex items-start justify-between gap-6 px-4 py-3"
         >
           <dt className="text-muted-foreground">{row.label}</dt>
@@ -64,8 +64,8 @@ function ComparisonTable({
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => (
-            <tr key={row.label} className="border-b last:border-0">
+          {rows.map((row, index) => (
+            <tr key={`${row.label}-${index}`} className="border-b last:border-0">
               <td className="px-4 py-3 text-muted-foreground">{row.label}</td>
               <td className="px-4 py-3 text-right font-medium tabular-nums">
                 {row.current ?? "—"}
@@ -84,9 +84,16 @@ function ComparisonTable({
 function SectionBlock({ section }: { section: InsightDetailSection }) {
   return (
     <section className="space-y-3">
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        {section.title}
-      </h3>
+      <div>
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          {section.title}
+        </h3>
+        {section.description ? (
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+            {section.description}
+          </p>
+        ) : null}
+      </div>
       {section.layout === "list" ? (
         <ListTable rows={section.rows} />
       ) : (

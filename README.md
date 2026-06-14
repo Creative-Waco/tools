@@ -419,11 +419,13 @@ Dedicated insights dashboard at [`/insights/`](https://tools.creativewaco.org/in
 
 **Filters** — source (`all` | `search` | `traffic`), type (`quick_wins`, `cannibalization`, `conversion`, `rising`, `watchlist`), and **High priority only** (impact ≥ 25). Shows 30 rows by default with **Show all** for the full list.
 
-**Detail panel** — click any row to open source data: period comparison (this range vs prior), vs site average (bounce/engagement when relevant), summary metrics, GSC click-trend table, and collapsible technical metadata.
+**Detail panel** — click any row to open underlying source data: **Source data** (GSC keyword or GA4 dimension + raw metrics), **Trigger rules** (exact threshold), period comparison, channel **Top sources** (for Email and other channel groups — UTM source tags / referrers with this vs prior period), vs site average, program breakdowns (audience, forms, devices when relevant), GSC click-trend table, and collapsible technical metadata.
 
 **Categories:** Quick wins (GSC + GA4 landings), Cannibalization (GSC), Conversion & experience (GA4), Rising, Watchlist.
 
-[`/search-insights/`](https://tools.creativewaco.org/search-insights/) redirects to `/insights/?source=search`. Uses the same `GET /api/analytics-dashboard/` payload and session cache (`v10`) as the main dashboard.
+**Impact (0–100)** — each insight gets a raw score from its source engine, then normalized against the highest raw score in the current list so search and traffic are comparable. **Search:** raw impact is potential extra clicks at benchmark CTR for rank (`expected clicks − actual clicks`), plus small impression bonuses for cannibalization, page-1 low CTR, and page-2 queries. **Traffic:** formulas vary by type (e.g. rising channel = `sessions × min(|% change|, 200) / 100`; high-bounce landing = `sessions × bounce gap / 100`). The detail panel **Technical details** section shows **Raw impact** before normalization. **High priority only** filters to impact ≥ 25.
+
+[`/search-insights/`](https://tools.creativewaco.org/search-insights/) redirects to `/insights/?source=search`. Uses the same `GET /api/analytics-dashboard/` payload and session cache (`v11`) as the main dashboard.
 
 **Environment variables**
 

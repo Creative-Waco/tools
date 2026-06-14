@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Insights** — unified hub at `/insights/` combining Search Console and GA4 opportunities with normalized impact scoring (0–100), source/type filters, and a row-click detail panel (period comparison, site benchmarks, GSC click trends, technical metadata).
+- **Insights** — unified hub at `/insights/` combining Search Console and GA4 opportunities with normalized impact scoring (0–100), source/type filters, and a row-click detail panel.
+- **Insights** — detail panel **Source data** on every row (GSC keyword or GA4 dimension + raw metrics), **Trigger rules** (exact threshold), channel **Top sources** with period comparison (`sessionSource` within each default channel group), and program breakdowns (audience, forms, devices) when relevant.
 - **Insights — Traffic** — GA4 opportunity engine: high-bounce landings, low-engagement pages, form/retention/mobile flags, rising and declining channels/sources.
 - **Campaign Tracker** — GA4 campaign table at the top of `/utm-builder/` with **By campaign** / **All links** views, expand/collapse by campaign and source/medium, **Source**, **Medium**, and **Referrer** columns, pagination, and row-click to load the URL builder.
 
@@ -24,7 +25,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Insights** — detail panel trigger rules no longer duplicate React keys when an insight matches multiple tags.
 - **Insights — Traffic** — fix GA4 comparison report parsing (one row per date range); corrects wrong engagement rates, prior-session counts, and inflated % change; impact scoring uses session delta; session cache `v10`.
+- **Insights — Traffic** — channel source breakdown now includes prior-period sessions for comparison; session cache `v11`.
 - **Insights** — normalize cached/partial search `insights` payloads so missing arrays or row fields no longer crash the page.
 - **Insights** — stale `.next` dev cache caused 500/blank page (`Cannot read properties of undefined (reading 'call')`); use `npm run dev:clean:3847` after route changes.
 - **Campaign Tracker** — duplicate GA4 rows with identical UTM/landing combos are merged so session counts sum correctly.

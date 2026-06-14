@@ -21,6 +21,7 @@ export type DailyRow = {
 export type ChannelSourceRow = {
   source: string;
   sessions: number;
+  previousSessions?: number;
 };
 
 export type ChannelRow = {
