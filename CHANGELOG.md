@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Google Ads** — dashboard at `/google-ads/` with campaign list, spend/clicks/impressions/conversions (7/30/90-day ranges), pause/enable controls, and daily budget edits; `google-ads-api` client in `lib/google-ads/`; `GET /api/google-ads/` and `PATCH /api/google-ads/campaigns/{id}/`.
 - **Design system** — suite-wide Creative Waco brand tokens (`app/brand-tokens.css`) mapped to shadcn theme: cream paper background, ink primary actions, Spark orange accents, warm chart palette.
 - **Design system** — shared toolkit `components/cw/` (`ToolPage`, `ToolLayout`, `ToolPanel`, `ToolSection`, `MetricCard`, `StatusPill`); brand variants on shadcn `Badge` and `Button`.
 - **Design system** — [docs/BRAND-GUIDE.md](docs/BRAND-GUIDE.md) and Cursor rule `.cursor/rules/brand-guide.mdc` for consistent UI additions.
@@ -31,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Mobile** — app shell flattens the content card on small screens (no double border/padding), closes the sidebar sheet on navigation, and tightens page padding, hero typography, filter toolbars, and panel spacing for phone layouts.
 - **Design system** — warm Spark-inspired theme applied across hub, utility tools, analytics dashboards, and app shell; Creative Spark `dashboard.css` consumes global tokens (scoped toolbar/field/button rules).
 - **Design system** — app shell content well is a white card panel; outline/secondary buttons, badges, and analytics filters use white surfaces with spark-soft hovers instead of grey-muted fills.
 - **Sidebar** — Insights uses a lightbulb icon so it is distinct from Analytics Dashboard (line chart).

@@ -9,6 +9,7 @@ import {
   LineChart,
   Link2,
   Mail,
+  Megaphone,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -43,6 +44,7 @@ const TAG_ICONS = {
 
 const TOOL_ICON_OVERRIDES: Partial<Record<string, (typeof TAG_ICONS)[keyof typeof TAG_ICONS]>> = {
   insights: Lightbulb,
+  "google-ads": Megaphone,
 };
 
 function toolIcon(toolId: string, tag: keyof typeof TAG_ICONS) {

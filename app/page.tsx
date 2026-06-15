@@ -10,7 +10,7 @@ function ToolGrid({ items }: { items: Tool[] }) {
         <li key={tool.id}>
           <Link
             href={tool.path}
-            className="flex h-full flex-col rounded-panel border border-line bg-card p-6 text-card-foreground no-underline shadow-panel transition-colors hover:bg-accent"
+            className="flex h-full flex-col rounded-panel border border-line bg-card p-4 text-card-foreground no-underline shadow-panel transition-colors hover:bg-accent sm:p-6"
           >
             <h2 className="mb-2 text-lg font-semibold">{tool.name}</h2>
             <p className="m-0 flex-1 text-sm leading-relaxed text-muted-foreground">

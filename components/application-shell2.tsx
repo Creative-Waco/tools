@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronRight, ChevronsUpDown, LogOut, User } from "lucide-react";
+import { usePathname } from "next/navigation";
 import * as React from "react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -38,6 +39,7 @@ import {
   SidebarProvider,
   SidebarRail,
   SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/cn";
 
@@ -127,6 +129,27 @@ function LogoMark({
   );
 }
 
+function MobileSidebarCloser() {
+  const pathname = usePathname();
+  const { setOpenMobile } = useSidebar();
+
+  React.useEffect(() => {
+    setOpenMobile(false);
+  }, [pathname, setOpenMobile]);
+
+  return null;
+}
+
+function useCloseMobileSidebarOnNavigate() {
+  const { isMobile, setOpenMobile } = useSidebar();
+
+  return React.useCallback(() => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  }, [isMobile, setOpenMobile]);
+}
+
 const SidebarLogo = ({ logo }: { logo: SidebarData["logo"] }) => (
   <SidebarMenu className="min-w-0 flex-1 !w-auto">
     <SidebarMenuItem>
@@ -162,6 +185,7 @@ const NavMenuItem = ({
 }) => {
   const Icon = item.icon;
   const hasChildren = item.children && item.children.length > 0;
+  const closeMobileSidebar = useCloseMobileSidebarOnNavigate();
 
   if (!hasChildren) {
     return (
@@ -169,7 +193,7 @@ const NavMenuItem = ({
         <SidebarMenuButton
           isActive={item.isActive}
           tooltip={item.label}
-          render={<Link href={item.href} />}
+          render={<Link href={item.href} onClick={closeMobileSidebar} />}
         >
           <Icon className="size-4" />
           <span>{item.label}</span>
@@ -191,7 +215,10 @@ const NavMenuItem = ({
         <SidebarMenuSub>
           {item.children!.map((child) => (
             <SidebarMenuSubItem key={child.label}>
-              <SidebarMenuSubButton isActive={child.isActive} render={<Link href={child.href} />}>
+              <SidebarMenuSubButton
+                isActive={child.isActive}
+                render={<Link href={child.href} onClick={closeMobileSidebar} />}
+              >
                 {child.label}
               </SidebarMenuSubButton>
             </SidebarMenuSubItem>
@@ -331,25 +358,26 @@ export function ApplicationShell2({
 
   return (
     <SidebarProvider className={cn("min-h-svh w-full", className)}>
+      <MobileSidebarCloser />
       <AppSidebar data={data} linkComponent={Link} />
       <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 md:hidden">
+        <header className="flex h-14 shrink-0 items-center gap-2 border-b px-3 md:hidden">
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 items-center gap-2">
             <div
               className={cn(
-                "flex aspect-square size-8 items-center justify-center overflow-hidden rounded-sm",
+                "flex aspect-square size-8 shrink-0 items-center justify-center overflow-hidden rounded-sm",
                 !data.logo.src && "bg-primary",
               )}
             >
               <LogoMark title={data.logo.title} src={data.logo.src} alt={data.logo.alt} />
             </div>
-            <span className="font-semibold">{data.logo.title}</span>
+            <span className="truncate font-semibold">{data.logo.title}</span>
           </div>
         </header>
-        <div className="flex min-w-0 flex-1 flex-col gap-4 p-4 md:p-6">
-          <div className="min-h-0 min-w-0 flex-1 overflow-x-hidden rounded-panel border border-line bg-card shadow-panel md:min-h-min">
+        <div className="flex min-w-0 flex-1 flex-col md:gap-4 md:p-6">
+          <div className="min-h-0 min-w-0 flex-1 overflow-x-hidden bg-card md:min-h-min md:rounded-panel md:border md:border-line md:shadow-panel">
             {children}
           </div>
         </div>

@@ -17,6 +17,7 @@ Internal tools for Creative Waco, hosted at **https://tools.creativewaco.org**.
 | Creative Spark Dashboard | [/sparks-dashboard/](https://tools.creativewaco.org/sparks-dashboard/) | Live Spark membership + event pipeline from Givebutter and Asana |
 | Analytics Dashboard | [/analytics-dashboard/](https://tools.creativewaco.org/analytics-dashboard/) | GA4 + Search Console — site and program analytics, organic keywords, traffic channels |
 | Insights | [/insights/](https://tools.creativewaco.org/insights/) | Cross-dataset opportunities (GSC + GA4 + audience + UTM) ranked by impact |
+| Google Ads | [/google-ads/](https://tools.creativewaco.org/google-ads/) | Campaign performance, pause/enable, and daily budget controls |
 
 ## Architecture
 
@@ -24,13 +25,13 @@ Next.js 15 App Router app deployed on Vercel at **https://tools.creativewaco.org
 
 | Layer | Location |
 |-------|----------|
-| Pages | `app/` — hub, `/rss-email/`, `/event-cards/`, `/sparks-dashboard/`, `/utm-builder/`, `/analytics-dashboard/` |
+| Pages | `app/` — hub, `/rss-email/`, `/event-cards/`, `/sparks-dashboard/`, `/utm-builder/`, `/analytics-dashboard/`, `/google-ads/` |
 | API | `app/api/` — Route Handlers wrapping `lib/` |
 | App shell | `components/AppShell.tsx` + `@shadcnblocks/application-shell2` — inset collapsible sidebar; **Tools** and **Dashboards** groups from `lib/tools-registry.ts` (`kind: "tool"` \| `"dashboard"`) |
 | UI components | `components/` — shadcn/ui primitives, shared layout, per-tool React clients |
-| Backend logic | `lib/` — RSS generation, event cards, Campaign Builder (Airtable + GA4), Givebutter/Asana dashboard, GA4/Search Console analytics |
+| Backend logic | `lib/` — RSS generation, event cards, Campaign Builder (Airtable + GA4), Givebutter/Asana dashboard, GA4/Search Console analytics, Google Ads API |
 
-Navigation is provided by the Application Shell 2 layout (inset sidebar with icon collapse). The sidebar has a **Tools** group (**All tools** plus utilities) and a **Dashboards** group (Creative Spark, Analytics, Insights); the current page is highlighted with a dark active state (visible in both expanded and collapsed icon mode). The Creative Waco branding block at the top is display-only (use **All tools** or **⌘B** / **Ctrl+B** to collapse the sidebar). Collapsed vs expanded state is remembered for 7 days in a browser cookie. The hub at `/` and each tool page render inside the shell's main content area.
+Navigation is provided by the Application Shell 2 layout (inset sidebar with icon collapse). The sidebar has a **Tools** group (**All tools** plus utilities) and a **Dashboards** group (Creative Spark, Analytics, Insights, Google Ads); the current page is highlighted with a dark active state (visible in both expanded and collapsed icon mode). The Creative Waco branding block at the top is display-only (use **All tools** or **⌘B** / **Ctrl+B** to collapse the sidebar). Collapsed vs expanded state is remembered for 7 days in a browser cookie. On mobile (under 768px), the sidebar opens as a slide-over sheet; selecting a nav item or changing routes closes it automatically. The hub at `/` and each tool page render inside the shell's main content area.
 
 Favicon and Apple touch icon match [creativewaco.org](https://creativewaco.org/) (`app/icon.png`, `app/apple-icon.png`).
 
@@ -247,6 +248,12 @@ Local file auto-load does **not** run on Vercel. Set at minimum:
 | `GSC_SITE_URL` | Optional Search Console property URL (defaults to `sc-domain:creativewaco.org`) |
 | `AIRTABLE_API_KEY` | Campaign Builder | Personal access token with schema + data scopes |
 | `AIRTABLE_BASE_ID` | Campaign Builder | Airtable base where CW Tools tables are bootstrapped |
+| `GOOGLE_ADS_DEVELOPER_TOKEN` | Google Ads | API developer token from Google Ads API Center |
+| `GOOGLE_ADS_CLIENT_ID` | Google Ads | OAuth client ID (Google Cloud Console) |
+| `GOOGLE_ADS_CLIENT_SECRET` | Google Ads | OAuth client secret |
+| `GOOGLE_ADS_REFRESH_TOKEN` | Google Ads | Long-lived OAuth refresh token for the Ads account |
+| `GOOGLE_ADS_CUSTOMER_ID` | Google Ads | Ads customer ID (digits only, no dashes) |
+| `GOOGLE_ADS_LOGIN_CUSTOMER_ID` | Google Ads | Optional MCC manager ID when accessing a client account |
 
 Optional overrides match the Spark Dashboard table above (`ASANA_SPARKS_PROJECT_GID`, campaign/tier aliases, etc.).
 
@@ -282,6 +289,8 @@ ASANA_OAUTH_REDIRECT_URI="http://localhost:3334/oauth/callback" node scripts/ref
 | `GET` | `/api/tools/` | Tool registry JSON |
 | `GET` | `/api/sparks-dashboard/` | Dashboard data (`period`, `membershipType`, optional `refresh=1`) |
 | `GET` | `/api/analytics-dashboard/` | GA4 + Search Console (`startDate`, `endDate`, optional `program`) |
+| `GET` | `/api/google-ads/` | Google Ads campaigns + metrics (`range` = `7d` \| `30d` \| `90d`, `status` = `all` \| `enabled` \| `paused`) |
+| `PATCH` | `/api/google-ads/campaigns/{id}/` | Pause/enable campaign (`status`) or update daily budget (`dailyBudget`, `budgetResourceName`) |
 | `POST` | `/api/generate/` | RSS → HubSpot email HTML |
 | `POST` | `/api/event-cards/generate/` | RSS → Instagram-width event card HTML |
 | `POST` | `/api/event-cards/months/` | RSS → months with events (for month picker) |
@@ -420,6 +429,32 @@ When a program is selected, four **program insight** panels answer:
 The **Search queries** table on the Analytics Dashboard lists organic Google keywords with **Keywords** and **Pages** views. Use **Insights** in the toolbar (or the link on the Search queries card) to open the dedicated insights dashboard.
 
 GA4 and Search Console report aggregated counts only — not individual identities. Search Console data is typically **2–3 days behind** GA4.
+
+## Google Ads
+
+Campaign management dashboard at [`/google-ads/`](https://tools.creativewaco.org/google-ads/). Lists campaigns from your Google Ads account with spend, clicks, impressions, and conversions for the selected date range.
+
+**Controls**
+
+- **Pause / Enable** — toggle delivery per campaign (enabled ↔ paused only)
+- **Daily budget** — edit the linked campaign budget amount and save
+- **Filters** — date range (7 / 30 / 90 days) and status (all active, enabled only, paused only)
+
+When credentials are missing, the page shows which env vars to set (see `.env.example`).
+
+**Setup**
+
+1. Apply for a **developer token** in Google Ads → Tools → API Center.
+2. Create an OAuth app in Google Cloud Console with the Google Ads API enabled.
+3. Generate a **refresh token** with scope `https://www.googleapis.com/auth/adwords`.
+4. Set `GOOGLE_ADS_CUSTOMER_ID` to the account you manage (digits only). If you access a client account through an MCC, also set `GOOGLE_ADS_LOGIN_CUSTOMER_ID` to the manager account ID.
+
+**API**
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| `GET` | `/api/google-ads/` | List campaigns + summary metrics |
+| `PATCH` | `/api/google-ads/campaigns/{id}/` | Update status or daily budget |
 
 ## Insights
 

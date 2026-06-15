@@ -54,6 +54,15 @@ export const TOOLS: Tool[] = [
     kind: "tool",
   },
   {
+    id: "google-ads",
+    name: "Google Ads",
+    path: "/google-ads/",
+    description:
+      "View Google Ads campaign performance and pause, enable, or adjust daily budgets.",
+    tag: "Marketing",
+    kind: "dashboard",
+  },
+  {
     id: "analytics-dashboard",
     name: "Analytics Dashboard",
     path: "/analytics-dashboard/",

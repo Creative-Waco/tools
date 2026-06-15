@@ -51,6 +51,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/cn";
 
 import { StatusLine } from "@/components/StatusLine";
@@ -307,6 +308,7 @@ function TrendChartTooltip({
 
 export function AnalyticsDashboard() {
   const skipUrlSync = useRef(true);
+  const isMobile = useIsMobile();
   const [urlReady, setUrlReady] = useState(false);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [selectedPreset, setSelectedPreset] = useState("Last 30 days");
@@ -485,7 +487,7 @@ export function AnalyticsDashboard() {
             value={programId}
             onValueChange={handleProgramChange}
           >
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-full min-w-0 sm:w-[180px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -497,7 +499,7 @@ export function AnalyticsDashboard() {
             </SelectContent>
           </Select>
           <Select value={selectedPreset} onValueChange={handlePresetChange}>
-            <SelectTrigger className="w-[220px]">
+            <SelectTrigger className="w-full min-w-0 sm:w-[220px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -509,7 +511,14 @@ export function AnalyticsDashboard() {
             </SelectContent>
           </Select>
           <Popover>
-            <PopoverTrigger render={<Button variant="outline" />}>
+            <PopoverTrigger
+              render={
+                <Button
+                  variant="outline"
+                  className="w-full min-w-0 justify-start sm:w-auto"
+                />
+              }
+            >
               <CalendarIcon className="mr-2 size-4" />
               {dateRange?.from ? (
                 dateRange.to ? (
@@ -524,10 +533,10 @@ export function AnalyticsDashboard() {
                 "Pick dates"
               )}
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="end">
+            <PopoverContent className="w-auto p-0" align="start">
               <Calendar
                 mode="range"
-                numberOfMonths={2}
+                numberOfMonths={isMobile ? 1 : 2}
                 selected={dateRange}
                 onSelect={(range) => {
                   setDateRange(range);
